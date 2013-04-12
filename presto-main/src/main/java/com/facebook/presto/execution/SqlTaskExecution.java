@@ -7,6 +7,7 @@ import com.facebook.presto.OutputBuffers;
 import com.facebook.presto.ScheduledSplit;
 import com.facebook.presto.TaskSource;
 import com.facebook.presto.metadata.Metadata;
+import com.facebook.presto.metadata.StorageManager;
 import com.facebook.presto.operator.Operator;
 import com.facebook.presto.operator.OperatorStats;
 import com.facebook.presto.operator.OutputProducingOperator;
@@ -70,8 +71,10 @@ public class SqlTaskExecution
     private final ListeningExecutorService shardExecutor;
     private final PlanFragment fragment;
     private final Metadata metadata;
+    private final StorageManager storageManager;
     private final DataSize maxOperatorMemoryUsage;
     private final Session session;
+    private final NodeInfo nodeInfo;
 
     private final AtomicInteger pendingWorkerCount = new AtomicInteger();
 
@@ -87,6 +90,7 @@ public class SqlTaskExecution
     private final BlockingDeque<FutureTask<?>> unfinishedWorkerTasks = new LinkedBlockingDeque<>();
 
     public static SqlTaskExecution createSqlTaskExecution(Session session,
+            NodeInfo nodeInfo,
             TaskId taskId,
             URI location,
             PlanFragment fragment,
@@ -94,11 +98,13 @@ public class SqlTaskExecution
             DataStreamProvider dataStreamProvider,
             ExchangeOperatorFactory exchangeOperatorFactory,
             Metadata metadata,
+            StorageManager storageManager,
             ExecutorService taskMasterExecutor,
             ListeningExecutorService shardExecutor,
             DataSize maxOperatorMemoryUsage)
     {
         SqlTaskExecution task = new SqlTaskExecution(session,
+                nodeInfo,
                 taskId,
                 location,
                 fragment,
@@ -106,6 +112,7 @@ public class SqlTaskExecution
                 dataStreamProvider,
                 exchangeOperatorFactory,
                 metadata,
+                storageManager,
                 shardExecutor,
                 maxOperatorMemoryUsage);
 
@@ -115,6 +122,7 @@ public class SqlTaskExecution
     }
 
     private SqlTaskExecution(Session session,
+            NodeInfo nodeInfo,
             TaskId taskId,
             URI location,
             PlanFragment fragment,
@@ -122,24 +130,29 @@ public class SqlTaskExecution
             DataStreamProvider dataStreamProvider,
             ExchangeOperatorFactory exchangeOperatorFactory,
             Metadata metadata,
+            StorageManager storageManager,
             ListeningExecutorService shardExecutor,
             DataSize maxOperatorMemoryUsage)
     {
         Preconditions.checkNotNull(session, "session is null");
+        Preconditions.checkNotNull(nodeInfo, "nodeInfo is null");
         Preconditions.checkNotNull(taskId, "taskId is null");
         Preconditions.checkNotNull(fragment, "fragment is null");
         Preconditions.checkArgument(pageBufferMax > 0, "pageBufferMax must be at least 1");
         Preconditions.checkNotNull(metadata, "metadata is null");
+        Preconditions.checkNotNull(storageManager, "storageManager is null");
         Preconditions.checkNotNull(shardExecutor, "shardExecutor is null");
         Preconditions.checkNotNull(maxOperatorMemoryUsage, "maxOperatorMemoryUsage is null");
 
         this.session = session;
+        this.nodeInfo = nodeInfo;
         this.taskId = taskId;
         this.fragment = fragment;
         this.dataStreamProvider = dataStreamProvider;
         this.exchangeOperatorFactory = exchangeOperatorFactory;
         this.shardExecutor = shardExecutor;
         this.metadata = metadata;
+        this.storageManager = storageManager;
         this.maxOperatorMemoryUsage = maxOperatorMemoryUsage;
 
         // create output buffers
@@ -235,11 +248,13 @@ public class SqlTaskExecution
     {
         // create a new split worker
         SplitWorker worker = new SplitWorker(session,
+                nodeInfo,
                 taskOutput,
                 fragment,
                 getSourceHashProviderFactory(),
                 metadata,
                 maxOperatorMemoryUsage,
+                storageManager,
                 dataStreamProvider,
                 exchangeOperatorFactory);
 
@@ -423,11 +438,13 @@ public class SqlTaskExecution
         private final Map<PlanNodeId, OutputProducingOperator<?>> outputOperators;
 
         private SplitWorker(Session session,
+                NodeInfo nodeInfo,
                 TaskOutput taskOutput,
                 PlanFragment fragment,
                 SourceHashProviderFactory sourceHashProviderFactory,
                 Metadata metadata,
                 DataSize maxOperatorMemoryUsage,
+                StorageManager storageManager,
                 DataStreamProvider dataStreamProvider,
                 ExchangeOperatorFactory exchangeOperatorFactory)
         {
@@ -436,12 +453,14 @@ public class SqlTaskExecution
             operatorStats = new OperatorStats(taskOutput);
 
             LocalExecutionPlanner planner = new LocalExecutionPlanner(session,
+                    nodeInfo,
                     metadata,
                     fragment.getSymbols(),
                     operatorStats,
                     sourceHashProviderFactory,
                     maxOperatorMemoryUsage,
                     dataStreamProvider,
+                    storageManager,
                     exchangeOperatorFactory);
 
             LocalExecutionPlan localExecutionPlan = planner.plan(fragment.getRoot());
