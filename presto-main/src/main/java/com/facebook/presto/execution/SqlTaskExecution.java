@@ -9,6 +9,7 @@ import com.facebook.presto.TaskSource;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.operator.Operator;
 import com.facebook.presto.operator.OperatorStats;
+import com.facebook.presto.operator.OutputProducingOperator;
 import com.facebook.presto.operator.Page;
 import com.facebook.presto.operator.PageIterator;
 import com.facebook.presto.operator.SourceHashProviderFactory;
@@ -49,6 +50,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Math.max;
 
 public class SqlTaskExecution
@@ -403,6 +407,7 @@ public class SqlTaskExecution
         private final Operator operator;
         private final OperatorStats operatorStats;
         private final Map<PlanNodeId, SourceOperator> sourceOperators;
+        private final Map<PlanNodeId, OutputProducingOperator<?>> outputOperators;
 
         private SplitWorker(Session session,
                 TaskOutput taskOutput,
@@ -429,6 +434,7 @@ public class SqlTaskExecution
             LocalExecutionPlan localExecutionPlan = planner.plan(fragment.getRoot());
             operator = localExecutionPlan.getRootOperator();
             sourceOperators = localExecutionPlan.getSourceOperators();
+            outputOperators = localExecutionPlan.getOutputOperators();
         }
 
         public void addSplit(PlanNodeId sourceId, Split split)
@@ -473,6 +479,9 @@ public class SqlTaskExecution
             }
             finally {
                 operatorStats.finish();
+                for (Map.Entry<PlanNodeId, OutputProducingOperator<?>> entry : outputOperators.entrySet()) {
+                    taskOutput.addOutput(entry.getKey(), entry.getValue().getOutput());
+                }
             }
             return null;
         }
