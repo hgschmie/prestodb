@@ -3,7 +3,6 @@ package com.facebook.presto.metadata;
 import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.tuple.TupleInfo;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 import javax.inject.Singleton;
@@ -31,17 +30,10 @@ public class MetadataManager
     private final ImportMetadata importMetadata;
 
     @Inject
-    public MetadataManager(NativeMetadata nativeMetadata,
-            InternalMetadata internalMetadata,
-            ImportMetadata importMetadata)
+    public MetadataManager(Map<DataSourceType, Metadata> metadataSourceMap)
     {
-        this.importMetadata = importMetadata;
-
-        metadataSourceMap = ImmutableMap.<DataSourceType, Metadata>builder()
-                .put(DataSourceType.NATIVE, checkNotNull(nativeMetadata, "nativeMetadata is null"))
-                .put(DataSourceType.INTERNAL, checkNotNull(internalMetadata, "internalMetadata is null"))
-                .put(DataSourceType.IMPORT, checkNotNull(importMetadata, "importMetadata is null"))
-                .build();
+        this.metadataSourceMap = metadataSourceMap;
+        this.importMetadata = (ImportMetadata) metadataSourceMap.get(DataSourceType.IMPORT);
     }
 
     @Override
@@ -185,7 +177,7 @@ public class MetadataManager
         }
 
         // TODO: this is a hack until we have the ability to create and manage catalogs from sql
-        if (importMetadata.hasCatalog(prefix.getCatalogName())) {
+        if (importMetadata != null && importMetadata.hasCatalog(prefix.getCatalogName())) {
             return DataSourceType.IMPORT;
         }
 
