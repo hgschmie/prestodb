@@ -8,7 +8,6 @@ import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.event.query.QueryCompletionEvent;
 import com.facebook.presto.event.query.QueryCreatedEvent;
 import com.facebook.presto.event.query.QueryMonitor;
-import com.facebook.presto.execution.CreateOrReplaceMaterializedViewExecution.CreateOrReplaceMaterializedViewExecutionFactory;
 import com.facebook.presto.execution.DropTableExecution.DropTableExecutionFactory;
 import com.facebook.presto.execution.LocationFactory;
 import com.facebook.presto.execution.QueryExecution.QueryExecutionFactory;
@@ -38,6 +37,7 @@ import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.importer.PeriodicImportRunnable;
 import com.facebook.presto.importer.ShardImport;
 import com.facebook.presto.metadata.AliasDao;
+import com.facebook.presto.metadata.DataSourceType;
 import com.facebook.presto.metadata.DatabaseShardManager;
 import com.facebook.presto.metadata.DatabaseStorageManager;
 import com.facebook.presto.metadata.ForAlias;
@@ -148,17 +148,28 @@ public class ServerMainModule
         bindConfig(binder).to(StorageManagerConfig.class);
         binder.bind(StorageManager.class).to(DatabaseStorageManager.class).in(Scopes.SINGLETON);
         binder.bind(DataStreamProvider.class).to(DataStreamManager.class).in(Scopes.SINGLETON);
-        binder.bind(NativeDataStreamProvider.class).in(Scopes.SINGLETON);
-        binder.bind(ImportDataStreamProvider.class).in(Scopes.SINGLETON);
 
         binder.bind(Metadata.class).to(MetadataManager.class).in(Scopes.SINGLETON);
         binder.bind(MetadataManager.class).in(Scopes.SINGLETON);
-        binder.bind(NativeMetadata.class).in(Scopes.SINGLETON);
+
+        MapBinder<DataSourceType, Metadata> metadataBinder = MapBinder.newMapBinder(binder,
+                DataSourceType.class,
+                Metadata.class);
+
+        metadataBinder.addBinding(DataSourceType.NATIVE).to(NativeMetadata.class).in(Scopes.SINGLETON);
+        metadataBinder.addBinding(DataSourceType.INTERNAL).to(InternalMetadata.class).in(Scopes.SINGLETON);
+        metadataBinder.addBinding(DataSourceType.IMPORT).to(ImportMetadata.class).in(Scopes.SINGLETON);
+
+        MapBinder<DataSourceType, DataStreamProvider> dataStreamProviderBinder = MapBinder.newMapBinder(binder,
+                DataSourceType.class,
+                DataStreamProvider.class);
+
+        dataStreamProviderBinder.addBinding(DataSourceType.NATIVE).to(NativeDataStreamProvider.class).in(Scopes.SINGLETON);
+        dataStreamProviderBinder.addBinding(DataSourceType.INTERNAL).to(InternalDataStreamProvider.class).in(Scopes.SINGLETON);
+        dataStreamProviderBinder.addBinding(DataSourceType.IMPORT).to(ImportDataStreamProvider.class).in(Scopes.SINGLETON);
 
         binder.bind(MetadataResource.class).in(Scopes.SINGLETON);
 
-        binder.bind(InternalMetadata.class).in(Scopes.SINGLETON);
-        binder.bind(InternalDataStreamProvider.class).in(Scopes.SINGLETON);
         binder.bind(InformationSchemaMetadata.class).in(Scopes.SINGLETON);
         binder.bind(InformationSchemaData.class).in(Scopes.SINGLETON);
         binder.bind(SystemTables.class).in(Scopes.SINGLETON);
@@ -167,7 +178,6 @@ public class ServerMainModule
 
         // kick off binding of import client factories
         Multibinder.newSetBinder(binder, ImportClientFactory.class);
-        binder.bind(ImportMetadata.class).in(Scopes.SINGLETON);
 
         binder.bind(SplitManager.class).in(Scopes.SINGLETON);
         ExportBinder.newExporter(binder).export(SplitManager.class).withGeneratedName();
