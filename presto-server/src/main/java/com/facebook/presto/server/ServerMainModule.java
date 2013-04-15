@@ -32,8 +32,9 @@ import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.importer.PeriodicImportRunnable;
 import com.facebook.presto.metadata.AliasDao;
 import com.facebook.presto.metadata.DataSourceType;
+import com.facebook.presto.metadata.DatabaseLocalStorageManager;
+import com.facebook.presto.metadata.DatabaseLocalStorageManagerConfig;
 import com.facebook.presto.metadata.DatabaseShardManager;
-import com.facebook.presto.metadata.DatabaseStorageManager;
 import com.facebook.presto.metadata.ForAlias;
 import com.facebook.presto.metadata.ForMetadata;
 import com.facebook.presto.metadata.ForShardCleaner;
@@ -44,6 +45,7 @@ import com.facebook.presto.metadata.ImportMetadata;
 import com.facebook.presto.metadata.InformationSchemaData;
 import com.facebook.presto.metadata.InformationSchemaMetadata;
 import com.facebook.presto.metadata.InternalMetadata;
+import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MetadataManager;
 import com.facebook.presto.metadata.NativeMetadata;
@@ -51,8 +53,6 @@ import com.facebook.presto.metadata.NodeManager;
 import com.facebook.presto.metadata.ShardCleaner;
 import com.facebook.presto.metadata.ShardCleanerConfig;
 import com.facebook.presto.metadata.ShardManager;
-import com.facebook.presto.metadata.StorageManager;
-import com.facebook.presto.metadata.StorageManagerConfig;
 import com.facebook.presto.metadata.SystemTables;
 import com.facebook.presto.operator.ForExchange;
 import com.facebook.presto.operator.ForScheduler;
@@ -80,6 +80,9 @@ import com.facebook.presto.sql.tree.ShowFunctions;
 import com.facebook.presto.sql.tree.ShowPartitions;
 import com.facebook.presto.sql.tree.ShowTables;
 import com.facebook.presto.sql.tree.Statement;
+import com.facebook.presto.storage.DatabaseStorageManager;
+import com.facebook.presto.storage.ForStorage;
+import com.facebook.presto.storage.StorageManager;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
@@ -139,8 +142,8 @@ public class ServerMainModule
         HttpClientBinder.httpClientBinder(binder).bindAsyncHttpClient("exchange", ForExchange.class).withTracing();
         HttpClientBinder.httpClientBinder(binder).bindAsyncHttpClient("scheduler", ForScheduler.class).withTracing();
 
-        bindConfig(binder).to(StorageManagerConfig.class);
-        binder.bind(StorageManager.class).to(DatabaseStorageManager.class).in(Scopes.SINGLETON);
+        bindConfig(binder).to(DatabaseLocalStorageManagerConfig.class);
+        binder.bind(LocalStorageManager.class).to(DatabaseLocalStorageManager.class).in(Scopes.SINGLETON);
         binder.bind(DataStreamProvider.class).to(DataStreamManager.class).in(Scopes.SINGLETON);
 
         binder.bind(Metadata.class).to(MetadataManager.class).in(Scopes.SINGLETON);
@@ -213,7 +216,7 @@ public class ServerMainModule
             discoveryBinder(binder).bindHttpAnnouncement("presto-coordinator");
         }
 
-        bindDataSource("presto-metastore", ForMetadata.class, ForShardManager.class, ForPeriodicImport.class, ForAlias.class);
+        bindDataSource("presto-metastore", ForMetadata.class, ForShardManager.class, ForPeriodicImport.class, ForAlias.class, ForStorage.class);
 
         jsonCodecBinder(binder).bindJsonCodec(QueryInfo.class);
         jsonCodecBinder(binder).bindJsonCodec(TaskInfo.class);
@@ -260,12 +263,14 @@ public class ServerMainModule
         binder.bind(new TypeLiteral<List<PlanOptimizer>>() {}).toProvider(PlanOptimizersFactory.class).in(Scopes.SINGLETON);
 
         binder.bind(NodeResource.class).in(Scopes.SINGLETON);
+
+        binder.bind(StorageManager.class).to(DatabaseStorageManager.class).in(Scopes.SINGLETON);
     }
 
     @Provides
     @Singleton
     @ForStorageManager
-    public IDBI createStorageManagerDBI(StorageManagerConfig config)
+    public IDBI createStorageManagerDBI(DatabaseLocalStorageManagerConfig config)
             throws Exception
     {
         String path = new File(config.getDataDirectory(), "db/StorageManager").getAbsolutePath();

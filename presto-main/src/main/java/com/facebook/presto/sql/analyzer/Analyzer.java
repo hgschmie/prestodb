@@ -254,7 +254,7 @@ public class Analyzer
             AnalyzedExpression resultFieldExpression = new AnalyzedExpression(resultField.getType(), QueryUtil.nameReference(resultField.getAttribute().get()));
 
             AnalyzedOutput output = new AnalyzedOutput(new TupleDescriptor(ImmutableList.<Field>of(resultField)),
-                                                       ImmutableMap.of(resultField.getSymbol(), resultFieldExpression));
+                    ImmutableMap.of(resultField.getSymbol(), resultFieldExpression));
 
             AnalyzedDestination destination = new AnalyzedDestination(dstTableName);
 
@@ -263,15 +263,15 @@ public class Analyzer
             context.addDestination(destination, analysis);
 
             return AnalysisResult.newInstance(context,
-                                              false,
-                                              output,
-                                              null,
-                                              ImmutableList.<AnalyzedExpression>of(),
-                                              ImmutableSet.<AnalyzedFunction>of(),
-                                              ImmutableSet.<AnalyzedFunction>of(),
-                                              null,
-                                              ImmutableList.<AnalyzedOrdering>of(),
-                                              null);
+                    false,
+                    output,
+                    null,
+                    ImmutableList.<AnalyzedExpression>of(),
+                    ImmutableSet.<AnalyzedFunction>of(),
+                    ImmutableSet.<AnalyzedFunction>of(),
+                    null,
+                    ImmutableList.<AnalyzedOrdering>of(),
+                    null);
         }
 
         @Override

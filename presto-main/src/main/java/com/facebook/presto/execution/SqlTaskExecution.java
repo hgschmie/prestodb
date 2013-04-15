@@ -7,7 +7,7 @@ import com.facebook.presto.OutputBuffers;
 import com.facebook.presto.ScheduledSplit;
 import com.facebook.presto.TaskSource;
 import com.facebook.presto.metadata.Metadata;
-import com.facebook.presto.metadata.StorageManager;
+import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.operator.Operator;
 import com.facebook.presto.operator.OperatorStats;
 import com.facebook.presto.operator.OutputProducingOperator;
@@ -71,7 +71,7 @@ public class SqlTaskExecution
     private final ListeningExecutorService shardExecutor;
     private final PlanFragment fragment;
     private final Metadata metadata;
-    private final StorageManager storageManager;
+    private final LocalStorageManager storageManager;
     private final DataSize maxOperatorMemoryUsage;
     private final Session session;
     private final NodeInfo nodeInfo;
@@ -98,7 +98,7 @@ public class SqlTaskExecution
             DataStreamProvider dataStreamProvider,
             ExchangeOperatorFactory exchangeOperatorFactory,
             Metadata metadata,
-            StorageManager storageManager,
+            LocalStorageManager storageManager,
             ExecutorService taskMasterExecutor,
             ListeningExecutorService shardExecutor,
             DataSize maxOperatorMemoryUsage)
@@ -130,7 +130,7 @@ public class SqlTaskExecution
             DataStreamProvider dataStreamProvider,
             ExchangeOperatorFactory exchangeOperatorFactory,
             Metadata metadata,
-            StorageManager storageManager,
+            LocalStorageManager storageManager,
             ListeningExecutorService shardExecutor,
             DataSize maxOperatorMemoryUsage)
     {
@@ -444,7 +444,7 @@ public class SqlTaskExecution
                 SourceHashProviderFactory sourceHashProviderFactory,
                 Metadata metadata,
                 DataSize maxOperatorMemoryUsage,
-                StorageManager storageManager,
+                LocalStorageManager storageManager,
                 DataStreamProvider dataStreamProvider,
                 ExchangeOperatorFactory exchangeOperatorFactory)
         {
