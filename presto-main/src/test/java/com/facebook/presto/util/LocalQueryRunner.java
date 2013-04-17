@@ -14,9 +14,9 @@ import com.facebook.presto.metadata.FunctionRegistry;
 import com.facebook.presto.metadata.InternalTable;
 import com.facebook.presto.metadata.InternalTableHandle;
 import com.facebook.presto.metadata.Metadata;
-import com.facebook.presto.metadata.MockStorageManager;
+import com.facebook.presto.metadata.MockLocalStorageManager;
 import com.facebook.presto.metadata.QualifiedTableName;
-import com.facebook.presto.metadata.StorageManager;
+import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.operator.AlignmentOperator;
@@ -74,12 +74,12 @@ public class LocalQueryRunner
 {
     private final DataStreamProvider dataStreamProvider;
     private final Metadata metadata;
-    private final StorageManager storageManager;
+    private final LocalStorageManager storageManager;
     private final Session session;
 
     public LocalQueryRunner(DataStreamProvider dataStreamProvider,
             Metadata metadata,
-            StorageManager storageManager,
+            LocalStorageManager storageManager,
             Session session)
     {
         this.dataStreamProvider = checkNotNull(dataStreamProvider, "dataStreamProvider is null");
@@ -150,7 +150,7 @@ public class LocalQueryRunner
         Session session = new Session(null, TpchSchema.CATALOG_NAME, TpchSchema.SCHEMA_NAME);
 
         try {
-            return new LocalQueryRunner(dataProvider, metadata, new MockStorageManager(), session);
+            return new LocalQueryRunner(dataProvider, metadata, new MockLocalStorageManager(), session);
         }
         catch (IOException e) {
             throw Throwables.propagate(e);
@@ -167,7 +167,7 @@ public class LocalQueryRunner
         DataStreamProvider dataProvider = new DualTableDataStreamProvider();
         Metadata metadata = new DualTableMetadata();
         try {
-            return new LocalQueryRunner(dataProvider, metadata, new MockStorageManager(), session);
+            return new LocalQueryRunner(dataProvider, metadata, new MockLocalStorageManager(), session);
         }
         catch (IOException e) {
             throw Throwables.propagate(e);
