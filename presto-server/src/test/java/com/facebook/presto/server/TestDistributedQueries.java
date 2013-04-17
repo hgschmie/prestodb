@@ -14,12 +14,12 @@ import com.facebook.presto.execution.QueryInfo;
 import com.facebook.presto.execution.QueryManager;
 import com.facebook.presto.metadata.DataSourceType;
 import com.facebook.presto.metadata.HandleJsonModule;
+import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.NodeManager;
 import com.facebook.presto.metadata.QualifiedTableName;
 import com.facebook.presto.metadata.QualifiedTablePrefix;
 import com.facebook.presto.metadata.ShardManager;
-import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.split.DataStreamProvider;
 import com.facebook.presto.sql.analyzer.Session;
 import com.facebook.presto.sql.tree.Expression;
@@ -236,11 +236,10 @@ public class TestDistributedQueries
     {
         ImmutableList.Builder<String> tableNames = ImmutableList.builder();
         List<QualifiedTableName> qualifiedTableNames = metadata.listTables(QualifiedTablePrefix.builder(catalog).build());
-        ImmutableList.Builder<QueryId> builder = ImmutableList.builder();
 
         for (QualifiedTableName qualifiedTableName : qualifiedTableNames) {
             log.info("Running import for %s", qualifiedTableName.getTableName());
-            MaterializedResult importResult = computeActual(format("CREATE MATERIALIZED VIEW default.default.%s WITH ENCODING 'snappy' AS SELECT * FROM %s", qualifiedTableName.getTableName(), qualifiedTableName));
+            MaterializedResult importResult = computeActual(format("CREATE MATERIALIZED VIEW default.default.%s AS SELECT * FROM %s", qualifiedTableName.getTableName(), qualifiedTableName));
             log.info("Imported %s rows for %s", importResult.getMaterializedTuples().get(0).getField(0), qualifiedTableName.getTableName());
             tableNames.add(qualifiedTableName.getTableName());
         }
