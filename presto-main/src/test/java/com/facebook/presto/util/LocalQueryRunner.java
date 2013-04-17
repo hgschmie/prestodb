@@ -1,10 +1,6 @@
 package com.facebook.presto.util;
 
 import com.facebook.presto.importer.MockPeriodicImportManager;
-
-import io.airlift.node.NodeConfig;
-import io.airlift.node.NodeInfo;
-
 import com.facebook.presto.metadata.AbstractMetadata;
 import com.facebook.presto.metadata.ColumnHandle;
 import com.facebook.presto.metadata.DualTable;
@@ -13,10 +9,10 @@ import com.facebook.presto.metadata.FunctionInfo;
 import com.facebook.presto.metadata.FunctionRegistry;
 import com.facebook.presto.metadata.InternalTable;
 import com.facebook.presto.metadata.InternalTableHandle;
+import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MockLocalStorageManager;
 import com.facebook.presto.metadata.QualifiedTableName;
-import com.facebook.presto.metadata.LocalStorageManager;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.operator.AlignmentOperator;
@@ -44,6 +40,7 @@ import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.facebook.presto.sql.planner.plan.TableScanNode;
 import com.facebook.presto.sql.tree.QualifiedName;
 import com.facebook.presto.sql.tree.Statement;
+import com.facebook.presto.storage.MockStorageManager;
 import com.facebook.presto.tpch.TpchDataStreamProvider;
 import com.facebook.presto.tpch.TpchSchema;
 import com.facebook.presto.tpch.TpchSplit;
@@ -53,6 +50,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airlift.node.NodeConfig;
+import io.airlift.node.NodeInfo;
 import io.airlift.units.DataSize;
 import org.intellij.lang.annotations.Language;
 
@@ -101,6 +100,7 @@ public class LocalQueryRunner
         PlanNode plan = new LogicalPlanner(session,
                 metadata,
                 new MockPeriodicImportManager(),
+                new MockStorageManager(),
                 planOptimizersFactory.get(),
                 idAllocator).plan(analysis);
         new PlanPrinter().print(plan, analysis.getTypes());

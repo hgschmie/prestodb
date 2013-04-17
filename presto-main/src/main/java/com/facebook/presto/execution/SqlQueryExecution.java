@@ -21,6 +21,7 @@ import com.facebook.presto.sql.planner.SubPlan;
 import com.facebook.presto.sql.planner.optimizations.PlanOptimizer;
 import com.facebook.presto.sql.planner.plan.PlanNode;
 import com.facebook.presto.sql.tree.Statement;
+import com.facebook.presto.storage.StorageManager;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
@@ -61,6 +62,7 @@ public class SqlQueryExecution
     private final ExecutorService queryExecutor;
     private final ShardManager shardManager;
     private final  PeriodicImportManager periodicImportManager;
+    private final StorageManager storageManager;
 
     private final AtomicReference<SqlStageExecution> outputStage = new AtomicReference<>();
 
@@ -79,7 +81,8 @@ public class SqlQueryExecution
             int maxPendingSplitsPerNode,
             ExecutorService queryExecutor,
             ShardManager shardManager,
-            PeriodicImportManager periodicImportManager)
+            PeriodicImportManager periodicImportManager,
+            StorageManager storageManager)
     {
         this.statement = checkNotNull(statement, "statement is null");
         this.metadata = checkNotNull(metadata, "metadata is null");
@@ -91,6 +94,7 @@ public class SqlQueryExecution
         this.queryExecutor = checkNotNull(queryExecutor, "queryExecutor is null");
         this.shardManager = checkNotNull(shardManager, "shardManager is null");
         this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
+        this.storageManager = checkNotNull(storageManager, "storageManager is null");
 
         checkArgument(maxPendingSplitsPerNode > 0, "maxPendingSplitsPerNode must be greater than 0");
         this.maxPendingSplitsPerNode = maxPendingSplitsPerNode;
@@ -153,7 +157,13 @@ public class SqlQueryExecution
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
         // plan query
-        LogicalPlanner logicalPlanner = new LogicalPlanner(stateMachine.getSession(), metadata, periodicImportManager, planOptimizers, idAllocator);
+        LogicalPlanner logicalPlanner = new LogicalPlanner(stateMachine.getSession(),
+                metadata,
+                periodicImportManager,
+                storageManager,
+                planOptimizers,
+                idAllocator);
+
         PlanNode plan = logicalPlanner.plan(analysis);
 
         // fragment the plan
@@ -332,6 +342,7 @@ public class SqlQueryExecution
         private final QueryMonitor queryMonitor;
         private final ShardManager shardManager;
         private final PeriodicImportManager periodicImportManager;
+        private final StorageManager storageManager;
 
         private final ExecutorService queryExecutor;
 
@@ -345,7 +356,8 @@ public class SqlQueryExecution
                 List<PlanOptimizer> planOptimizers,
                 RemoteTaskFactory remoteTaskFactory,
                 ShardManager shardManager,
-                PeriodicImportManager periodicImportManager)
+                PeriodicImportManager periodicImportManager,
+                StorageManager storageManager)
         {
             Preconditions.checkNotNull(config, "config is null");
             this.maxPendingSplitsPerNode = config.getMaxPendingSplitsPerNode();
@@ -358,6 +370,7 @@ public class SqlQueryExecution
             this.remoteTaskFactory = checkNotNull(remoteTaskFactory, "remoteTaskFactory is null");
             this.shardManager = checkNotNull(shardManager, "shardManager is null");
             this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
+            this.storageManager = checkNotNull(storageManager, "storageManager is null");
 
             this.queryExecutor = Executors.newCachedThreadPool(threadsNamed("query-scheduler-%d"));
         }
@@ -380,7 +393,8 @@ public class SqlQueryExecution
                     maxPendingSplitsPerNode,
                     queryExecutor,
                     shardManager,
-                    periodicImportManager);
+                    periodicImportManager,
+                    storageManager);
 
             return queryExecution;
         }

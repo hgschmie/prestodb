@@ -1,5 +1,7 @@
 package com.facebook.presto.benchmark;
 
+import com.facebook.presto.storage.MockStorageManager;
+
 import com.facebook.presto.importer.MockPeriodicImportManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MockLocalStorageManager;
@@ -64,6 +66,7 @@ public abstract class AbstractSqlBenchmark
         PlanNode plan = new LogicalPlanner(session,
                 metadata,
                 new MockPeriodicImportManager(),
+                new MockStorageManager(),
                 planOptimizersFactory.get(),
                 idAllocator).plan(analysis);
         fragment = new DistributedLogicalPlanner(metadata, idAllocator)

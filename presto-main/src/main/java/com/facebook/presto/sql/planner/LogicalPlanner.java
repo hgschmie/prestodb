@@ -4,10 +4,12 @@ import com.facebook.presto.importer.PeriodicImportJob;
 import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.metadata.ColumnHandle;
 import com.facebook.presto.metadata.ColumnMetadata;
+import com.facebook.presto.metadata.DataSourceType;
 import com.facebook.presto.metadata.FunctionHandle;
 import com.facebook.presto.metadata.FunctionInfo;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MetadataUtil;
+import com.facebook.presto.metadata.NativeTableHandle;
 import com.facebook.presto.metadata.QualifiedTableName;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.sql.analyzer.AnalysisResult;
@@ -50,6 +52,7 @@ import com.facebook.presto.sql.tree.SortItem;
 import com.facebook.presto.sql.tree.Subquery;
 import com.facebook.presto.sql.tree.Table;
 import com.facebook.presto.sql.tree.TreeRewriter;
+import com.facebook.presto.storage.StorageManager;
 import com.facebook.presto.util.IterableTransformer;
 import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
@@ -83,16 +86,19 @@ public class LogicalPlanner
     private final PlanNodeIdAllocator idAllocator;
     private final List<PlanOptimizer> planOptimizers;
     private final PeriodicImportManager periodicImportManager;
+    private final StorageManager storageManager;
 
     public LogicalPlanner(Session session,
             Metadata metadata,
             PeriodicImportManager periodicImportManager,
+            StorageManager storageManager,
             List<PlanOptimizer> planOptimizers,
             PlanNodeIdAllocator idAllocator)
     {
         this.session = checkNotNull(session, "session is null");
         this.metadata = checkNotNull(metadata, "metadata is null");
         this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
+        this.storageManager = checkNotNull(storageManager, "storageManager is null");
         this.planOptimizers = checkNotNull(planOptimizers, "planOptimizersFactory is null");
         this.idAllocator = checkNotNull(idAllocator, "idAllocator is null");
     }
@@ -549,7 +555,10 @@ public class LogicalPlanner
 
         TableMetadata dstTableMetadata = createTable(metadata, destination.getTableName(), columns.build());
         checkState(dstTableMetadata.getTableHandle().isPresent(), "can not import into a table without table handle");
+        checkState(dstTableMetadata.getTableHandle().get().getDataSourceType() == DataSourceType.NATIVE, "can not import into non-native table %s", dstTableMetadata.getTable());
         QualifiedTableName srcTableName = getTableNameFromQuery(session, queryAnalysis);
+
+        storageManager.insertSourceTable(((NativeTableHandle) dstTableMetadata.getTableHandle().get()), srcTableName);
 
         // if a refresh is present, create a periodic import for this table
         if (destination.getRefresh().isPresent()) {
