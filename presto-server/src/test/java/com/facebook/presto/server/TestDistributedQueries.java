@@ -240,7 +240,7 @@ public class TestDistributedQueries
 
         for (QualifiedTableName qualifiedTableName : qualifiedTableNames) {
             log.info("Running import for %s", qualifiedTableName.getTableName());
-            MaterializedResult importResult = computeActual(format("CREATE OR REPLACE MATERIALIZED VIEW default.default.%s AS SELECT * FROM %s", qualifiedTableName.getTableName(), qualifiedTableName));
+            MaterializedResult importResult = computeActual(format("CREATE MATERIALIZED VIEW default.default.%s WITH ENCODING 'snappy' AS SELECT * FROM %s", qualifiedTableName.getTableName(), qualifiedTableName));
             log.info("Imported %s rows for %s", importResult.getMaterializedTuples().get(0).getField(0), qualifiedTableName.getTableName());
             tableNames.add(qualifiedTableName.getTableName());
         }
