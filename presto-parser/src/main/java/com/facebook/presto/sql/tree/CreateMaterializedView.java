@@ -43,7 +43,7 @@ public class CreateMaterializedView
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, tableDefinition);
+        return Objects.hashCode(name, refresh, tableDefinition);
     }
 
     @Override
