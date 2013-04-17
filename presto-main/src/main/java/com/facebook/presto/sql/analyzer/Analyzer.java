@@ -1,10 +1,15 @@
 package com.facebook.presto.sql.analyzer;
 
+import com.facebook.presto.importer.PeriodicImportJob;
+import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.metadata.ColumnMetadata;
+import com.facebook.presto.metadata.DataSourceType;
 import com.facebook.presto.metadata.FunctionInfo;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MetadataUtil;
+import com.facebook.presto.metadata.NativeTableHandle;
 import com.facebook.presto.metadata.QualifiedTableName;
+import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.sql.ExpressionFormatter;
 import com.facebook.presto.sql.ExpressionUtils;
@@ -44,6 +49,7 @@ import com.facebook.presto.sql.tree.Subquery;
 import com.facebook.presto.sql.tree.Table;
 import com.facebook.presto.sql.tree.TreeRewriter;
 import com.facebook.presto.sql.tree.Window;
+import com.facebook.presto.storage.StorageManager;
 import com.facebook.presto.util.IterableTransformer;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -66,6 +72,7 @@ import static com.facebook.presto.metadata.InformationSchemaMetadata.TABLE_COLUM
 import static com.facebook.presto.metadata.InformationSchemaMetadata.TABLE_INTERNAL_FUNCTIONS;
 import static com.facebook.presto.metadata.InformationSchemaMetadata.TABLE_INTERNAL_PARTITIONS;
 import static com.facebook.presto.metadata.InformationSchemaMetadata.TABLE_TABLES;
+import static com.facebook.presto.metadata.MetadataUtil.createTable;
 import static com.facebook.presto.sql.analyzer.AnalyzedExpression.rewrittenExpressionGetter;
 import static com.facebook.presto.sql.analyzer.AnalyzedExpression.typeGetter;
 import static com.facebook.presto.sql.analyzer.AnalyzedFunction.distinctPredicate;
@@ -82,6 +89,7 @@ import static com.facebook.presto.sql.tree.QueryUtil.selectAll;
 import static com.facebook.presto.sql.tree.QueryUtil.selectList;
 import static com.facebook.presto.sql.tree.QueryUtil.table;
 import static com.facebook.presto.sql.tree.SortItem.sortKeyGetter;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.compose;
 import static com.google.common.base.Predicates.in;
@@ -92,13 +100,25 @@ import static com.google.common.collect.Iterables.transform;
 
 public class Analyzer
 {
+    private final PeriodicImportManager periodicImportManager;
+    private final StorageManager storageManager;
     private final Metadata metadata;
     private final Session session;
 
-    public Analyzer(Session session, Metadata metadata)
+    public Analyzer(Session session,
+            Metadata metadata,
+            StorageManager storageManager,
+            PeriodicImportManager periodicImportManager)
     {
         this.session = session;
         this.metadata = metadata;
+        this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
+        this.storageManager = checkNotNull(storageManager, "storageManager is null");
+    }
+
+    private Analyzer newAnalyzer()
+    {
+        return new Analyzer(session, metadata, storageManager, periodicImportManager);
     }
 
     public AnalysisResult analyze(Node node)
@@ -139,7 +159,7 @@ public class Analyzer
 
             // analyze FROM clause
             Relation relation = Iterables.getOnlyElement(query.getFrom());
-            TupleDescriptor sourceDescriptor = new RelationAnalyzer(metadata, context.getSession()).process(relation, context);
+            TupleDescriptor sourceDescriptor = new RelationAnalyzer().process(relation, context);
 
             AnalyzedExpression predicate = null;
             if (query.getWhere().isPresent()) {
@@ -244,6 +264,35 @@ public class Analyzer
             TableMetadata dstTableMetadata = metadata.getTable(dstTableName);
             checkState(dstTableMetadata == null, "Destination table %s already exists!", dstTableName);
 
+            // Analyze the query that creates the table...
+            AnalysisResult queryAnalysis = newAnalyzer().analyze(statement.getTableDefinition(), new AnalysisContext(context.getSession(), context.getSymbolAllocator()));
+
+            // Create the destination table
+            ImmutableList.Builder<ColumnMetadata> columns = ImmutableList.builder();
+            for (Field field : queryAnalysis.getOutputDescriptor().getFields()) {
+                ColumnMetadata columnMetadata = new ColumnMetadata(field.getAttribute().get(), field.getType().getRawType());
+                columns.add(columnMetadata);
+            }
+
+            dstTableMetadata = createTable(metadata, dstTableName, columns.build());
+
+            Optional<TableHandle> dstTableHandle = dstTableMetadata.getTableHandle();
+            checkState(dstTableHandle.isPresent(), "can not import into a table without table handle");
+            checkState(dstTableHandle.get().getDataSourceType() == DataSourceType.NATIVE, "can not import into non-native table %s", dstTableMetadata.getTable());
+
+            QualifiedTableName srcTableName = getTableNameFromQuery(session, queryAnalysis);
+
+            // create source table and optional import information
+            storageManager.insertSourceTable(((NativeTableHandle) dstTableHandle.get()), srcTableName);
+
+            // if a refresh is present, create a periodic import for this table
+            if (statement.getRefresh().isPresent()) {
+                int importInterval = Integer.parseInt(statement.getRefresh().get());
+                checkState(importInterval > 0, "import interval must be > 0");
+                PeriodicImportJob job = PeriodicImportJob.createJob(srcTableName, dstTableMetadata.getTable(), importInterval);
+                periodicImportManager.insertJob(job);
+            }
+
             // yeah, that should be somehow simpler...
             Field resultField = Field.getField("imported_rows", context.getSymbolAllocator().newSymbol("imported_rows", Type.LONG), Type.LONG);
             AnalyzedExpression resultFieldExpression = new AnalyzedExpression(resultField.getType(), QueryUtil.nameReference(resultField.getAttribute().get()));
@@ -251,11 +300,9 @@ public class Analyzer
             AnalyzedOutput output = new AnalyzedOutput(new TupleDescriptor(ImmutableList.<Field>of(resultField)),
                     ImmutableMap.of(resultField.getSymbol(), resultFieldExpression));
 
-            AnalyzedDestination destination = new AnalyzedDestination(dstTableName, statement.getRefresh());
+            AnalyzedDestination destination = new AnalyzedDestination(dstTableName);
 
-            AnalysisResult analysis = new Analyzer(context.getSession(), metadata).analyze(statement.getTableDefinition(), new AnalysisContext(context.getSession(), context.getSymbolAllocator()));
-
-            context.addDestination(destination, analysis);
+            context.addDestination(destination, queryAnalysis);
 
             return AnalysisResult.newInstance(context,
                     false,
@@ -434,7 +481,7 @@ public class Analyzer
             // analyze select and order by terms
             for (Expression term : concat(transform(select.getSelectItems(), unaliasFunction()), transform(orderBy, sortKeyGetter()))) {
                 // TODO: this doesn't currently handle queries like 'SELECT k + sum(v) FROM T GROUP BY k' correctly
-                AggregateAnalyzer analyzer = new AggregateAnalyzer(metadata, descriptor);
+                AggregateAnalyzer analyzer = new AggregateAnalyzer(descriptor);
 
                 List<AnalyzedFunction> aggregations = analyzer.analyze(term);
                 if (aggregations.isEmpty()) {
@@ -471,26 +518,35 @@ public class Analyzer
             ImmutableSet.Builder<AnalyzedFunction> builder = ImmutableSet.builder();
             // analyze select and order by terms
             for (Expression term : concat(transform(select.getSelectItems(), unaliasFunction()), transform(orderBy, sortKeyGetter()))) {
-                builder.addAll(new WindowAnalyzer(metadata, descriptor).analyze(term));
+                builder.addAll(new WindowAnalyzer(descriptor).analyze(term));
             }
             return builder.build();
         }
     }
 
+    private QualifiedTableName getTableNameFromQuery(Session session, AnalysisResult queryAnalysis)
+    {
+        // Yup. Total hack.
+        Query q = queryAnalysis.getRewrittenQuery();
+        List<Relation> relations = q.getFrom();
+        checkState(relations.size() == 1, "query uses more than one table");
+        Relation r = Iterables.getOnlyElement(relations);
+        checkState(r instanceof Table, "query does not select from a table");
+        return MetadataUtil.createQualifiedTableName(session, ((Table) r).getName());
+    }
+
     /**
      * Resolves and extracts aggregate functions from an expression and analyzes them (infer types and replace QualifiedNames with symbols)
      */
-    private static class AggregateAnalyzer
+    private class AggregateAnalyzer
             extends DefaultTraversalVisitor<Void, FunctionCall>
     {
-        private final Metadata metadata;
         private final TupleDescriptor descriptor;
 
         private List<AnalyzedFunction> aggregations;
 
-        public AggregateAnalyzer(Metadata metadata, TupleDescriptor descriptor)
+        public AggregateAnalyzer(TupleDescriptor descriptor)
         {
-            this.metadata = metadata;
             this.descriptor = descriptor;
         }
 
@@ -539,17 +595,15 @@ public class Analyzer
     /**
      * Resolves and extracts window functions from an expression and analyzes them (infer types and replace QualifiedNames with symbols)
      */
-    private static class WindowAnalyzer
+    private class WindowAnalyzer
             extends DefaultTraversalVisitor<Void, FunctionCall>
     {
-        private final Metadata metadata;
         private final TupleDescriptor descriptor;
 
         private List<AnalyzedFunction> functions;
 
-        public WindowAnalyzer(Metadata metadata, TupleDescriptor descriptor)
+        public WindowAnalyzer(TupleDescriptor descriptor)
         {
-            this.metadata = metadata;
             this.descriptor = descriptor;
         }
 
@@ -638,18 +692,9 @@ public class Analyzer
         };
     }
 
-    private static class RelationAnalyzer
+    private class RelationAnalyzer
             extends DefaultTraversalVisitor<TupleDescriptor, AnalysisContext>
     {
-        private final Metadata metadata;
-        private final Session session;
-
-        private RelationAnalyzer(Metadata metadata, Session session)
-        {
-            this.metadata = metadata;
-            this.session = session;
-        }
-
         @Override
         protected TupleDescriptor visitTable(Table table, AnalysisContext context)
         {
@@ -699,7 +744,7 @@ public class Analyzer
         protected TupleDescriptor visitSubquery(Subquery node, AnalysisContext context)
         {
             // Analyze the subquery recursively
-            AnalysisResult analysis = new Analyzer(context.getSession(), metadata).analyze(node.getQuery(), new AnalysisContext(context.getSession(), context.getSymbolAllocator()));
+            AnalysisResult analysis = newAnalyzer().analyze(node.getQuery(), new AnalysisContext(context.getSession(), context.getSymbolAllocator()));
 
             context.registerInlineView(node, analysis);
 

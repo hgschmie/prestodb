@@ -152,15 +152,17 @@ public class SqlQueryExecution
         long analysisStart = System.nanoTime();
 
         // analyze query
-        Analyzer analyzer = new Analyzer(stateMachine.getSession(), metadata);
+        Analyzer analyzer = new Analyzer(stateMachine.getSession(),
+                metadata,
+                storageManager,
+                periodicImportManager);
+
         AnalysisResult analysis = analyzer.analyze(statement);
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
         // plan query
         LogicalPlanner logicalPlanner = new LogicalPlanner(stateMachine.getSession(),
                 metadata,
-                periodicImportManager,
-                storageManager,
                 planOptimizers,
                 idAllocator);
 

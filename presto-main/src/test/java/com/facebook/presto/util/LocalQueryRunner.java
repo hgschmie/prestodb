@@ -91,7 +91,10 @@ public class LocalQueryRunner
     {
         Statement statement = SqlParser.createStatement(sql);
 
-        Analyzer analyzer = new Analyzer(session, metadata);
+        Analyzer analyzer = new Analyzer(session,
+                metadata,
+                new MockStorageManager(),
+                new MockPeriodicImportManager());
 
         AnalysisResult analysis = analyzer.analyze(statement);
 
@@ -99,8 +102,6 @@ public class LocalQueryRunner
         PlanOptimizersFactory planOptimizersFactory = new PlanOptimizersFactory(metadata);
         PlanNode plan = new LogicalPlanner(session,
                 metadata,
-                new MockPeriodicImportManager(),
-                new MockStorageManager(),
                 planOptimizersFactory.get(),
                 idAllocator).plan(analysis);
         new PlanPrinter().print(plan, analysis.getTypes());

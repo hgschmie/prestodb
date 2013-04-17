@@ -1,7 +1,5 @@
 package com.facebook.presto.benchmark;
 
-import com.facebook.presto.storage.MockStorageManager;
-
 import com.facebook.presto.importer.MockPeriodicImportManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MockLocalStorageManager;
@@ -25,6 +23,7 @@ import com.facebook.presto.sql.planner.plan.PlanNode;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.facebook.presto.sql.planner.plan.TableScanNode;
 import com.facebook.presto.sql.tree.Statement;
+import com.facebook.presto.storage.MockStorageManager;
 import com.facebook.presto.tpch.TpchBlocksProvider;
 import com.facebook.presto.tpch.TpchDataStreamProvider;
 import com.facebook.presto.tpch.TpchSchema;
@@ -59,14 +58,15 @@ public abstract class AbstractSqlBenchmark
         metadata = TpchSchema.createMetadata();
 
         session = new Session(null, TpchSchema.CATALOG_NAME, TpchSchema.SCHEMA_NAME);
-        analysis = new Analyzer(session, metadata).analyze(statement);
+        analysis = new Analyzer(session,
+                metadata,
+                new MockStorageManager(),
+                new MockPeriodicImportManager()).analyze(statement);
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
         PlanOptimizersFactory planOptimizersFactory = new PlanOptimizersFactory(metadata);
         PlanNode plan = new LogicalPlanner(session,
                 metadata,
-                new MockPeriodicImportManager(),
-                new MockStorageManager(),
                 planOptimizersFactory.get(),
                 idAllocator).plan(analysis);
         fragment = new DistributedLogicalPlanner(metadata, idAllocator)
