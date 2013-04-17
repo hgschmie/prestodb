@@ -484,6 +484,10 @@ tableElement
     : ident dataType columnConstDef* -> ^(COLUMN_DEF ident dataType columnConstDef*)
     ;
 
+viewRefresh
+    : REFRESH r=integer -> ^(REFRESH $r)
+    ;
+
 dataType
     : charType
     | exactNumType
@@ -553,7 +557,7 @@ integer
 nonReserved
     : SHOW | TABLES | COLUMNS | PARTITIONS | FUNCTIONS
     | OVER | PARTITION | RANGE | ROWS | PRECEDING | FOLLOWING | CURRENT | ROW
-    | REPLACE | MATERIALIZED | VIEW
+    | MATERIALIZED | VIEW | REFRESH
     ;
 
 SELECT: 'SELECT';
@@ -653,7 +657,7 @@ PARTITIONS: 'PARTITIONS';
 FUNCTIONS: 'FUNCTIONS';
 MATERIALIZED: 'MATERIALIZED';
 VIEW: 'VIEW';
-REPLACE: 'REPLACE';
+REFRESH: 'REFRESH';
 DROP: 'DROP';
 
 EQ  : '=';

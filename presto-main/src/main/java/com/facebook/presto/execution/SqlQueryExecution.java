@@ -4,6 +4,7 @@
 package com.facebook.presto.execution;
 
 import com.facebook.presto.event.query.QueryMonitor;
+import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.NodeManager;
 import com.facebook.presto.metadata.ShardManager;
@@ -59,6 +60,7 @@ public class SqlQueryExecution
     private final int maxPendingSplitsPerNode;
     private final ExecutorService queryExecutor;
     private final ShardManager shardManager;
+    private final  PeriodicImportManager periodicImportManager;
 
     private final AtomicReference<SqlStageExecution> outputStage = new AtomicReference<>();
 
@@ -76,7 +78,8 @@ public class SqlQueryExecution
             QueryMonitor queryMonitor,
             int maxPendingSplitsPerNode,
             ExecutorService queryExecutor,
-            ShardManager shardManager)
+            ShardManager shardManager,
+            PeriodicImportManager periodicImportManager)
     {
         this.statement = checkNotNull(statement, "statement is null");
         this.metadata = checkNotNull(metadata, "metadata is null");
@@ -87,6 +90,7 @@ public class SqlQueryExecution
         this.locationFactory = checkNotNull(locationFactory, "locationFactory is null");
         this.queryExecutor = checkNotNull(queryExecutor, "queryExecutor is null");
         this.shardManager = checkNotNull(shardManager, "shardManager is null");
+        this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
 
         checkArgument(maxPendingSplitsPerNode > 0, "maxPendingSplitsPerNode must be greater than 0");
         this.maxPendingSplitsPerNode = maxPendingSplitsPerNode;
@@ -149,7 +153,7 @@ public class SqlQueryExecution
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
         // plan query
-        LogicalPlanner logicalPlanner = new LogicalPlanner(stateMachine.getSession(), metadata, planOptimizers, idAllocator);
+        LogicalPlanner logicalPlanner = new LogicalPlanner(stateMachine.getSession(), metadata, periodicImportManager, planOptimizers, idAllocator);
         PlanNode plan = logicalPlanner.plan(analysis);
 
         // fragment the plan
@@ -327,6 +331,7 @@ public class SqlQueryExecution
         private final LocationFactory locationFactory;
         private final QueryMonitor queryMonitor;
         private final ShardManager shardManager;
+        private final PeriodicImportManager periodicImportManager;
 
         private final ExecutorService queryExecutor;
 
@@ -339,7 +344,8 @@ public class SqlQueryExecution
                 NodeManager nodeManager,
                 List<PlanOptimizer> planOptimizers,
                 RemoteTaskFactory remoteTaskFactory,
-                ShardManager shardManager)
+                ShardManager shardManager,
+                PeriodicImportManager periodicImportManager)
         {
             Preconditions.checkNotNull(config, "config is null");
             this.maxPendingSplitsPerNode = config.getMaxPendingSplitsPerNode();
@@ -351,6 +357,7 @@ public class SqlQueryExecution
             this.planOptimizers = checkNotNull(planOptimizers, "planOptimizers is null");
             this.remoteTaskFactory = checkNotNull(remoteTaskFactory, "remoteTaskFactory is null");
             this.shardManager = checkNotNull(shardManager, "shardManager is null");
+            this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
 
             this.queryExecutor = Executors.newCachedThreadPool(threadsNamed("query-scheduler-%d"));
         }
@@ -372,7 +379,8 @@ public class SqlQueryExecution
                     queryMonitor,
                     maxPendingSplitsPerNode,
                     queryExecutor,
-                    shardManager);
+                    shardManager,
+                    periodicImportManager);
 
             return queryExecution;
         }

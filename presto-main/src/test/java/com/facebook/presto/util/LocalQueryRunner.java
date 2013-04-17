@@ -1,5 +1,7 @@
 package com.facebook.presto.util;
 
+import com.facebook.presto.importer.MockPeriodicImportManager;
+
 import io.airlift.node.NodeConfig;
 import io.airlift.node.NodeInfo;
 
@@ -96,7 +98,11 @@ public class LocalQueryRunner
 
         PlanNodeIdAllocator idAllocator = new PlanNodeIdAllocator();
         PlanOptimizersFactory planOptimizersFactory = new PlanOptimizersFactory(metadata);
-        PlanNode plan = new LogicalPlanner(session, metadata, planOptimizersFactory.get(), idAllocator).plan(analysis);
+        PlanNode plan = new LogicalPlanner(session,
+                metadata,
+                new MockPeriodicImportManager(),
+                planOptimizersFactory.get(),
+                idAllocator).plan(analysis);
         new PlanPrinter().print(plan, analysis.getTypes());
 
         SubPlan subplan = new DistributedLogicalPlanner(metadata, idAllocator).createSubplans(plan, analysis.getSymbolAllocator(), true);

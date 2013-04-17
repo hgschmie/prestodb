@@ -1,11 +1,14 @@
 package com.facebook.presto.sql.planner;
 
+import com.facebook.presto.importer.PeriodicImportJob;
+import com.facebook.presto.importer.PeriodicImportManager;
 import com.facebook.presto.metadata.ColumnHandle;
 import com.facebook.presto.metadata.ColumnMetadata;
 import com.facebook.presto.metadata.FunctionHandle;
 import com.facebook.presto.metadata.FunctionInfo;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.MetadataUtil;
+import com.facebook.presto.metadata.QualifiedTableName;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.sql.analyzer.AnalysisResult;
 import com.facebook.presto.sql.analyzer.AnalyzedDestination;
@@ -80,14 +83,17 @@ public class LogicalPlanner
     private final Metadata metadata;
     private final PlanNodeIdAllocator idAllocator;
     private final List<PlanOptimizer> planOptimizers;
+    private final PeriodicImportManager periodicImportManager;
 
     public LogicalPlanner(Session session,
             Metadata metadata,
+            PeriodicImportManager periodicImportManager,
             List<PlanOptimizer> planOptimizers,
             PlanNodeIdAllocator idAllocator)
     {
         this.session = checkNotNull(session, "session is null");
         this.metadata = checkNotNull(metadata, "metadata is null");
+        this.periodicImportManager = checkNotNull(periodicImportManager, "periodicImportManager is null");
         this.planOptimizers = checkNotNull(planOptimizers, "planOptimizersFactory is null");
         this.idAllocator = checkNotNull(idAllocator, "idAllocator is null");
     }
@@ -544,7 +550,13 @@ public class LogicalPlanner
 
         TableMetadata tableMetadata = findOrCreateTable(metadata, destination.getTableName(), columns.build());
 
-        checkState(tableMetadata.getTableHandle().isPresent(), "can not import into a table without table handle");
+        // if a refresh is present, create a periodic import for this table
+        if (destination.getRefresh().isPresent()) {
+            int importInterval = Integer.parseInt(destination.getRefresh().get());
+            checkState(importInterval > 0, "import interval must be > 0");
+            PeriodicImportJob job = PeriodicImportJob.createJob(srcTableName, dstTableMetadata.getTable(), importInterval);
+            periodicImportManager.insertJob(job);
+        }
 
         ImmutableMap.Builder<Symbol, ColumnHandle> columnHandlesBuilder = ImmutableMap.builder();
         ImmutableMap.Builder<Symbol, Type> inputTypesBuilder = ImmutableMap.builder();
@@ -554,7 +566,7 @@ public class LogicalPlanner
             inputTypesBuilder.put(field.getSymbol(), field.getType());
             inputSymbolsBuilder.add(field.getSymbol());
 
-            ColumnHandle columnHandle = findColumnHandle(field, tableMetadata);
+            ColumnHandle columnHandle = findColumnHandle(field, dstTableMetadata);
             checkState(columnHandle != null, "Could not match symbol %s to any table column!", field.getSymbol());
             columnHandlesBuilder.put(field.getSymbol(), columnHandle);
         }
@@ -566,7 +578,7 @@ public class LogicalPlanner
 
         TableWriterNode writerNode = new TableWriterNode(idAllocator.getNextId(),
                 queryNode,
-                tableMetadata.getTableHandle().get(),
+                dstTableMetadata.getTableHandle().get(),
                 inputSymbolsBuilder.build(),
                 inputTypesBuilder.build(),
                 columnHandlesBuilder.build(),
@@ -585,7 +597,6 @@ public class LogicalPlanner
         return aggregationNode;
     }
 
-
     private ColumnHandle findColumnHandle(Field field, TableMetadata tableMetadata)
     {
         for (ColumnMetadata columnMetadata : tableMetadata.getColumns()) {
@@ -599,6 +610,16 @@ public class LogicalPlanner
         return null;
     }
 
+    private QualifiedTableName getTableNameFromQuery(Session session, AnalysisResult queryAnalysis)
+    {
+        // Yup. Total hack.
+        Query q = queryAnalysis.getRewrittenQuery();
+        List<Relation> relations = q.getFrom();
+        checkState(relations.size() == 1, "query uses more than one table");
+        Relation r = Iterables.getOnlyElement(relations);
+        checkState(r instanceof Table, "query does not select from a table");
+        return MetadataUtil.createQualifiedTableName(session, ((Table) r).getName());
+    }
 
     private static NodeRewriter<Void> substitution(final Map<Expression, Symbol> substitutions)
     {
