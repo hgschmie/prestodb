@@ -67,8 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.facebook.presto.metadata.MetadataUtil.findOrCreateTable;
-
+import static com.facebook.presto.metadata.MetadataUtil.createTable;
 import static com.facebook.presto.sql.analyzer.AnalyzedFunction.argumentGetter;
 import static com.facebook.presto.sql.analyzer.AnalyzedFunction.windowExpressionGetter;
 import static com.facebook.presto.sql.analyzer.AnalyzedOrdering.expressionGetter;
@@ -548,7 +547,9 @@ public class LogicalPlanner
             columns.add(columnMetadata);
         }
 
-        TableMetadata tableMetadata = findOrCreateTable(metadata, destination.getTableName(), columns.build());
+        TableMetadata dstTableMetadata = createTable(metadata, destination.getTableName(), columns.build());
+        checkState(dstTableMetadata.getTableHandle().isPresent(), "can not import into a table without table handle");
+        QualifiedTableName srcTableName = getTableNameFromQuery(session, queryAnalysis);
 
         // if a refresh is present, create a periodic import for this table
         if (destination.getRefresh().isPresent()) {
