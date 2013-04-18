@@ -64,6 +64,8 @@ tokens {
     CREATE_TABLE;
     CREATE_MATERIALIZED_VIEW;
     REFRESH_MATERIALIZED_VIEW;
+    CREATE_ALIAS;
+    DROP_ALIAS;
     VIEW_REFRESH;
     DROP_TABLE;
     TABLE_ELEMENT_LIST;
@@ -138,9 +140,11 @@ statement
     | showPartitionsStmt
     | showFunctionsStmt
     | createTableStmt
+    | dropTableStmt
     | createMaterializedViewStmt
     | refreshMaterializedViewStmt
-    | dropTableStmt
+    | createAliasStmt
+    | dropAliasStmt
     ;
 
 selectStmt
@@ -478,6 +482,18 @@ refreshMaterializedViewStmt
     : REFRESH MATERIALIZED VIEW qname -> ^(REFRESH_MATERIALIZED_VIEW qname)
     ;
 
+createAliasStmt
+    : CREATE ALIAS qname forRemote -> ^(CREATE_ALIAS qname forRemote)
+    ;
+
+forRemote
+    : FOR qname -> ^(FOR qname)
+    ;
+
+dropAliasStmt
+    : DROP ALIAS qname -> ^(DROP_ALIAS qname)
+    ;
+
 createTableStmt
     : CREATE TABLE qname tableElementList -> ^(CREATE_TABLE qname tableElementList)
     ;
@@ -563,7 +579,7 @@ integer
 nonReserved
     : SHOW | TABLES | COLUMNS | PARTITIONS | FUNCTIONS
     | OVER | PARTITION | RANGE | ROWS | PRECEDING | FOLLOWING | CURRENT | ROW
-    | MATERIALIZED | VIEW | REFRESH
+    | MATERIALIZED | VIEW | REFRESH | ALIAS
     ;
 
 SELECT: 'SELECT';
@@ -665,6 +681,7 @@ MATERIALIZED: 'MATERIALIZED';
 VIEW: 'VIEW';
 REFRESH: 'REFRESH';
 DROP: 'DROP';
+ALIAS: 'ALIAS';
 
 EQ  : '=';
 NEQ : '<>' | '!=';

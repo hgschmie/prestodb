@@ -51,6 +51,8 @@ statement returns [Statement value]
     | showFunctions   { $value = $showFunctions.value; }
     | createMaterializedView { $value = $createMaterializedView.value; }
     | refreshMaterializedView { $value = $refreshMaterializedView.value; }
+    | createAlias     { $value = $createAlias.value; }
+    | dropAlias     { $value = $dropAlias.value; }
     | dropTable       { $value = $dropTable.value; }
     ;
 
@@ -400,6 +402,18 @@ createMaterializedView returns [Statement value]
 
 refreshMaterializedView returns [Statement value]
     : ^(REFRESH_MATERIALIZED_VIEW qname) { $value = new RefreshMaterializedView($qname.value); }
+    ;
+
+createAlias returns [Statement value]
+    : ^(CREATE_ALIAS qname remote=forRemote) { $value = new CreateAlias($qname.value, $remote.value); }
+    ;
+
+forRemote returns [QualifiedName value]
+    : ^(FOR qname) { $value = $qname.value; }
+    ;
+    
+dropAlias returns [Statement value]
+    : ^(DROP_ALIAS qname) { $value = new DropAlias($qname.value); }
     ;
 
 viewRefresh returns [String value]
