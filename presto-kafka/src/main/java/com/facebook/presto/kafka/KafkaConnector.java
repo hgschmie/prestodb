@@ -16,22 +16,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class KafkaConnector
         implements Connector
 {
-    // private final KafkaMetadata metadata;
-    // private final KafkaSplitManager splitManager;
-    // private final KafkaRecordSetProvider recordSetProvider;
+    private final KafkaMetadata metadata;
+
+    private final KafkaSplitManager splitManager;
+    private final KafkaRecordSetProvider recordSetProvider;
     private final KafkaHandleResolver handleResolver;
 
     @Inject
     public KafkaConnector(
-            // KafkaMetadata metadata,
-            // KafkaSplitManager splitManager,
-            // KafkaRecordSetProvider recordSetProvider,
-            KafkaHandleResolver handleResolver)
+            KafkaHandleResolver handleResolver,
+            KafkaMetadata metadata,
+            KafkaSplitManager splitManager,
+            KafkaRecordSetProvider recordSetProvider)
     {
-        // this.metadata = checkNotNull(metadata, "metadata is null");
-        // this.splitManager = checkNotNull(splitManager, "splitManager is null");
-        // this.recordSetProvider = checkNotNull(recordSetProvider, "recordSetProvider is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
+        this.metadata = checkNotNull(metadata, "metadata is null");
+        this.splitManager = checkNotNull(splitManager, "splitManager is null");
+        this.recordSetProvider = checkNotNull(recordSetProvider, "recordSetProvider is null");
     }
 
     @Override
@@ -41,25 +42,25 @@ public class KafkaConnector
     }
 
     @Override
-    public ConnectorOutputHandleResolver getOutputHandleResolver()
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ConnectorMetadata getMetadata()
     {
-        throw new UnsupportedOperationException();
+        return metadata;
     }
 
     @Override
     public ConnectorSplitManager getSplitManager()
     {
-        throw new UnsupportedOperationException();
+        return splitManager;
     }
 
     @Override
     public ConnectorRecordSetProvider getRecordSetProvider()
+    {
+        return recordSetProvider;
+    }
+
+    @Override
+    public ConnectorOutputHandleResolver getOutputHandleResolver()
     {
         throw new UnsupportedOperationException();
     }

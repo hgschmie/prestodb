@@ -8,6 +8,7 @@ import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import io.airlift.bootstrap.Bootstrap;
+import io.airlift.json.JsonModule;
 import io.airlift.node.NodeModule;
 
 import javax.management.MBeanServer;
@@ -44,7 +45,7 @@ public class KafkaConnectorFactory
             Bootstrap app = new Bootstrap(
                     new NodeModule(),
 //                    new MBeanModule(),
-//                    new JsonModule(),
+                    new JsonModule(),
                     new KafkaModule(connectorId, typeManager),
                     new Module()
                     {
@@ -56,9 +57,11 @@ public class KafkaConnectorFactory
                     }
             );
 
-            Injector injector = app.strictConfig().doNotInitializeLogging()
+            Injector injector = app.strictConfig()
+                    .doNotInitializeLogging()
                     .setRequiredConfigurationProperties(config)
-                    .setOptionalConfigurationProperties(optionalConfig).initialize();
+                    .setOptionalConfigurationProperties(optionalConfig)
+                    .initialize();
 
             return injector.getInstance(KafkaConnector.class);
         }
