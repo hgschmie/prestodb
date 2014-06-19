@@ -13,46 +13,131 @@
  */
 package com.facebook.presto.kafka;
 
-import com.facebook.presto.spi.ConnectorColumnHandle;
-import com.facebook.presto.spi.ConnectorRecordSetProvider;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.RecordSet;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import java.util.List;
+import com.facebook.presto.spi.ConnectorColumnHandle;
+import com.facebook.presto.spi.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.RecordCursor;
+import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.type.Type;
+import com.google.common.collect.ImmutableList;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import io.airlift.log.Logger;
+import io.airlift.slice.Slice;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
 {
+    private static final Logger LOGGER = Logger.get(KafkaRecordSetProvider.class);
+
     private final String connectorId;
+    private final KafkaHandleResolver handleResolver;
 
     @Inject
-    public KafkaRecordSetProvider(@Named("connectorId") String connectorId)
+    public KafkaRecordSetProvider(@Named("connectorId") String connectorId,
+                                  KafkaHandleResolver handleResolver)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
+        this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
     }
 
     @Override
     public RecordSet getRecordSet(ConnectorSplit split, List<? extends ConnectorColumnHandle> columns)
     {
-        throw new UnsupportedOperationException();
+        LOGGER.info("getRecordSet(%s, %s)", split, columns);
 
-        // checkNotNull(split, "partitionChunk is null");
-        // checkArgument(split instanceof KafkaSplit);
+        ImmutableList.Builder<Type> types = ImmutableList.builder();
+        for (ConnectorColumnHandle column : columns) {
+            KafkaColumnHandle kch = (KafkaColumnHandle) column;
+            types.add(kch.getColumnType());
+        }
 
-        // KafkaSplit kafkaSplit = (KafkaSplit) split;
-        // checkArgument(kafkaSplit.getConnectorId().equals(connectorId), "split is not for this connector");
+        final List<Type> columnTypes = types.build();
 
-        // ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
-        // for (ConnectorColumnHandle handle : columns) {
-        //     checkArgument(handle instanceof KafkaColumnHandle);
-        //     handles.add((KafkaColumnHandle) handle);
-        // }
+        return new RecordSet() {
+            @Override
+            public List<Type> getColumnTypes()
+            {
+                return columnTypes;
+            }
 
-        // return new KafkaRecordSet(kafkaSplit, handles.build());
+            @Override
+            public RecordCursor cursor()
+            {
+                return new RecordCursor() {
+                    @Override
+                    public long getTotalBytes()
+                    {
+                        return 0;
+                    }
+
+                    @Override
+                    public long getCompletedBytes()
+                    {
+                        return 0;
+                    }
+
+                    @Override
+                    public long getReadTimeNanos()
+                    {
+                        return 0;
+                    }
+
+                    @Override
+                    public Type getType(int field)
+                    {
+                        return columnTypes.get(field);
+                    }
+
+                    @Override
+                    public boolean advanceNextPosition()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean getBoolean(int field)
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public long getLong(int field)
+                    {
+                        return 0;
+                    }
+
+                    @Override
+                    public double getDouble(int field)
+                    {
+                        return 0.0;
+                    }
+
+                    @Override
+                    public Slice getSlice(int field)
+                    {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean isNull(int field)
+                    {
+                        return true;
+                    }
+
+                    @Override
+                    public void close()
+                    {
+                    }
+                };
+            }
+
+        };
     }
 }

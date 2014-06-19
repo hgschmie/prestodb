@@ -27,16 +27,20 @@ public final class KafkaTableHandle
     private final String connectorId;
     private final String schemaName;
     private final String tableName;
+    private final String topicName;
 
     @JsonCreator
     public KafkaTableHandle(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("schemaName") String schemaName,
-            @JsonProperty("tableName") String tableName)
+            @JsonProperty("tableName") String tableName,
+            @JsonProperty("topicName") String topicName
+            )
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.schemaName = checkNotNull(schemaName, "schemaName is null");
         this.tableName = checkNotNull(tableName, "tableName is null");
+        this.topicName = checkNotNull(topicName, "topicName is null");
     }
 
     @JsonProperty
@@ -57,6 +61,12 @@ public final class KafkaTableHandle
         return tableName;
     }
 
+    @JsonProperty
+    public String getTopicName()
+    {
+        return topicName;
+    }
+
     public SchemaTableName toSchemaTableName()
     {
         return new SchemaTableName(schemaName, tableName);
@@ -65,7 +75,7 @@ public final class KafkaTableHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, tableName);
+        return Objects.hashCode(connectorId, schemaName, tableName, topicName);
     }
 
     @Override
@@ -80,7 +90,9 @@ public final class KafkaTableHandle
 
         KafkaTableHandle other = (KafkaTableHandle) obj;
         return Objects.equal(this.connectorId, other.connectorId)
-                && Objects.equal(this.tableName, other.tableName);
+                && Objects.equal(this.schemaName, other.schemaName)
+                && Objects.equal(this.tableName, other.tableName)
+                && Objects.equal(this.topicName, other.topicName);
     }
 
     @Override
@@ -88,7 +100,9 @@ public final class KafkaTableHandle
     {
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
+                .add("schemaName", schemaName)
                 .add("tableName", tableName)
+                .add("topicName", topicName)
                 .toString();
     }
 }

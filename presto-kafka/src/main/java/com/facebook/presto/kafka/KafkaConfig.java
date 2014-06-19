@@ -1,20 +1,39 @@
 package com.facebook.presto.kafka;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-import io.airlift.configuration.Config;
-
-import javax.validation.constraints.NotNull;
-
 import java.io.File;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
+
+import com.facebook.presto.spi.HostAddress;
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
+import io.airlift.configuration.Config;
+import io.airlift.units.DataSize;
+import io.airlift.units.DataSize.Unit;
+import io.airlift.units.Duration;
+import io.airlift.units.MinDuration;
 
 public class KafkaConfig
 {
     /**
-     * Zookeeper URL for Kafka
+     * Seed nodes for Kafka cluster. At least one must exist.
      */
-    private String zookeeperUrl = "zk://localhost:2181/";
+    private Set<HostAddress> nodes = null;
+
+    /**
+     * Timeout to connect to Kafka.
+     */
+    private Duration kafkaConnectTimeout = Duration.valueOf("10s");
+
+    /**
+     * Buffer size for connecting to Kafka.
+     */
+    private DataSize kafkaBufferSize = new DataSize(64, Unit.KILOBYTE);
 
     /**
      * The schema name to use in the connector.
@@ -71,15 +90,45 @@ public class KafkaConfig
     }
 
     @NotNull
-    public String getZookeeperUrl()
+    public Set<HostAddress> getNodes()
     {
-        return zookeeperUrl;
+        return nodes;
     }
 
-    @Config("kafka.zookeeper-url")
-    public KafkaConfig setZookeeperUrl(String zookeeperUrl)
+    @Config("kafka.nodes")
+    public KafkaConfig setNodes(String nodes)
     {
-        this.zookeeperUrl = zookeeperUrl;
+        this.nodes = ImmutableSet.copyOf(Iterables.transform(Splitter.on(',').omitEmptyStrings().trimResults().split(nodes), new Function<String, HostAddress>() {
+            @Override
+            public HostAddress apply(@Nonnull String value)
+            {
+                return HostAddress.fromString(value);
+            }
+        }));
+
         return this;
+    }
+
+    @MinDuration("1s")
+    public Duration getKafkaConnectTimeout()
+    {
+        return kafkaConnectTimeout;
+    }
+
+    @Config("kafka.connect-timeout")
+    public void setKafkaConnectTimeout(String kafkaConnectTimeout)
+    {
+        this.kafkaConnectTimeout = Duration.valueOf(kafkaConnectTimeout);
+    }
+
+    public DataSize getKafkaBufferSize()
+    {
+        return kafkaBufferSize;
+    }
+
+    @Config("kafka.buffer-size")
+    public void setKafkaBufferSize(String kafkaBufferSize)
+    {
+        this.kafkaBufferSize = DataSize.valueOf(kafkaBufferSize);
     }
 }

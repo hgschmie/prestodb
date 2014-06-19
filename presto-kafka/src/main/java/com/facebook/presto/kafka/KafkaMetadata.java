@@ -13,13 +13,22 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.ReadOnlyConnectorMetadata;
-import com.facebook.presto.spi.SchemaNotFoundException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
 import com.facebook.presto.spi.TableNotFoundException;
@@ -31,19 +40,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import com.google.inject.name.Named;
+
 import io.airlift.json.JsonCodec;
 import io.airlift.log.Logger;
-
-import javax.inject.Inject;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaMetadata
     extends ReadOnlyConnectorMetadata
@@ -52,6 +51,7 @@ public class KafkaMetadata
 
     private final String connectorId;
     private final KafkaConfig kafkaConfig;
+    private final KafkaHandleResolver handleResolver;
     private final JsonCodec<KafkaTable> tableCodec;
 
     private final Supplier<Map<String, KafkaTable>> tableDefinitions;
@@ -59,10 +59,12 @@ public class KafkaMetadata
     @Inject
     KafkaMetadata(@Named("connectorId") String connectorId,
             KafkaConfig kafkaConfig,
+            KafkaHandleResolver handleResolver,
             JsonCodec<KafkaTable> tableCodec)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
+        this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.tableCodec = checkNotNull(tableCodec, "tableCodec is null");
 
         LOGGER.debug("Loading kafka table definitions from %s", kafkaConfig.getTableDescriptionDir().getAbsolutePath());
@@ -86,14 +88,17 @@ public class KafkaMetadata
     {
         LOGGER.debug("getTableHandle(%s, %s)", session, schemaTableName);
 
-        checkSchemaName(schemaTableName.getSchemaName());
+        handleResolver.checkSchemaName(schemaTableName.getSchemaName());
 
         KafkaTable table = getDefinedTables().get(schemaTableName.getTableName());
         if (table == null) {
             throw new TableNotFoundException(schemaTableName);
         }
 
-        KafkaTableHandle result = new KafkaTableHandle(connectorId, schemaTableName.getSchemaName(), schemaTableName.getTableName());
+        KafkaTableHandle result = new KafkaTableHandle(connectorId,
+                                                       schemaTableName.getSchemaName(),
+                                                       schemaTableName.getTableName(),
+                                                       table.getTopicName());
 
         LOGGER.debug("Result: %s", result);
         return result;
@@ -104,7 +109,7 @@ public class KafkaMetadata
     {
         LOGGER.debug("getTableMetadata(%s)", tableHandle);
 
-        KafkaTableHandle kafkaTableHandle = convertHandle(tableHandle);
+        KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
         return getTableMetadata(kafkaTableHandle.toSchemaTableName());
     }
@@ -148,7 +153,7 @@ public class KafkaMetadata
     {
         LOGGER.debug("getColumnHandles(%s)", tableHandle);
 
-        KafkaTableHandle kafkaTableHandle = convertHandle(tableHandle);
+        KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
         KafkaTable table = getDefinedTables().get(kafkaTableHandle.getTableName());
         if (table == null) {
@@ -191,8 +196,8 @@ public class KafkaMetadata
     {
         LOGGER.debug("getColumnMetadata(%s, %s)", tableHandle, columnHandle);
 
-        KafkaTableHandle kafkaTableHandle = convertHandle(tableHandle);
-        KafkaColumnHandle kafkaColumnHandle = convertHandle(columnHandle);
+        handleResolver.convertTableHandle(tableHandle);
+        KafkaColumnHandle kafkaColumnHandle = handleResolver.convertColumnHandle(columnHandle);
 
         ColumnMetadata result = kafkaColumnHandle.getColumnMetadata();
 
@@ -208,7 +213,7 @@ public class KafkaMetadata
 
     private ConnectorTableMetadata getTableMetadata(SchemaTableName schemaTableName)
     {
-        checkSchemaName(schemaTableName.getSchemaName());
+        handleResolver.checkSchemaName(schemaTableName.getSchemaName());
         KafkaTable table = getDefinedTables().get(schemaTableName.getTableName());
         if (table == null) {
             throw new TableNotFoundException(schemaTableName);
@@ -218,33 +223,6 @@ public class KafkaMetadata
 
         LOGGER.debug("Result: %s", result);
         return result;
-    }
-
-    private void checkSchemaName(String schemaName)
-    {
-        if (schemaName != null && !kafkaConfig.getSchemaName().equals(schemaName)) {
-            throw new SchemaNotFoundException(schemaName);
-        }
-    }
-
-    private KafkaTableHandle convertHandle(ConnectorTableHandle tableHandle)
-    {
-        checkNotNull(tableHandle, "tableHandle is null");
-        checkArgument(tableHandle instanceof KafkaTableHandle, "tableHandle is not an instance of KafkaTableHandle");
-        KafkaTableHandle kafkaTableHandle = (KafkaTableHandle) tableHandle;
-        checkArgument(kafkaTableHandle.getConnectorId().equals(connectorId), "tableHandle is not for this connector");
-        checkSchemaName(kafkaTableHandle.getSchemaName());
-
-        return kafkaTableHandle;
-    }
-
-    private KafkaColumnHandle convertHandle(ConnectorColumnHandle columnHandle)
-    {
-        checkNotNull(columnHandle, "columnHandle is null");
-        checkArgument(columnHandle instanceof KafkaColumnHandle, "columnHandle is not an instance of KafkaColumnHandle");
-        KafkaColumnHandle kafkaColumnHandle = (KafkaColumnHandle) columnHandle;
-        checkArgument(kafkaColumnHandle.getConnectorId().equals(connectorId), "columnHandle is not for this connector");
-        return kafkaColumnHandle;
     }
 
     private class TableSupplier
