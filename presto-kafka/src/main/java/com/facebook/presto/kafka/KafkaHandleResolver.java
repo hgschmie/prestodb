@@ -103,4 +103,13 @@ public class KafkaHandleResolver
         checkArgument(kafkaColumnHandle.getConnectorId().equals(connectorId), "columnHandle is not for this connector");
         return kafkaColumnHandle;
     }
+
+    KafkaSplit convertSplit(ConnectorSplit split)
+    {
+        checkNotNull(split, "split is null");
+        checkArgument(split instanceof KafkaSplit, "split is not an instance of KafkaSplit");
+        KafkaSplit kafkaSplit = (KafkaSplit) split;
+        checkArgument(kafkaSplit.getConnectorId().equals(connectorId), "split is not for this connector");
+        return kafkaSplit;
+    }
 }

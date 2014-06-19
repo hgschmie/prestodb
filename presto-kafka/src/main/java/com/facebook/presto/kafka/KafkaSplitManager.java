@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import io.airlift.log.Logger;
+
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
@@ -83,8 +83,6 @@ public class KafkaSplitManager
     @Override
     public ConnectorPartitionResult getPartitions(ConnectorTableHandle tableHandle, TupleDomain<ConnectorColumnHandle> tupleDomain)
     {
-        LOGGER.info("getPartitions(%s, %s)", tableHandle, tupleDomain);
-
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
         try (CloseableSimpleConsumer simpleConsumer = getSimpleConsumer()) {
@@ -120,8 +118,6 @@ public class KafkaSplitManager
     @Override
     public ConnectorSplitSource getPartitionSplits(ConnectorTableHandle tableHandle, List<ConnectorPartition> partitions)
     {
-        LOGGER.info("getPartitionSplits(%s, %s)", tableHandle, partitions);
-
         handleResolver.convertTableHandle(tableHandle);
 
         ImmutableList.Builder<ConnectorSplit> builder = ImmutableList.builder();
@@ -130,16 +126,17 @@ public class KafkaSplitManager
             checkState(cp instanceof KafkaPartition, "Found an unknown partition type: %s", cp.getClass().getSimpleName());
             KafkaPartition partition = (KafkaPartition) cp;
 
-            LOGGER.info("Processing Partition %s", partition);
-
             try (CloseableSimpleConsumer leaderConsumer = getSimpleConsumer(partition.getPartitionLeader())) {
                 // Kafka contains a reverse list of "end - start" pairs for the splits
                 long [] endOffsets = findOffsets(leaderConsumer, partition, kafka.api.OffsetRequest.LatestTime());
-                LOGGER.info("End Offsets are: %s", Arrays.toString(endOffsets));
 
                 for (int i = endOffsets.length - 1; i > 0; i--) {
-                    KafkaSplit split = new KafkaSplit(connectorId, endOffsets[i], endOffsets[i - 1], partition.getPartitionNodes());
-                    LOGGER.info("Adding Split: %s", split);
+                    KafkaSplit split = new KafkaSplit(connectorId,
+                        partition.getTopicName(),
+                        partition.getPartitionIdAsInt(),
+                        endOffsets[i],
+                        endOffsets[i - 1],
+                        partition.getPartitionNodes());
                     builder.add(split);
                 }
             }

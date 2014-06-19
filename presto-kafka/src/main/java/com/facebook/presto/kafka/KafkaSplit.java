@@ -28,6 +28,8 @@ public class KafkaSplit
         implements ConnectorSplit
 {
     private final String connectorId;
+    private final String topicName;
+    private final int partitionId;
     private final long start;
     private final long end;
     private final List<HostAddress> nodes;
@@ -35,11 +37,15 @@ public class KafkaSplit
     @JsonCreator
     public KafkaSplit(
             @JsonProperty("connectorId") String connectorId,
+            @JsonProperty("topicName") String topicName,
+            @JsonProperty("partitionId") int partitionId,
             @JsonProperty("start") long start,
             @JsonProperty("end") long end,
             @JsonProperty("nodes") List<HostAddress> nodes)
     {
         this.connectorId = checkNotNull(connectorId, "connector id is null");
+        this.topicName = checkNotNull(topicName, "topicName is null");
+        this.partitionId = partitionId;
         this.start = start;
         this.end = end;
         this.nodes = ImmutableList.copyOf(checkNotNull(nodes, "addresses is null"));
@@ -61,6 +67,18 @@ public class KafkaSplit
     public long getEnd()
     {
         return end;
+    }
+
+    @JsonProperty
+    public String getTopicName()
+    {
+        return topicName;
+    }
+
+    @JsonProperty
+    public int getPartitionId()
+    {
+        return partitionId;
     }
 
     @JsonProperty
@@ -92,6 +110,8 @@ public class KafkaSplit
     {
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
+                .add("topicName", topicName)
+                .add("partitionId", partitionId)
                 .add("start", start)
                 .add("end", end)
                 .add("nodes", nodes)

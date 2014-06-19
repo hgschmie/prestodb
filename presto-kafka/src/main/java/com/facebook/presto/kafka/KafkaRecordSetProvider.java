@@ -23,13 +23,11 @@ import javax.inject.Named;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
 
 import io.airlift.log.Logger;
-import io.airlift.slice.Slice;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -38,13 +36,16 @@ public class KafkaRecordSetProvider
 
     private final String connectorId;
     private final KafkaHandleResolver handleResolver;
+    private final KafkaConfig kafkaConfig;
 
     @Inject
     public KafkaRecordSetProvider(@Named("connectorId") String connectorId,
-                                  KafkaHandleResolver handleResolver)
+                                  KafkaHandleResolver handleResolver,
+                                  KafkaConfig kafkaConfig)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
+        this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
     }
 
     @Override
@@ -52,92 +53,16 @@ public class KafkaRecordSetProvider
     {
         LOGGER.info("getRecordSet(%s, %s)", split, columns);
 
+        KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
+
+        ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
         ImmutableList.Builder<Type> types = ImmutableList.builder();
-        for (ConnectorColumnHandle column : columns) {
-            KafkaColumnHandle kch = (KafkaColumnHandle) column;
-            types.add(kch.getColumnType());
+        for (ConnectorColumnHandle handle : columns) {
+            KafkaColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
+            handles.add(columnHandle);
+            types.add(columnHandle.getColumnType());
         }
 
-        final List<Type> columnTypes = types.build();
-
-        return new RecordSet() {
-            @Override
-            public List<Type> getColumnTypes()
-            {
-                return columnTypes;
-            }
-
-            @Override
-            public RecordCursor cursor()
-            {
-                return new RecordCursor() {
-                    @Override
-                    public long getTotalBytes()
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public long getCompletedBytes()
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public long getReadTimeNanos()
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public Type getType(int field)
-                    {
-                        return columnTypes.get(field);
-                    }
-
-                    @Override
-                    public boolean advanceNextPosition()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean getBoolean(int field)
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public long getLong(int field)
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public double getDouble(int field)
-                    {
-                        return 0.0;
-                    }
-
-                    @Override
-                    public Slice getSlice(int field)
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean isNull(int field)
-                    {
-                        return true;
-                    }
-
-                    @Override
-                    public void close()
-                    {
-                    }
-                };
-            }
-
-        };
+        return new KafkaRecordSet(kafkaSplit, kafkaConfig, handles.build(), types.build());
     }
 }
