@@ -42,7 +42,7 @@ public class TestKafkaPlugin
     public void testSpinup()
     {
         ConnectorFactory factory = testConnectorExists();
-        Connector c = factory.create("test-connector", ImmutableMap.<String, String>of("node.environment", "test"));
+        Connector c = factory.create("test-connector", ImmutableMap.<String, String>of("node.environment", "test", "kafka.table-names", "test", "kafka.nodes", "localhost:9092"));
         assertNotNull(c);
     }
 }

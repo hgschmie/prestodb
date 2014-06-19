@@ -56,7 +56,7 @@ public class KafkaConfig
         return tableDescriptionDir;
     }
 
-    @Config("plugin.config-dir")
+    @Config("kafka.table-description-dir")
     public KafkaConfig setTableDescriptionDir(File tableDescriptionDir)
     {
         this.tableDescriptionDir = tableDescriptionDir;
