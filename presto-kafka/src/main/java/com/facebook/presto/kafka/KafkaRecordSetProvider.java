@@ -14,11 +14,12 @@
 package com.facebook.presto.kafka;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
@@ -34,26 +35,32 @@ public class KafkaRecordSetProvider
 {
     private static final Logger LOGGER = Logger.get(KafkaRecordSetProvider.class);
 
-    private final String connectorId;
     private final KafkaHandleResolver handleResolver;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaSimpleConsumerManager consumerManager;
+    private final Map<String, KafkaDecoder> decoders;
 
     @Inject
-    public KafkaRecordSetProvider(@Named("connectorId") String connectorId,
+    public KafkaRecordSetProvider(Map<String, KafkaDecoder> decoders,
                                   KafkaHandleResolver handleResolver,
-                                  KafkaConfig kafkaConfig)
+                                  KafkaSimpleConsumerManager consumerManager)
     {
-        this.connectorId = checkNotNull(connectorId, "connectorId is null");
+        this.decoders = checkNotNull(decoders, "decoders is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
-        this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
+        this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
+
+        LOGGER.info("Found %s as decoders", decoders);
     }
 
     @Override
     public RecordSet getRecordSet(ConnectorSplit split, List<? extends ConnectorColumnHandle> columns)
     {
-        LOGGER.info("getRecordSet(%s, %s)", split, columns);
-
         KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
+
+        String decoderType = kafkaSplit.getDecoderType();
+
+        LOGGER.info("Decoder in use: %s (%s)", decoders.get(decoderType), decoderType);
+
+        checkState(decoders.containsKey(decoderType), "no decoder for type '%s' found", decoderType);
 
         ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
         ImmutableList.Builder<Type> types = ImmutableList.builder();
@@ -63,6 +70,6 @@ public class KafkaRecordSetProvider
             types.add(columnHandle.getColumnType());
         }
 
-        return new KafkaRecordSet(kafkaSplit, kafkaConfig, handles.build(), types.build());
+        return new KafkaRecordSet(decoders.get(decoderType), kafkaSplit, consumerManager, handles.build(), types.build());
     }
 }

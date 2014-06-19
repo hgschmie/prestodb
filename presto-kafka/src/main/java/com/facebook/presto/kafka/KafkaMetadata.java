@@ -32,6 +32,7 @@ import com.facebook.presto.spi.ReadOnlyConnectorMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
 import com.facebook.presto.spi.TableNotFoundException;
+import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -96,6 +97,7 @@ public class KafkaMetadata
         }
 
         KafkaTableHandle result = new KafkaTableHandle(connectorId,
+                                                       table.getDecoderType(),
                                                        schemaTableName.getSchemaName(),
                                                        schemaTableName.getTableName(),
                                                        table.getTopicName());
@@ -161,8 +163,10 @@ public class KafkaMetadata
         }
 
         ImmutableMap.Builder<String, ConnectorColumnHandle> columnHandles = ImmutableMap.builder();
-        for (ColumnMetadata columnMetadata : table.getColumnsMetadata()) {
-            columnHandles.put(columnMetadata.getName(), new KafkaColumnHandle(connectorId, columnMetadata));
+
+        int index = 0;
+        for (KafkaColumn kafkaColumn : table.getColumns()) {
+            columnHandles.put(kafkaColumn.getName(), new KafkaColumnHandle(connectorId, kafkaColumn.getName(), kafkaColumn.getMapping(), kafkaColumn.getType(), index++));
         }
 
         Map<String, ConnectorColumnHandle> result = columnHandles.build();
@@ -219,7 +223,13 @@ public class KafkaMetadata
             throw new TableNotFoundException(schemaTableName);
         }
 
-        ConnectorTableMetadata result = new ConnectorTableMetadata(schemaTableName, table.getColumnsMetadata());
+        ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.builder();
+        int index = 0;
+        for (KafkaColumn column : table.getColumns()) {
+            builder.add(column.getColumnMetadata(index++));
+        }
+
+        ConnectorTableMetadata result = new ConnectorTableMetadata(schemaTableName, builder.build());
 
         LOGGER.debug("Result: %s", result);
         return result;
@@ -254,7 +264,10 @@ public class KafkaMetadata
                     }
                     else {
                         LOGGER.debug("Created basic Table definition for %s", definedTable);
-                        builder.put(definedTable, new KafkaTable(definedTable, definedTable, ImmutableList.<KafkaColumn>of()));
+                        builder.put(definedTable, new KafkaTable(definedTable,
+                                                                 definedTable,
+                                                                 KafkaJsonDecoder.MESSAGE_FORMAT,
+                                                                 ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, KafkaJsonDecoder.MESSAGE_WILDCARD))));
                     }
                 }
 

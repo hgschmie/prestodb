@@ -1,21 +1,18 @@
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Map;
+
 import com.facebook.presto.spi.Connector;
 import com.facebook.presto.spi.ConnectorFactory;
 import com.facebook.presto.spi.type.TypeManager;
 import com.google.common.base.Throwables;
-import com.google.inject.Binder;
 import com.google.inject.Injector;
-import com.google.inject.Module;
+
 import io.airlift.bootstrap.Bootstrap;
 import io.airlift.json.JsonModule;
 import io.airlift.node.NodeModule;
-
-import javax.management.MBeanServer;
-
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaConnectorFactory
         implements ConnectorFactory
@@ -44,17 +41,16 @@ public class KafkaConnectorFactory
         try {
             Bootstrap app = new Bootstrap(
                     new NodeModule(),
-//                    new MBeanModule(),
                     new JsonModule(),
-                    new KafkaModule(connectorId, typeManager),
-                    new Module()
-                    {
-                        @Override
-                        public void configure(Binder binder)
-                        {
-                            binder.bind(MBeanServer.class).toInstance(RebindSafeMBeanServer.wrapPlatformServer());
-                        }
-                    }
+                    new KafkaModule(connectorId, typeManager)
+//                    new Module()
+//                    {
+//                        @Override
+//                        public void configure(Binder binder)
+//                        {
+//                            binder.bind(MBeanServer.class).toInstance(RebindSafeMBeanServer.wrapPlatformServer());
+//                        }
+//                    }
             );
 
             Injector injector = app.strictConfig()

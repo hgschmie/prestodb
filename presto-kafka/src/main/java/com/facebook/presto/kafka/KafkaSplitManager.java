@@ -13,8 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import static java.lang.String.format;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -43,7 +41,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import io.airlift.log.Logger;
-
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.cluster.Broker;
 import kafka.common.TopicAndPartition;
@@ -63,15 +60,18 @@ public class KafkaSplitManager
     private final String connectorId;
     private final KafkaConfig kafkaConfig;
     private final KafkaHandleResolver handleResolver;
+    private final KafkaSimpleConsumerManager consumerManager;
 
     @Inject
     public KafkaSplitManager(@Named("connectorId") String connectorId,
                              KafkaConfig kafkaConfig,
-                             KafkaHandleResolver handleResolver)
+                             KafkaHandleResolver handleResolver,
+                             KafkaSimpleConsumerManager consumerManager)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
+        this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
     }
 
     @Override
@@ -85,7 +85,12 @@ public class KafkaSplitManager
     {
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
-        try (CloseableSimpleConsumer simpleConsumer = getSimpleConsumer()) {
+        List<HostAddress> nodes = new ArrayList<>(kafkaConfig.getNodes());
+        Collections.shuffle(nodes);
+
+        SimpleConsumer simpleConsumer = consumerManager.getConsumer(nodes.get(0));
+
+        try {
             TopicMetadataRequest req = new TopicMetadataRequest(ImmutableList.of(kafkaTableHandle.getTopicName()));
             TopicMetadataResponse resp = simpleConsumer.send(req);
 
@@ -118,7 +123,7 @@ public class KafkaSplitManager
     @Override
     public ConnectorSplitSource getPartitionSplits(ConnectorTableHandle tableHandle, List<ConnectorPartition> partitions)
     {
-        handleResolver.convertTableHandle(tableHandle);
+        KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
         ImmutableList.Builder<ConnectorSplit> builder = ImmutableList.builder();
 
@@ -126,19 +131,19 @@ public class KafkaSplitManager
             checkState(cp instanceof KafkaPartition, "Found an unknown partition type: %s", cp.getClass().getSimpleName());
             KafkaPartition partition = (KafkaPartition) cp;
 
-            try (CloseableSimpleConsumer leaderConsumer = getSimpleConsumer(partition.getPartitionLeader())) {
-                // Kafka contains a reverse list of "end - start" pairs for the splits
-                long [] endOffsets = findOffsets(leaderConsumer, partition, kafka.api.OffsetRequest.LatestTime());
+            SimpleConsumer leaderConsumer = consumerManager.getConsumer(partition.getPartitionLeader());
+            // Kafka contains a reverse list of "end - start" pairs for the splits
+            long [] endOffsets = findOffsets(leaderConsumer, partition, kafka.api.OffsetRequest.LatestTime());
 
-                for (int i = endOffsets.length - 1; i > 0; i--) {
-                    KafkaSplit split = new KafkaSplit(connectorId,
-                        partition.getTopicName(),
-                        partition.getPartitionIdAsInt(),
-                        endOffsets[i],
-                        endOffsets[i - 1],
-                        partition.getPartitionNodes());
-                    builder.add(split);
-                }
+            for (int i = endOffsets.length - 1; i > 0; i--) {
+                KafkaSplit split = new KafkaSplit(connectorId,
+                                                  partition.getTopicName(),
+                                                  kafkaTableHandle.getDecoderType(),
+                                                  partition.getPartitionIdAsInt(),
+                                                  endOffsets[i],
+                                                  endOffsets[i - 1],
+                                                  partition.getPartitionNodes());
+                builder.add(split);
             }
         }
 
@@ -152,23 +157,6 @@ public class KafkaSplitManager
         OffsetRequest or = new OffsetRequest(ImmutableMap.of(tap, pori), kafka.api.OffsetRequest.CurrentVersion(), consumer.clientId());
         OffsetResponse oresp = consumer.getOffsetsBefore(or);
         return oresp.offsets(partition.getTopicName(), partition.getPartitionIdAsInt());
-    }
-
-    private CloseableSimpleConsumer getSimpleConsumer()
-    {
-        List<HostAddress> nodes = new ArrayList<>(kafkaConfig.getNodes());
-        Collections.shuffle(nodes);
-
-        return getSimpleConsumer(nodes.get(0));
-    }
-
-    private CloseableSimpleConsumer getSimpleConsumer(HostAddress host)
-    {
-        return new CloseableSimpleConsumer(host.getHostText(),
-                                           host.getPort(),
-                                           kafkaConfig.getKafkaConnectTimeout().toMillis(),
-                                           kafkaConfig.getKafkaBufferSize().toBytes(),
-                                           format("presto-kafka-%s-split-manager", connectorId));
     }
 
     private Function<Broker, HostAddress> getBrokerToHostAddressFunction()

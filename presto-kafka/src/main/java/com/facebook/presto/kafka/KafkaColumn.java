@@ -13,14 +13,15 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
+import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 public final class KafkaColumn
 {
@@ -57,6 +58,12 @@ public final class KafkaColumn
     public String getMapping()
     {
         return mapping;
+    }
+
+    public ColumnMetadata getColumnMetadata(int index)
+    {
+        return new ColumnMetadata(name, type, index, false);
+
     }
 
     @Override

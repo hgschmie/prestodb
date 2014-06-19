@@ -25,6 +25,7 @@ public final class KafkaTableHandle
         implements ConnectorTableHandle
 {
     private final String connectorId;
+    private final String decoderType;
     private final String schemaName;
     private final String tableName;
     private final String topicName;
@@ -32,12 +33,14 @@ public final class KafkaTableHandle
     @JsonCreator
     public KafkaTableHandle(
             @JsonProperty("connectorId") String connectorId,
+            @JsonProperty("decoderType") String decoderType,
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
             @JsonProperty("topicName") String topicName
             )
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
+        this.decoderType = checkNotNull(decoderType, "decoderType is null");
         this.schemaName = checkNotNull(schemaName, "schemaName is null");
         this.tableName = checkNotNull(tableName, "tableName is null");
         this.topicName = checkNotNull(topicName, "topicName is null");
@@ -47,6 +50,12 @@ public final class KafkaTableHandle
     public String getConnectorId()
     {
         return connectorId;
+    }
+
+    @JsonProperty
+    public String getDecoderType()
+    {
+        return decoderType;
     }
 
     @JsonProperty
@@ -75,7 +84,7 @@ public final class KafkaTableHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, schemaName, tableName, topicName);
+        return Objects.hashCode(connectorId, decoderType, schemaName, tableName, topicName);
     }
 
     @Override
@@ -90,6 +99,7 @@ public final class KafkaTableHandle
 
         KafkaTableHandle other = (KafkaTableHandle) obj;
         return Objects.equal(this.connectorId, other.connectorId)
+                && Objects.equal(this.decoderType, other.decoderType)
                 && Objects.equal(this.schemaName, other.schemaName)
                 && Objects.equal(this.tableName, other.tableName)
                 && Objects.equal(this.topicName, other.topicName);
@@ -100,6 +110,7 @@ public final class KafkaTableHandle
     {
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
+                .add("decoderType", decoderType)
                 .add("schemaName", schemaName)
                 .add("tableName", tableName)
                 .add("topicName", topicName)

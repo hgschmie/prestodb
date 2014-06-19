@@ -13,37 +13,41 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.primitives.Ints;
 
 public final class KafkaColumnHandle
-        implements ConnectorColumnHandle
+    implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
 {
     private final String connectorId;
     private final String columnName;
+    private final String mapping;
     private final Type columnType;
     private final int ordinalPosition;
 
-    public KafkaColumnHandle(String connectorId, ColumnMetadata columnMetadata)
+    public KafkaColumnHandle(String connectorId, String mapping, ColumnMetadata columnMetadata)
     {
-        this(connectorId, columnMetadata.getName(), columnMetadata.getType(), columnMetadata.getOrdinalPosition());
+        this(connectorId, columnMetadata.getName(), mapping, columnMetadata.getType(), columnMetadata.getOrdinalPosition());
     }
 
     @JsonCreator
     public KafkaColumnHandle(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("columnName") String columnName,
+            @JsonProperty("mapping") String mapping,
             @JsonProperty("columnType") Type columnType,
             @JsonProperty("ordinalPosition") int ordinalPosition)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.columnName = checkNotNull(columnName, "columnName is null");
+        this.mapping = checkNotNull(mapping, "mapping is null");
         this.columnType = checkNotNull(columnType, "columnType is null");
         this.ordinalPosition = ordinalPosition;
     }
@@ -67,6 +71,12 @@ public final class KafkaColumnHandle
     }
 
     @JsonProperty
+    public String getMapping()
+    {
+        return mapping;
+    }
+
+    @JsonProperty
     public int getOrdinalPosition()
     {
         return ordinalPosition;
@@ -80,7 +90,7 @@ public final class KafkaColumnHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, columnName);
+        return Objects.hashCode(connectorId, columnName, mapping, columnType, ordinalPosition);
     }
 
     @Override
@@ -95,7 +105,16 @@ public final class KafkaColumnHandle
 
         KafkaColumnHandle other = (KafkaColumnHandle) obj;
         return Objects.equal(this.connectorId, other.connectorId) &&
-                Objects.equal(this.columnName, other.columnName);
+                Objects.equal(this.columnName, other.columnName) &&
+                Objects.equal(this.mapping, other.mapping) &&
+                Objects.equal(this.columnType, other.columnType) &&
+                Objects.equal(this.ordinalPosition, other.ordinalPosition);
+    }
+
+    @Override
+    public int compareTo(KafkaColumnHandle otherHandle)
+    {
+        return Ints.compare(this.getOrdinalPosition(), otherHandle.getOrdinalPosition());
     }
 
     @Override
@@ -104,6 +123,7 @@ public final class KafkaColumnHandle
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
                 .add("columnName", columnName)
+                .add("mapping", mapping)
                 .add("columnType", columnType)
                 .add("ordinalPosition", ordinalPosition)
                 .toString();

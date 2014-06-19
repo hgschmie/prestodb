@@ -29,6 +29,7 @@ public class KafkaSplit
 {
     private final String connectorId;
     private final String topicName;
+    private final String decoderType;
     private final int partitionId;
     private final long start;
     private final long end;
@@ -38,6 +39,7 @@ public class KafkaSplit
     public KafkaSplit(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("topicName") String topicName,
+            @JsonProperty("decoderType") String decoderType,
             @JsonProperty("partitionId") int partitionId,
             @JsonProperty("start") long start,
             @JsonProperty("end") long end,
@@ -45,6 +47,7 @@ public class KafkaSplit
     {
         this.connectorId = checkNotNull(connectorId, "connector id is null");
         this.topicName = checkNotNull(topicName, "topicName is null");
+        this.decoderType = checkNotNull(decoderType, "decoderType is null");
         this.partitionId = partitionId;
         this.start = start;
         this.end = end;
@@ -73,6 +76,12 @@ public class KafkaSplit
     public String getTopicName()
     {
         return topicName;
+    }
+
+    @JsonProperty
+    public String getDecoderType()
+    {
+        return decoderType;
     }
 
     @JsonProperty
@@ -111,6 +120,7 @@ public class KafkaSplit
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
                 .add("topicName", topicName)
+                .add("decoderType", decoderType)
                 .add("partitionId", partitionId)
                 .add("start", start)
                 .add("end", end)
