@@ -13,16 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
@@ -41,12 +31,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import com.google.inject.name.Named;
-
 import io.airlift.json.JsonCodec;
 import io.airlift.log.Logger;
 
+import javax.inject.Inject;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class KafkaMetadata
-    extends ReadOnlyConnectorMetadata
+        extends ReadOnlyConnectorMetadata
 {
     private static final Logger LOGGER = Logger.get(KafkaMetadata.class);
 
@@ -97,10 +96,10 @@ public class KafkaMetadata
         }
 
         KafkaTableHandle result = new KafkaTableHandle(connectorId,
-                                                       table.getDecoderType(),
-                                                       schemaTableName.getSchemaName(),
-                                                       schemaTableName.getTableName(),
-                                                       table.getTopicName());
+                table.getDecoderType(),
+                schemaTableName.getSchemaName(),
+                schemaTableName.getTableName(),
+                table.getTopicName());
 
         LOGGER.debug("Result: %s", result);
         return result;
@@ -265,9 +264,9 @@ public class KafkaMetadata
                     else {
                         LOGGER.debug("Created basic Table definition for %s", definedTable);
                         builder.put(definedTable, new KafkaTable(definedTable,
-                                                                 definedTable,
-                                                                 KafkaJsonDecoder.MESSAGE_FORMAT,
-                                                                 ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, KafkaJsonDecoder.MESSAGE_WILDCARD))));
+                                definedTable,
+                                KafkaJsonDecoder.MESSAGE_FORMAT,
+                                ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, KafkaJsonDecoder.MESSAGE_WILDCARD))));
                     }
                 }
 

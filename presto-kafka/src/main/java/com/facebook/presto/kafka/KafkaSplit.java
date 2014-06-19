@@ -13,16 +13,16 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.HostAddress;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaSplit
         implements ConnectorSplit

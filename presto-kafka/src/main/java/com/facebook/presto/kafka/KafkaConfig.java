@@ -1,22 +1,21 @@
 package com.facebook.presto.kafka;
 
-import java.io.File;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
-
 import com.facebook.presto.spi.HostAddress;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-
 import io.airlift.configuration.Config;
 import io.airlift.units.DataSize;
 import io.airlift.units.DataSize.Unit;
 import io.airlift.units.Duration;
 import io.airlift.units.MinDuration;
+
+import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
+
+import java.io.File;
+import java.util.Set;
 
 public class KafkaConfig
 {
@@ -98,7 +97,8 @@ public class KafkaConfig
     @Config("kafka.nodes")
     public KafkaConfig setNodes(String nodes)
     {
-        this.nodes = ImmutableSet.copyOf(Iterables.transform(Splitter.on(',').omitEmptyStrings().trimResults().split(nodes), new Function<String, HostAddress>() {
+        this.nodes = ImmutableSet.copyOf(Iterables.transform(Splitter.on(',').omitEmptyStrings().trimResults().split(nodes), new Function<String, HostAddress>()
+        {
             @Override
             public HostAddress apply(@Nonnull String value)
             {

@@ -13,18 +13,9 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
-
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import kafka.api.FetchRequest;
@@ -32,6 +23,14 @@ import kafka.api.FetchRequestBuilder;
 import kafka.javaapi.FetchResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
+
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaRecordSet
         implements RecordSet
@@ -48,10 +47,10 @@ public class KafkaRecordSet
     private final KafkaDecoder kafkaDecoder;
 
     KafkaRecordSet(KafkaDecoder kafkaDecoder,
-                   KafkaSplit split,
-                   KafkaSimpleConsumerManager consumerManager,
-                   List<KafkaColumnHandle> columnHandles,
-                   List<Type> columnTypes)
+            KafkaSplit split,
+            KafkaSimpleConsumerManager consumerManager,
+            List<KafkaColumnHandle> columnHandles,
+            List<Type> columnTypes)
     {
         this.kafkaDecoder = checkNotNull(kafkaDecoder, "kafkaDecoder is null");
         this.split = checkNotNull(split, "split is null");
@@ -116,7 +115,7 @@ public class KafkaRecordSet
         @Override
         public boolean advanceNextPosition()
         {
-            for (;; ) {
+            for (; ; ) {
                 if (cursorOffset >= split.getEnd()) {
                     return endOfData(); // Split end is exclusive.
                 }
@@ -143,7 +142,7 @@ public class KafkaRecordSet
         {
             if (!reported.getAndSet(true)) {
                 LOGGER.debug("Found a total of %d messages with %d bytes (%d messages expected). Last Offset: %d", totalMessages, totalBytes,
-                            split.getEnd() - split.getStart(), cursorOffset);
+                        split.getEnd() - split.getStart(), cursorOffset);
             }
             return false;
         }
@@ -155,12 +154,11 @@ public class KafkaRecordSet
             totalMessages++;
 
             ByteBuffer payload = messageAndOffset.message().payload();
-            byte [] currentRow = new byte[payload.limit()];
+            byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
             this.currentRow = kafkaDecoder.decodeRow(currentRow);
 
             return true; // Advanced successfully.
-
         }
 
         @Override

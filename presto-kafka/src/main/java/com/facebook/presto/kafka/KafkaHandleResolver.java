@@ -1,10 +1,5 @@
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import javax.inject.Inject;
-
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorIndexHandle;
@@ -12,6 +7,11 @@ import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.SchemaNotFoundException;
 import com.google.inject.name.Named;
+
+import javax.inject.Inject;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaHandleResolver
         implements ConnectorHandleResolver
@@ -21,7 +21,7 @@ public class KafkaHandleResolver
 
     @Inject
     KafkaHandleResolver(@Named("connectorId") String connectorId,
-                        KafkaConfig kafkaConfig)
+            KafkaConfig kafkaConfig)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         checkNotNull(kafkaConfig, "kafkaConfig is null");

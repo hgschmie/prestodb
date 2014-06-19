@@ -1,26 +1,24 @@
 package com.facebook.presto.kafka;
 
-import static java.lang.String.format;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import com.facebook.presto.spi.HostAddress;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.primitives.Ints;
-
 import io.airlift.log.Logger;
 import io.airlift.node.NodeInfo;
 import kafka.javaapi.consumer.SimpleConsumer;
+
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class KafkaSimpleConsumerManager
 {
@@ -34,8 +32,8 @@ public class KafkaSimpleConsumerManager
 
     @Inject
     KafkaSimpleConsumerManager(@Named("connectorId") String connectorId,
-                    KafkaConfig kafkaConfig,
-                    NodeInfo nodeInfo)
+            KafkaConfig kafkaConfig,
+            NodeInfo nodeInfo)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
@@ -68,17 +66,19 @@ public class KafkaSimpleConsumerManager
         }
     }
 
-    private class SimpleConsumerCacheLoader extends CacheLoader<HostAddress, SimpleConsumer>
+    private class SimpleConsumerCacheLoader
+            extends CacheLoader<HostAddress, SimpleConsumer>
     {
         @Override
-        public SimpleConsumer load(HostAddress host) throws Exception
+        public SimpleConsumer load(HostAddress host)
+                throws Exception
         {
             LOGGER.info("Creating new Consumer for %s", host);
             return new SimpleConsumer(host.getHostText(),
-                                      host.getPort(),
-                                      Ints.checkedCast(kafkaConfig.getKafkaConnectTimeout().toMillis()),
-                                      Ints.checkedCast(kafkaConfig.getKafkaBufferSize().toBytes()),
-                                      format("presto-kafka-%s-%s", connectorId, nodeInfo.getInstanceId()));
-            }
+                    host.getPort(),
+                    Ints.checkedCast(kafkaConfig.getKafkaConnectTimeout().toMillis()),
+                    Ints.checkedCast(kafkaConfig.getKafkaBufferSize().toBytes()),
+                    format("presto-kafka-%s-%s", connectorId, nodeInfo.getInstanceId()));
+        }
     }
 }

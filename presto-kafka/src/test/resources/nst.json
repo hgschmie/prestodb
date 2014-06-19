@@ -1,0 +1,12 @@
+{
+    "tableName": "nst",
+    "topicName": "nst",
+    "decoderType": "csv",
+    "columns": [
+        {
+            "name": "text",
+            "mapping": "*",
+            "type": "VARCHAR"
+        }
+    ]
+}

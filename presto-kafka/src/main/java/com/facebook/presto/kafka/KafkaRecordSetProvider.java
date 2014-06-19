@@ -13,22 +13,21 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
-
 import io.airlift.log.Logger;
+
+import javax.inject.Inject;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -41,8 +40,8 @@ public class KafkaRecordSetProvider
 
     @Inject
     public KafkaRecordSetProvider(Map<String, KafkaDecoder> decoders,
-                                  KafkaHandleResolver handleResolver,
-                                  KafkaSimpleConsumerManager consumerManager)
+            KafkaHandleResolver handleResolver,
+            KafkaSimpleConsumerManager consumerManager)
     {
         this.decoders = checkNotNull(decoders, "decoders is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");

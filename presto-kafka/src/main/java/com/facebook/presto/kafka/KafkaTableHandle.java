@@ -37,7 +37,7 @@ public final class KafkaTableHandle
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
             @JsonProperty("topicName") String topicName
-            )
+    )
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.decoderType = checkNotNull(decoderType, "decoderType is null");

@@ -13,10 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorPartition;
 import com.facebook.presto.spi.HostAddress;
@@ -24,8 +20,12 @@ import com.facebook.presto.spi.TupleDomain;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class KafkaPartition
-    implements ConnectorPartition
+        implements ConnectorPartition
 {
     private final String topicName;
     private final int partitionId;
@@ -33,9 +33,9 @@ public class KafkaPartition
     private final List<HostAddress> partitionNodes;
 
     public KafkaPartition(String topicName,
-                          int partitionId,
-                          HostAddress partitionLeader,
-                          List<HostAddress> partitionNodes)
+            int partitionId,
+            HostAddress partitionLeader,
+            List<HostAddress> partitionNodes)
     {
         this.topicName = checkNotNull(topicName, "schema name is null");
         this.partitionId = partitionId;
@@ -79,10 +79,10 @@ public class KafkaPartition
     public String toString()
     {
         return Objects.toStringHelper(this)
-            .add("topicName", topicName)
-            .add("partitionId", partitionId)
-            .add("partitionLeader", partitionLeader)
-            .add("partitionNodes", partitionNodes)
-            .toString();
+                .add("topicName", topicName)
+                .add("partitionId", partitionId)
+                .add("partitionLeader", partitionLeader)
+                .add("partitionNodes", partitionNodes)
+                .toString();
     }
 }

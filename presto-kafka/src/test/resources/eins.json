@@ -1,0 +1,17 @@
+{
+    "tableName": "eins",
+    "topicName": "topic.eins",
+    "decoderType": "json",
+    "columns": [
+        {
+            "name": "id",
+            "mapping": "/id",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "count",
+            "mapping": "/count",
+            "type": "BIGINT"
+        }
+    ]
+}

@@ -1,20 +1,20 @@
 package com.facebook.presto.kafka;
 
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 
-public class KafkaJsonDecoder implements KafkaDecoder
+import javax.inject.Inject;
+
+import java.util.Map;
+
+public class KafkaJsonDecoder
+        implements KafkaDecoder
 {
     private final ObjectMapper objectMapper;
 
@@ -28,7 +28,7 @@ public class KafkaJsonDecoder implements KafkaDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte [] data)
+    public KafkaRow decodeRow(byte[] data)
     {
         try {
             return new KafkaJsonRow(objectMapper.readTree(data));
@@ -38,7 +38,8 @@ public class KafkaJsonDecoder implements KafkaDecoder
         }
     }
 
-    public static class KafkaJsonRow implements KafkaRow
+    public static class KafkaJsonRow
+            implements KafkaRow
     {
         private final JsonNode tree;
         private final Map<String, JsonNode> cache = Maps.newConcurrentMap();
@@ -54,7 +55,6 @@ public class KafkaJsonDecoder implements KafkaDecoder
         {
             JsonNode node = locateNode(mapping);
             return node.booleanValue();
-
         }
 
         @Override

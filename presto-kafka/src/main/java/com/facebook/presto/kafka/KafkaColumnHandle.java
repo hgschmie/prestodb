@@ -13,8 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.type.Type;
@@ -23,8 +21,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public final class KafkaColumnHandle
-    implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
+        implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
 {
     private final String connectorId;
     private final String columnName;

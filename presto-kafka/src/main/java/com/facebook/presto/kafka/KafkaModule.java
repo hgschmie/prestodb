@@ -1,14 +1,5 @@
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import static io.airlift.configuration.ConfigurationModule.bindConfig;
-import static io.airlift.json.JsonBinder.jsonBinder;
-import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
-
-import javax.inject.Inject;
-
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -18,6 +9,14 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Names;
+
+import javax.inject.Inject;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static io.airlift.configuration.ConfigurationModule.bindConfig;
+import static io.airlift.json.JsonBinder.jsonBinder;
+import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
 
 public class KafkaModule
         implements Module

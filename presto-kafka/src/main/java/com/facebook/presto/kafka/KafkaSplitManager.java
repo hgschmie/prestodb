@@ -13,17 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorPartition;
 import com.facebook.presto.spi.ConnectorPartitionResult;
@@ -39,7 +28,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import io.airlift.log.Logger;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.cluster.Broker;
@@ -51,6 +39,17 @@ import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.TopicMetadataResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class KafkaSplitManager
         implements ConnectorSplitManager
@@ -64,9 +63,9 @@ public class KafkaSplitManager
 
     @Inject
     public KafkaSplitManager(@Named("connectorId") String connectorId,
-                             KafkaConfig kafkaConfig,
-                             KafkaHandleResolver handleResolver,
-                             KafkaSimpleConsumerManager consumerManager)
+            KafkaConfig kafkaConfig,
+            KafkaHandleResolver handleResolver,
+            KafkaSimpleConsumerManager consumerManager)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
@@ -105,10 +104,10 @@ public class KafkaSplitManager
                     }
                     else {
                         builder.add(new KafkaPartition(metadata.topic(),
-                                                       part.partitionId(),
-                                                       HostAddress.fromParts(leader.host(), leader.port()),
-                                                       // TODO - that may probably be isr().
-                                                       ImmutableList.copyOf(Lists.transform(part.replicas(), getBrokerToHostAddressFunction()))));
+                                part.partitionId(),
+                                HostAddress.fromParts(leader.host(), leader.port()),
+                                // TODO - that may probably be isr().
+                                ImmutableList.copyOf(Lists.transform(part.replicas(), getBrokerToHostAddressFunction()))));
                     }
                 }
             }
@@ -133,16 +132,16 @@ public class KafkaSplitManager
 
             SimpleConsumer leaderConsumer = consumerManager.getConsumer(partition.getPartitionLeader());
             // Kafka contains a reverse list of "end - start" pairs for the splits
-            long [] endOffsets = findOffsets(leaderConsumer, partition, kafka.api.OffsetRequest.LatestTime());
+            long[] endOffsets = findOffsets(leaderConsumer, partition, kafka.api.OffsetRequest.LatestTime());
 
             for (int i = endOffsets.length - 1; i > 0; i--) {
                 KafkaSplit split = new KafkaSplit(connectorId,
-                                                  partition.getTopicName(),
-                                                  kafkaTableHandle.getDecoderType(),
-                                                  partition.getPartitionIdAsInt(),
-                                                  endOffsets[i],
-                                                  endOffsets[i - 1],
-                                                  partition.getPartitionNodes());
+                        partition.getTopicName(),
+                        kafkaTableHandle.getDecoderType(),
+                        partition.getPartitionIdAsInt(),
+                        endOffsets[i],
+                        endOffsets[i - 1],
+                        partition.getPartitionNodes());
                 builder.add(split);
             }
         }
@@ -150,7 +149,7 @@ public class KafkaSplitManager
         return new FixedSplitSource(connectorId, builder.build());
     }
 
-    private long [] findOffsets(SimpleConsumer consumer, KafkaPartition partition, long time)
+    private long[] findOffsets(SimpleConsumer consumer, KafkaPartition partition, long time)
     {
         TopicAndPartition tap = new TopicAndPartition(partition.getTopicName(), partition.getPartitionIdAsInt());
         PartitionOffsetRequestInfo pori = new PartitionOffsetRequestInfo(time, Integer.MAX_VALUE); // TODO - Is there a constant for "get all of them?"
@@ -161,7 +160,8 @@ public class KafkaSplitManager
 
     private Function<Broker, HostAddress> getBrokerToHostAddressFunction()
     {
-        return new Function<Broker, HostAddress>() {
+        return new Function<Broker, HostAddress>()
+        {
             @Override
             public HostAddress apply(@Nonnull Broker broker)
             {

@@ -1,56 +1,62 @@
 {
-  "tableName": "twitter",
-  "topicName": "twitter_posts",
-  "columns": [
-    {
-      "name":"text",
-      "mapping":"/text",
-      "type":"VARCHAR"
-    },
-    {
-      "name":"user_name",
-      "mapping":"/user/screen_name",
-      "type":"VARCHAR"
-    },
-    {
-      "name":"lang",
-      "mapping":"/lang",
-      "type":"VARCHAR"
-    },
-    {
-      "name":"created_at",
-      "mapping":"/created_at",
-      "type":"TIMESTAMP"
-    },
-    {
-      "name":"favorite_count",
-      "mapping":"/favorite_count",
-      "type":"BIGINT"
-    },
-    {
-      "name":"retweet_count",
-      "mapping":"/retweet_count",
-      "type":"BIGINT"
-    },
-    {
-      "name":"favorited",
-      "mapping":"/favorited",
-      "type":"BOOLEAN"
-    },
-    {
-      "name":"id",
-      "mapping":"/id_str",
-      "type":"VARCHAR"
-    },
-    {
-      "name":"in_reply_to_screen_name",
-      "mapping":"/in_reply_to_screen_name",
-      "type":"VARCHAR"
-    },
-    {
-      "name":"place_name",
-      "mapping":"/place/full_name",
-      "type":"VARCHAR"
-    }  
-  ]
+    "tableName": "twitter",
+    "topicName": "twitter_feed",
+    "decoderType": "json",
+    "columns": [
+        {
+            "name": "text",
+            "mapping": "/text",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "user_name",
+            "mapping": "/user/screen_name",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "lang",
+            "mapping": "/lang",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "created_at",
+            "mapping": "/created_at",
+            "type": "TIMESTAMP"
+        },
+        {
+            "name": "favorite_count",
+            "mapping": "/favorite_count",
+            "type": "BIGINT"
+        },
+        {
+            "name": "retweet_count",
+            "mapping": "/retweet_count",
+            "type": "BIGINT"
+        },
+        {
+            "name": "favorited",
+            "mapping": "/favorited",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "id",
+            "mapping": "/id_str",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "in_reply_to_screen_name",
+            "mapping": "/in_reply_to_screen_name",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "place_name",
+            "mapping": "/place/full_name",
+            "type": "VARCHAR"
+        },
+        {
+            "name": "json",
+            "mapping": "*",
+            "type": "VARCHAR"
+        }
+    ]
 }

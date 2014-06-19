@@ -2,5 +2,5 @@ package com.facebook.presto.kafka;
 
 public interface KafkaDecoder
 {
-    KafkaRow decodeRow(byte [] data);
+    KafkaRow decodeRow(byte[] data);
 }
