@@ -11,16 +11,20 @@ import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class KafkaCsvDecoder
-        implements KafkaDecoder
+public class CsvKafkaRowDecoder
+        implements KafkaRowDecoder
 {
-    public static final String MESSAGE_FORMAT = "csv";
-
     private static final CSVParser PARSER = new CSVParser();
 
     @Inject
-    KafkaCsvDecoder()
+    CsvKafkaRowDecoder()
     {
+    }
+
+    @Override
+    public String getName()
+    {
+        return "csv";
     }
 
     @Override
@@ -46,10 +50,10 @@ public class KafkaCsvDecoder
                     cache.put(Integer.toString(i), fields[i]);
                 }
 
-                cache.put(KafkaDecoder.MESSAGE_CORRUPTED, "false");
+                cache.put(KafkaRowDecoder.MESSAGE_CORRUPTED, "false");
             }
             catch (Exception e) {
-                cache.put(KafkaDecoder.MESSAGE_CORRUPTED, "true");
+                cache.put(KafkaRowDecoder.MESSAGE_CORRUPTED, "true");
             }
         }
 

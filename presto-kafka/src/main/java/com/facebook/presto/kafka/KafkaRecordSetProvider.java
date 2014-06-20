@@ -13,20 +13,23 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import io.airlift.log.Logger;
-
-import javax.inject.Inject;
-
-import java.util.List;
-import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -35,18 +38,23 @@ public class KafkaRecordSetProvider
 
     private final KafkaHandleResolver handleResolver;
     private final KafkaSimpleConsumerManager consumerManager;
-    private final Map<String, KafkaDecoder> decoders;
+    private final Map<String, KafkaRowDecoder> decoders;
 
     @Inject
-    public KafkaRecordSetProvider(Map<String, KafkaDecoder> decoders,
+    public KafkaRecordSetProvider(Set<KafkaRowDecoder> decoders,
             KafkaHandleResolver handleResolver,
             KafkaSimpleConsumerManager consumerManager)
     {
-        this.decoders = checkNotNull(decoders, "decoders is null");
+        checkNotNull(decoders, "decoders is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
 
-        LOGGER.info("Found %s as decoders", decoders);
+        ImmutableMap.Builder<String, KafkaRowDecoder> builder = ImmutableMap.builder();
+        for (KafkaRowDecoder decoder : decoders) {
+            builder.put(decoder.getName(), decoder);
+        }
+
+        this.decoders = builder.build();
     }
 
     @Override

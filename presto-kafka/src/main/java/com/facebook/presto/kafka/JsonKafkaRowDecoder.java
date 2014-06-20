@@ -7,9 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.base.Splitter;
+
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
+
 import org.joda.time.format.DateTimeFormat;
 
 import javax.inject.Inject;
@@ -18,19 +20,23 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class KafkaJsonDecoder
-        implements KafkaDecoder
+public class JsonKafkaRowDecoder
+        implements KafkaRowDecoder
 {
-    private static final Logger LOGGER = Logger.get(KafkaJsonDecoder.class);
+    private static final Logger LOGGER = Logger.get(JsonKafkaRowDecoder.class);
 
     private final ObjectMapper objectMapper;
 
-    public static final String MESSAGE_FORMAT = "json";
-
     @Inject
-    KafkaJsonDecoder(ObjectMapper objectMapper)
+    JsonKafkaRowDecoder(ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "json";
     }
 
     @Override

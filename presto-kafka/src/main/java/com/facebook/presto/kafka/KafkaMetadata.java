@@ -165,7 +165,7 @@ public class KafkaMetadata
 
         int index = 0;
         for (KafkaColumn kafkaColumn : table.getColumns()) {
-            columnHandles.put(kafkaColumn.getName(), new KafkaColumnHandle(connectorId, kafkaColumn.getName(), kafkaColumn.getMapping(), kafkaColumn.getType(), index++));
+            columnHandles.put(kafkaColumn.getName(), new KafkaColumnHandle(connectorId, index++, kafkaColumn));
         }
 
         Map<String, ConnectorColumnHandle> result = columnHandles.build();
@@ -266,8 +266,8 @@ public class KafkaMetadata
                         LOGGER.debug("Created basic Table definition for %s", definedTable);
                         builder.put(definedTable, new KafkaTable(definedTable,
                                 definedTable,
-                                KafkaJsonDecoder.MESSAGE_FORMAT,
-                                ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, KafkaJsonDecoder.MESSAGE_WILDCARD))));
+                                "json",
+                                ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, JsonKafkaRowDecoder.MESSAGE_WILDCARD, null, null))));
                     }
                 }
 

@@ -28,18 +28,24 @@ public final class KafkaColumn
     private final String name;
     private final Type type;
     private final String mapping;
+    private final String decoder;
+    private final String format;
 
     @JsonCreator
     public KafkaColumn(
             @JsonProperty("name") String name,
             @JsonProperty("type") Type type,
-            @JsonProperty("mapping") String mapping)
+            @JsonProperty("mapping") String mapping,
+            @JsonProperty("decoder") String decoder,
+            @JsonProperty("format") String format)
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
         checkArgument(!isNullOrEmpty(mapping), "mapping is null or is empty");
         this.name = name;
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
+        this.decoder = decoder;
+        this.format = format;
     }
 
     @JsonProperty
@@ -60,6 +66,18 @@ public final class KafkaColumn
         return mapping;
     }
 
+    @JsonProperty
+    public String getDecoder()
+    {
+        return decoder;
+    }
+
+    @JsonProperty
+    public String getFormat()
+    {
+        return format;
+    }
+
     public ColumnMetadata getColumnMetadata(int index)
     {
         return new ColumnMetadata(name, type, index, false);
@@ -68,7 +86,7 @@ public final class KafkaColumn
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, type, mapping);
+        return Objects.hashCode(name, type, mapping, decoder, format);
     }
 
     @Override
@@ -84,7 +102,9 @@ public final class KafkaColumn
         KafkaColumn other = (KafkaColumn) obj;
         return Objects.equal(this.name, other.name) &&
                 Objects.equal(this.type, other.type) &&
-                Objects.equal(this.mapping, other.mapping);
+                Objects.equal(this.mapping, other.mapping) &&
+                Objects.equal(this.decoder, other.decoder) &&
+                Objects.equal(this.format, other.format);
     }
 
     @Override

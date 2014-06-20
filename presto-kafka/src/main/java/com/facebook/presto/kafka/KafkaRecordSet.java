@@ -48,9 +48,9 @@ public class KafkaRecordSet
     private final Map<String, Type> mapping;
     private final KafkaSplit split;
 
-    private final KafkaDecoder kafkaDecoder;
+    private final KafkaRowDecoder kafkaDecoder;
 
-    KafkaRecordSet(KafkaDecoder kafkaDecoder,
+    KafkaRecordSet(KafkaRowDecoder kafkaDecoder,
             KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
             List<KafkaColumnHandle> columnHandles)
@@ -65,8 +65,8 @@ public class KafkaRecordSet
         ImmutableMap.Builder<String, Type> mappingBuilder = ImmutableMap.builder();
 
         for (KafkaColumnHandle handle : columnHandles) {
-            typeBuilder.add(handle.getColumnType());
-            mappingBuilder.put(handle.getMapping(), handle.getColumnType());
+            typeBuilder.add(handle.getColumn().getType());
+            mappingBuilder.put(handle.getColumn().getMapping(), handle.getColumn().getType());
         }
 
         this.columnTypes = typeBuilder.build();
@@ -122,13 +122,13 @@ public class KafkaRecordSet
         public Type getType(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            return columnHandles.get(field).getColumnType();
+            return columnHandles.get(field).getColumn().getType();
         }
 
         @Override
         public boolean advanceNextPosition()
         {
-            for (; ; ) {
+            for (;; ) {
                 if (cursorOffset >= split.getEnd()) {
                     return endOfData(); // Split end is exclusive.
                 }
@@ -181,7 +181,7 @@ public class KafkaRecordSet
             KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, boolean.class);
-            return currentRow.getBoolean(columnHandle.getMapping());
+            return currentRow.getBoolean(columnHandle.getColumn().getMapping());
         }
 
         @Override
@@ -191,7 +191,7 @@ public class KafkaRecordSet
             KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, long.class);
-            return currentRow.getLong(columnHandle.getMapping());
+            return currentRow.getLong(columnHandle.getColumn().getMapping());
         }
 
         @Override
@@ -201,7 +201,7 @@ public class KafkaRecordSet
             KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, double.class);
-            return currentRow.getDouble(columnHandle.getMapping());
+            return currentRow.getDouble(columnHandle.getColumn().getMapping());
         }
 
         @Override
@@ -211,7 +211,7 @@ public class KafkaRecordSet
             KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, Slice.class);
-            return currentRow.getSlice(columnHandle.getMapping());
+            return currentRow.getSlice(columnHandle.getColumn().getMapping());
         }
 
         @Override
@@ -220,7 +220,7 @@ public class KafkaRecordSet
             checkArgument(field < columnHandles.size(), "Invalid field index");
             KafkaColumnHandle columnHandle = columnHandles.get(field);
 
-            return currentRow.isNull(columnHandle.getMapping());
+            return currentRow.isNull(columnHandle.getColumn().getMapping());
         }
 
         private void checkFieldType(int field, Class<?> expected)

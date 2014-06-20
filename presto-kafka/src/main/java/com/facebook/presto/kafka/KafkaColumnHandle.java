@@ -13,43 +13,31 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
-import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public final class KafkaColumnHandle
         implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
 {
     private final String connectorId;
-    private final String columnName;
-    private final String mapping;
-    private final Type columnType;
     private final int ordinalPosition;
-
-    public KafkaColumnHandle(String connectorId, String mapping, ColumnMetadata columnMetadata)
-    {
-        this(connectorId, columnMetadata.getName(), mapping, columnMetadata.getType(), columnMetadata.getOrdinalPosition());
-    }
+    private KafkaColumn kafkaColumn;
 
     @JsonCreator
     public KafkaColumnHandle(
             @JsonProperty("connectorId") String connectorId,
-            @JsonProperty("columnName") String columnName,
-            @JsonProperty("mapping") String mapping,
-            @JsonProperty("columnType") Type columnType,
-            @JsonProperty("ordinalPosition") int ordinalPosition)
+            @JsonProperty("ordinalPosition") int ordinalPosition,
+            @JsonProperty("column") KafkaColumn kafkaColumn)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.columnName = checkNotNull(columnName, "columnName is null");
-        this.mapping = checkNotNull(mapping, "mapping is null");
-        this.columnType = checkNotNull(columnType, "columnType is null");
         this.ordinalPosition = ordinalPosition;
+        this.kafkaColumn = checkNotNull(kafkaColumn, "kafkaColumn is null");
     }
 
     @JsonProperty
@@ -59,21 +47,9 @@ public final class KafkaColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public KafkaColumn getColumn()
     {
-        return columnName;
-    }
-
-    @JsonProperty
-    public Type getColumnType()
-    {
-        return columnType;
-    }
-
-    @JsonProperty
-    public String getMapping()
-    {
-        return mapping;
+        return kafkaColumn;
     }
 
     @JsonProperty
@@ -84,13 +60,13 @@ public final class KafkaColumnHandle
 
     public ColumnMetadata getColumnMetadata()
     {
-        return new ColumnMetadata(columnName, columnType, ordinalPosition, false);
+        return new ColumnMetadata(kafkaColumn.toString(), kafkaColumn.getType(), ordinalPosition, false);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, columnName, mapping, columnType, ordinalPosition);
+        return Objects.hashCode(connectorId, ordinalPosition, kafkaColumn);
     }
 
     @Override
@@ -105,10 +81,8 @@ public final class KafkaColumnHandle
 
         KafkaColumnHandle other = (KafkaColumnHandle) obj;
         return Objects.equal(this.connectorId, other.connectorId) &&
-                Objects.equal(this.columnName, other.columnName) &&
-                Objects.equal(this.mapping, other.mapping) &&
-                Objects.equal(this.columnType, other.columnType) &&
-                Objects.equal(this.ordinalPosition, other.ordinalPosition);
+                Objects.equal(this.ordinalPosition, other.ordinalPosition) &&
+                Objects.equal(this.kafkaColumn, other.kafkaColumn);
     }
 
     @Override
@@ -122,10 +96,8 @@ public final class KafkaColumnHandle
     {
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
-                .add("columnName", columnName)
-                .add("mapping", mapping)
-                .add("columnType", columnType)
                 .add("ordinalPosition", ordinalPosition)
+                .add("column", kafkaColumn)
                 .toString();
     }
 }

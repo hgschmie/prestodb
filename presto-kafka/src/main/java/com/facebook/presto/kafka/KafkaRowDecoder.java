@@ -4,11 +4,13 @@ import com.facebook.presto.spi.type.Type;
 
 import java.util.Map;
 
-public interface KafkaDecoder
+public interface KafkaRowDecoder
 {
     String MESSAGE_WILDCARD = "*";
 
-    String MESSAGE_CORRUPTED = "/corrupt";
+    String MESSAGE_CORRUPTED = "corrupt";
+
+    String getName();
 
     KafkaRow decodeRow(byte[] data, Map<String, Type> typeMap);
 }

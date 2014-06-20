@@ -1,5 +1,14 @@
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import static io.airlift.configuration.ConfigurationModule.bindConfig;
+import static io.airlift.json.JsonBinder.jsonBinder;
+import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
+
+import javax.inject.Inject;
+
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -7,16 +16,8 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
-
-import javax.inject.Inject;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static io.airlift.configuration.ConfigurationModule.bindConfig;
-import static io.airlift.json.JsonBinder.jsonBinder;
-import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
 
 public class KafkaModule
         implements Module
@@ -50,9 +51,9 @@ public class KafkaModule
         jsonBinder(binder).addDeserializerBinding(Type.class).to(TypeDeserializer.class);
         jsonCodecBinder(binder).bindJsonCodec(KafkaTable.class);
 
-        MapBinder<String, KafkaDecoder> decoderBinder = MapBinder.newMapBinder(binder, String.class, KafkaDecoder.class);
-        decoderBinder.addBinding(KafkaJsonDecoder.MESSAGE_FORMAT).to(KafkaJsonDecoder.class).in(Scopes.SINGLETON);
-        decoderBinder.addBinding(KafkaCsvDecoder.MESSAGE_FORMAT).to(KafkaCsvDecoder.class).in(Scopes.SINGLETON);
+        Multibinder<KafkaRowDecoder> decoderBinder = Multibinder.newSetBinder(binder, KafkaRowDecoder.class);
+        decoderBinder.addBinding().to(JsonKafkaRowDecoder.class).in(Scopes.SINGLETON);
+        decoderBinder.addBinding().to(CsvKafkaRowDecoder.class).in(Scopes.SINGLETON);
     }
 
     public static final class TypeDeserializer
