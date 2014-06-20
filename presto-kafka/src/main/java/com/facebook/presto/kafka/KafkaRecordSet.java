@@ -13,9 +13,21 @@
  */
 package com.facebook.presto.kafka;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import kafka.api.FetchRequest;
@@ -23,14 +35,6 @@ import kafka.api.FetchRequestBuilder;
 import kafka.javaapi.FetchResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
-
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaRecordSet
         implements RecordSet
@@ -42,6 +46,7 @@ public class KafkaRecordSet
     private final KafkaSimpleConsumerManager consumerManager;
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
+    private final Map<String, Type> mapping;
     private final KafkaSplit split;
 
     private final KafkaDecoder kafkaDecoder;
@@ -49,15 +54,25 @@ public class KafkaRecordSet
     KafkaRecordSet(KafkaDecoder kafkaDecoder,
             KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
-            List<KafkaColumnHandle> columnHandles,
-            List<Type> columnTypes)
+            List<KafkaColumnHandle> columnHandles)
     {
         this.kafkaDecoder = checkNotNull(kafkaDecoder, "kafkaDecoder is null");
         this.split = checkNotNull(split, "split is null");
 
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
         this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
-        this.columnTypes = checkNotNull(columnTypes, "types is null");
+
+        ImmutableList.Builder<Type> typeBuilder = ImmutableList.builder();
+        ImmutableMap.Builder<String, Type> mappingBuilder = ImmutableMap.builder();
+
+        for (KafkaColumnHandle handle : columnHandles) {
+            typeBuilder.add(handle.getColumnType());
+            mappingBuilder.put(handle.getMapping(), handle.getColumnType());
+        }
+
+        this.columnTypes = typeBuilder.build();
+        this.mapping = mappingBuilder.build();
+
     }
 
     @Override
@@ -115,7 +130,7 @@ public class KafkaRecordSet
         @Override
         public boolean advanceNextPosition()
         {
-            for (; ; ) {
+            for (;; ) {
                 if (cursorOffset >= split.getEnd()) {
                     return endOfData(); // Split end is exclusive.
                 }
@@ -156,7 +171,7 @@ public class KafkaRecordSet
             ByteBuffer payload = messageAndOffset.message().payload();
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
-            this.currentRow = kafkaDecoder.decodeRow(currentRow);
+            this.currentRow = kafkaDecoder.decodeRow(currentRow, mapping);
 
             return true; // Advanced successfully.
         }

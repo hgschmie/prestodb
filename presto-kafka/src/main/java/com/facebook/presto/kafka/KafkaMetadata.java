@@ -258,8 +258,9 @@ public class KafkaMetadata
                 builder = ImmutableMap.builder();
                 for (String definedTable : kafkaConfig.getTableNames()) {
                     if (tableDefinitions.containsKey(definedTable)) {
-                        LOGGER.debug("Found Table definition for %s: %s", definedTable, tableDefinitions.get(definedTable));
-                        builder.put(definedTable, tableDefinitions.get(definedTable));
+                        KafkaTable kafkaTable = tableDefinitions.get(definedTable);
+                        LOGGER.debug("Found Table definition for %s: %s", definedTable, kafkaTable);
+                        builder.put(kafkaTable.getTableName(), kafkaTable);
                     }
                     else {
                         LOGGER.debug("Created basic Table definition for %s", definedTable);

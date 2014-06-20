@@ -1,53 +1,68 @@
 package com.facebook.presto.kafka;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.MissingNode;
-import com.google.common.base.Splitter;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import io.airlift.slice.Slice;
-import io.airlift.slice.Slices;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
-import java.util.Map;
+import com.facebook.presto.spi.type.TimestampType;
+import com.facebook.presto.spi.type.Type;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
+import com.google.common.base.Splitter;
+
+import org.joda.time.DateTime;
+
+import io.airlift.log.Logger;
+import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
 
 public class KafkaJsonDecoder
         implements KafkaDecoder
 {
+    private static final Logger LOGGER = Logger.get(KafkaJsonDecoder.class);
+
     private final ObjectMapper objectMapper;
 
     public static final String MESSAGE_FORMAT = "json";
-    public static final String MESSAGE_WILDCARD = "*";
 
     @Inject
-    public KafkaJsonDecoder(ObjectMapper objectMapper)
+    KafkaJsonDecoder(ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data)
+    public KafkaRow decodeRow(byte[] data, Map<String, Type> typeMap)
     {
-        try {
-            return new KafkaJsonRow(objectMapper.readTree(data));
-        }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
+        return new KafkaJsonRow(data, typeMap);
     }
 
-    public static class KafkaJsonRow
+    public class KafkaJsonRow
             implements KafkaRow
     {
         private final JsonNode tree;
-        private final Map<String, JsonNode> cache = Maps.newConcurrentMap();
+        private final Map<String, JsonNode> cache = new HashMap<>();
+        private final Map<String, Type> typeMap;
 
-        KafkaJsonRow(JsonNode tree)
+        KafkaJsonRow(byte [] data, Map<String, Type> typeMap)
         {
+            this.typeMap = typeMap;
+
+            JsonNode tree = null;
+            try {
+                tree = objectMapper.readTree(data);
+                cache.put(MESSAGE_CORRUPTED, BooleanNode.FALSE);
+            }
+            catch (Exception e) {
+                tree = MissingNode.getInstance();
+                cache.put(MESSAGE_CORRUPTED, BooleanNode.TRUE);
+            }
+
             this.tree = tree;
-            cache.put(MESSAGE_WILDCARD, tree);
+            cache.put(MESSAGE_WILDCARD, this.tree);
         }
 
         @Override
@@ -61,6 +76,37 @@ public class KafkaJsonDecoder
         public long getLong(String mapping)
         {
             JsonNode node = locateNode(mapping);
+
+            if (node.isMissingNode() || node.isNull()) {
+                return 0L;
+            }
+
+            Type columnType = typeMap.get(mapping);
+
+            // Timestamp conversion hack. Remove once there is a real
+            // way to convert a column into a time stamp.
+            if (columnType == TimestampType.TIMESTAMP) {
+                try {
+                    if (node.isNumber()) {
+                        return node.longValue();
+                    }
+                    else if (node.isTextual()) {
+                        LOGGER.info("Pondering timestamp %s", node.asText());
+                        DateTime time = new DateTime(node.asText());
+                        LOGGER.info("Converted to %s", time);
+                        return time.getMillis();
+                    }
+                    else {
+                        // Coerce to long. Good luck.
+                        return node.asLong();
+                    }
+                }
+                catch (Exception e) {
+                    LOGGER.warn(e, "Busted!");
+                    return node.longValue();
+                }
+            }
+
             return node.longValue();
         }
 

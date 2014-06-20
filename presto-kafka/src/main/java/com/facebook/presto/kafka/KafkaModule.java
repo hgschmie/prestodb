@@ -52,6 +52,7 @@ public class KafkaModule
 
         MapBinder<String, KafkaDecoder> decoderBinder = MapBinder.newMapBinder(binder, String.class, KafkaDecoder.class);
         decoderBinder.addBinding(KafkaJsonDecoder.MESSAGE_FORMAT).to(KafkaJsonDecoder.class).in(Scopes.SINGLETON);
+        decoderBinder.addBinding(KafkaCsvDecoder.MESSAGE_FORMAT).to(KafkaCsvDecoder.class).in(Scopes.SINGLETON);
     }
 
     public static final class TypeDeserializer

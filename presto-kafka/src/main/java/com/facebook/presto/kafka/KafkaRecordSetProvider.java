@@ -13,21 +13,21 @@
  */
 package com.facebook.presto.kafka;
 
-import com.facebook.presto.spi.ConnectorColumnHandle;
-import com.facebook.presto.spi.ConnectorRecordSetProvider;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.RecordSet;
-import com.facebook.presto.spi.type.Type;
-import com.google.common.collect.ImmutableList;
-import io.airlift.log.Logger;
-
-import javax.inject.Inject;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import javax.inject.Inject;
+
+import com.facebook.presto.spi.ConnectorColumnHandle;
+import com.facebook.presto.spi.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.RecordSet;
+import com.google.common.collect.ImmutableList;
+
+import io.airlift.log.Logger;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -57,18 +57,14 @@ public class KafkaRecordSetProvider
 
         String decoderType = kafkaSplit.getDecoderType();
 
-        LOGGER.info("Decoder in use: %s (%s)", decoders.get(decoderType), decoderType);
-
         checkState(decoders.containsKey(decoderType), "no decoder for type '%s' found", decoderType);
 
         ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
-        ImmutableList.Builder<Type> types = ImmutableList.builder();
         for (ConnectorColumnHandle handle : columns) {
             KafkaColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
             handles.add(columnHandle);
-            types.add(columnHandle.getColumnType());
         }
 
-        return new KafkaRecordSet(decoders.get(decoderType), kafkaSplit, consumerManager, handles.build(), types.build());
+        return new KafkaRecordSet(decoders.get(decoderType), kafkaSplit, consumerManager, handles.build());
     }
 }
