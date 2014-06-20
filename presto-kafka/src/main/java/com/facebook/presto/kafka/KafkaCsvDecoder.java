@@ -1,16 +1,15 @@
 package com.facebook.presto.kafka;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import au.com.bytecode.opencsv.CSVParser;
+import com.facebook.presto.spi.type.Type;
+import com.google.common.collect.Maps;
+import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
 
 import javax.inject.Inject;
 
-import com.facebook.presto.spi.type.Type;
-import com.google.common.collect.Maps;
-
-import au.com.bytecode.opencsv.CSVParser;
-import io.airlift.slice.Slice;
-import io.airlift.slice.Slices;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class KafkaCsvDecoder
         implements KafkaDecoder
@@ -35,13 +34,13 @@ public class KafkaCsvDecoder
     {
         private final Map<String, String> cache = Maps.newConcurrentMap();
 
-        KafkaCsvRow(byte [] data)
+        KafkaCsvRow(byte[] data)
         {
             String line = new String(data, StandardCharsets.UTF_8);
             cache.put(MESSAGE_WILDCARD, line);
 
             try {
-                String [] fields = PARSER.parseLine(line);
+                String[] fields = PARSER.parseLine(line);
 
                 for (int i = 0; i < fields.length; i++) {
                     cache.put(Integer.toString(i), fields[i]);

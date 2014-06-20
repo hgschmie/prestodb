@@ -1,10 +1,5 @@
 package com.facebook.presto.kafka;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import com.facebook.presto.spi.type.TimestampType;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,12 +7,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.base.Splitter;
-
-import org.joda.time.DateTime;
-
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
+import org.joda.time.format.DateTimeFormat;
+
+import javax.inject.Inject;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class KafkaJsonDecoder
         implements KafkaDecoder
@@ -47,7 +46,7 @@ public class KafkaJsonDecoder
         private final Map<String, JsonNode> cache = new HashMap<>();
         private final Map<String, Type> typeMap;
 
-        KafkaJsonRow(byte [] data, Map<String, Type> typeMap)
+        KafkaJsonRow(byte[] data, Map<String, Type> typeMap)
         {
             this.typeMap = typeMap;
 
@@ -91,10 +90,8 @@ public class KafkaJsonDecoder
                         return node.longValue();
                     }
                     else if (node.isTextual()) {
-                        LOGGER.info("Pondering timestamp %s", node.asText());
-                        DateTime time = new DateTime(node.asText());
-                        LOGGER.info("Converted to %s", time);
-                        return time.getMillis();
+                        // Super hack to make twitter timestamps work. This needs to be pluggable.
+                        return DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z yyyy").withLocale(Locale.ENGLISH).parseMillis(node.asText());
                     }
                     else {
                         // Coerce to long. Good luck.

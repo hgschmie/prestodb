@@ -13,21 +13,11 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import kafka.api.FetchRequest;
@@ -35,6 +25,15 @@ import kafka.api.FetchRequestBuilder;
 import kafka.javaapi.FetchResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
+
+import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaRecordSet
         implements RecordSet
@@ -72,7 +71,6 @@ public class KafkaRecordSet
 
         this.columnTypes = typeBuilder.build();
         this.mapping = mappingBuilder.build();
-
     }
 
     @Override
@@ -130,7 +128,7 @@ public class KafkaRecordSet
         @Override
         public boolean advanceNextPosition()
         {
-            for (;; ) {
+            for (; ; ) {
                 if (cursorOffset >= split.getEnd()) {
                     return endOfData(); // Split end is exclusive.
                 }

@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka;
 
-import java.util.Map;
-
 import com.facebook.presto.spi.type.Type;
+
+import java.util.Map;
 
 public interface KafkaDecoder
 {
