@@ -13,6 +13,8 @@
  */
 package com.facebook.presto.kafka;
 
+import com.facebook.presto.kafka.decoder.JsonKafkaRowDecoder;
+import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
@@ -266,8 +268,9 @@ public class KafkaMetadata
                         LOGGER.debug("Created basic Table definition for %s", definedTable);
                         builder.put(definedTable, new KafkaTable(definedTable,
                                 definedTable,
-                                "json",
-                                ImmutableList.of(new KafkaColumn("json", VarcharType.VARCHAR, JsonKafkaRowDecoder.MESSAGE_WILDCARD, null, null))));
+                                JsonKafkaRowDecoder.NAME,
+                                ImmutableList.of(new KafkaColumn(JsonKafkaRowDecoder.NAME, VarcharType.VARCHAR, KafkaRowDecoder.COLUMN_MESSAGE, null, null),
+                                        new KafkaColumn(JsonKafkaRowDecoder.NAME, VarcharType.VARCHAR, KafkaRowDecoder.COLUMN_CORRUPT, null, null))));
                     }
                 }
 

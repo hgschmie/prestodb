@@ -13,23 +13,21 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-
+import com.facebook.presto.kafka.decoder.KafkaDecoderRegistry;
+import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
+import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import io.airlift.log.Logger;
+
+import javax.inject.Inject;
+
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -38,40 +36,38 @@ public class KafkaRecordSetProvider
 
     private final KafkaHandleResolver handleResolver;
     private final KafkaSimpleConsumerManager consumerManager;
-    private final Map<String, KafkaRowDecoder> decoders;
+    private final KafkaDecoderRegistry registry;
 
     @Inject
-    public KafkaRecordSetProvider(Set<KafkaRowDecoder> decoders,
+    public KafkaRecordSetProvider(
+            KafkaDecoderRegistry registry,
             KafkaHandleResolver handleResolver,
             KafkaSimpleConsumerManager consumerManager)
     {
-        checkNotNull(decoders, "decoders is null");
+        this.registry = checkNotNull(registry, "registry is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
-
-        ImmutableMap.Builder<String, KafkaRowDecoder> builder = ImmutableMap.builder();
-        for (KafkaRowDecoder decoder : decoders) {
-            builder.put(decoder.getName(), decoder);
-        }
-
-        this.decoders = builder.build();
     }
 
     @Override
     public RecordSet getRecordSet(ConnectorSplit split, List<? extends ConnectorColumnHandle> columns)
     {
         KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
-
-        String decoderType = kafkaSplit.getDecoderType();
-
-        checkState(decoders.containsKey(decoderType), "no decoder for type '%s' found", decoderType);
+        KafkaRowDecoder rowDecoder = registry.getRowDecoder(kafkaSplit.getDecoderType());
 
         ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
+        ImmutableList.Builder<KafkaFieldDecoder<?>> fieldDecoders = ImmutableList.builder();
+
         for (ConnectorColumnHandle handle : columns) {
             KafkaColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
             handles.add(columnHandle);
+
+            KafkaFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kafkaSplit.getDecoderType(),
+                    columnHandle.getColumn().getType().getJavaType(),
+                    columnHandle.getColumn().getFormat());
+            fieldDecoders.add(fieldDecoder);
         }
 
-        return new KafkaRecordSet(decoders.get(decoderType), kafkaSplit, consumerManager, handles.build());
+        return new KafkaRecordSet(kafkaSplit, consumerManager, rowDecoder, fieldDecoders.build(), handles.build());
     }
 }

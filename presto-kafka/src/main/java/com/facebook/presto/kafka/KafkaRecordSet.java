@@ -13,11 +13,12 @@
  */
 package com.facebook.presto.kafka;
 
+import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
+import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import kafka.api.FetchRequest;
@@ -29,7 +30,6 @@ import kafka.message.MessageAndOffset;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -42,35 +42,36 @@ public class KafkaRecordSet
 
     private static final int KAFKA_READ_BUFFER_SIZE = 100_000;
 
+    private final KafkaSplit split;
     private final KafkaSimpleConsumerManager consumerManager;
+
+    private final KafkaRowDecoder rowDecoder;
+    private final List<KafkaFieldDecoder<?>> fieldDecoders;
+
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
-    private final Map<String, Type> mapping;
-    private final KafkaSplit split;
 
-    private final KafkaRowDecoder kafkaDecoder;
-
-    KafkaRecordSet(KafkaRowDecoder kafkaDecoder,
-            KafkaSplit split,
+    KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
+            KafkaRowDecoder rowDecoder,
+            List<KafkaFieldDecoder<?>> fieldDecoders,
             List<KafkaColumnHandle> columnHandles)
     {
-        this.kafkaDecoder = checkNotNull(kafkaDecoder, "kafkaDecoder is null");
         this.split = checkNotNull(split, "split is null");
-
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
+
+        this.rowDecoder = checkNotNull(rowDecoder, "rowDecoder is null");
+        this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
+
         this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
 
         ImmutableList.Builder<Type> typeBuilder = ImmutableList.builder();
-        ImmutableMap.Builder<String, Type> mappingBuilder = ImmutableMap.builder();
 
         for (KafkaColumnHandle handle : columnHandles) {
             typeBuilder.add(handle.getColumn().getType());
-            mappingBuilder.put(handle.getColumn().getMapping(), handle.getColumn().getType());
         }
 
         this.columnTypes = typeBuilder.build();
-        this.mapping = mappingBuilder.build();
     }
 
     @Override
@@ -128,7 +129,7 @@ public class KafkaRecordSet
         @Override
         public boolean advanceNextPosition()
         {
-            for (;; ) {
+            while (true) {
                 if (cursorOffset >= split.getEnd()) {
                     return endOfData(); // Split end is exclusive.
                 }
@@ -169,7 +170,7 @@ public class KafkaRecordSet
             ByteBuffer payload = messageAndOffset.message().payload();
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
-            this.currentRow = kafkaDecoder.decodeRow(currentRow, mapping);
+            this.currentRow = rowDecoder.decodeRow(currentRow, fieldDecoders, columnHandles);
 
             return true; // Advanced successfully.
         }
@@ -178,49 +179,44 @@ public class KafkaRecordSet
         public boolean getBoolean(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, boolean.class);
-            return currentRow.getBoolean(columnHandle.getColumn().getMapping());
+            return currentRow.getBoolean(field);
         }
 
         @Override
         public long getLong(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, long.class);
-            return currentRow.getLong(columnHandle.getColumn().getMapping());
+            return currentRow.getLong(field);
         }
 
         @Override
         public double getDouble(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, double.class);
-            return currentRow.getDouble(columnHandle.getColumn().getMapping());
+            return currentRow.getDouble(field);
         }
 
         @Override
         public Slice getSlice(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            KafkaColumnHandle columnHandle = columnHandles.get(field);
 
             checkFieldType(field, Slice.class);
-            return currentRow.getSlice(columnHandle.getColumn().getMapping());
+            return currentRow.getSlice(field);
         }
 
         @Override
         public boolean isNull(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            KafkaColumnHandle columnHandle = columnHandles.get(field);
 
-            return currentRow.isNull(columnHandle.getColumn().getMapping());
+            return currentRow.isNull(field);
         }
 
         private void checkFieldType(int field, Class<?> expected)

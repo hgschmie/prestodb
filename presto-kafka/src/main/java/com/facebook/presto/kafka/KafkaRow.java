@@ -3,14 +3,15 @@ package com.facebook.presto.kafka;
 import io.airlift.slice.Slice;
 
 public interface KafkaRow
+
 {
-    boolean getBoolean(String mapping);
+    boolean getBoolean(int field);
 
-    long getLong(String mapping);
+    long getLong(int field);
 
-    double getDouble(String mapping);
+    double getDouble(int field);
 
-    Slice getSlice(String mapping);
+    Slice getSlice(int field);
 
-    boolean isNull(String mapping);
+    boolean isNull(int field);
 }

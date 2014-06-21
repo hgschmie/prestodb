@@ -13,14 +13,14 @@
  */
 package com.facebook.presto.kafka;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class KafkaColumnHandle
         implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
