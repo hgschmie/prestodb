@@ -49,7 +49,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class KafkaMetadata
         extends ReadOnlyConnectorMetadata
 {
-    private static final Logger LOGGER = Logger.get(KafkaMetadata.class);
+    private static final Logger LOG = Logger.get(KafkaMetadata.class);
 
     private final String connectorId;
     private final KafkaConfig kafkaConfig;
@@ -69,7 +69,7 @@ public class KafkaMetadata
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.tableCodec = checkNotNull(tableCodec, "tableCodec is null");
 
-        LOGGER.debug("Loading kafka table definitions from %s", kafkaConfig.getTableDescriptionDir().getAbsolutePath());
+        LOG.debug("Loading kafka table definitions from %s", kafkaConfig.getTableDescriptionDir().getAbsolutePath());
 
         this.tableDefinitions = Suppliers.memoize(new TableSupplier());
     }
@@ -77,19 +77,12 @@ public class KafkaMetadata
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        LOGGER.debug("listSchemaNames(%s)", session);
-
-        List<String> result = ImmutableList.of(kafkaConfig.getSchemaName());
-
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return ImmutableList.of(kafkaConfig.getSchemaName());
     }
 
     @Override
     public KafkaTableHandle getTableHandle(ConnectorSession session, SchemaTableName schemaTableName)
     {
-        LOGGER.debug("getTableHandle(%s, %s)", session, schemaTableName);
-
         handleResolver.checkSchemaName(schemaTableName.getSchemaName());
 
         KafkaTable table = getDefinedTables().get(schemaTableName.getTableName());
@@ -97,31 +90,23 @@ public class KafkaMetadata
             throw new TableNotFoundException(schemaTableName);
         }
 
-        KafkaTableHandle result = new KafkaTableHandle(connectorId,
-                table.getDecoderType(),
+        return new KafkaTableHandle(connectorId,
+                table.getDecoder(),
                 schemaTableName.getSchemaName(),
                 schemaTableName.getTableName(),
                 table.getTopicName());
-
-        LOGGER.debug("Result: %s", result);
-        return result;
     }
 
     @Override
     public ConnectorTableMetadata getTableMetadata(ConnectorTableHandle tableHandle)
     {
-        LOGGER.debug("getTableMetadata(%s)", tableHandle);
-
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
-
         return getTableMetadata(kafkaTableHandle.toSchemaTableName());
     }
 
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, String schemaNameOrNull)
     {
-        LOGGER.debug("listTables(%s, %s)", session, schemaNameOrNull);
-
         ImmutableList.Builder<SchemaTableName> builder = ImmutableList.builder();
         if (schemaNameOrNull == null || schemaNameOrNull.equals(kafkaConfig.getSchemaName())) {
             for (String tableName : getDefinedTables().keySet()) {
@@ -129,20 +114,13 @@ public class KafkaMetadata
             }
         }
 
-        List<SchemaTableName> result = builder.build();
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return builder.build();
     }
 
     @Override
     public ConnectorColumnHandle getColumnHandle(ConnectorTableHandle tableHandle, String columnName)
     {
-        LOGGER.debug("getColumnHandle(%s, %s)", tableHandle, columnName);
-
-        ConnectorColumnHandle result = getColumnHandles(tableHandle).get(columnName);
-
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return getColumnHandles(tableHandle).get(columnName);
     }
 
     @Override
@@ -154,8 +132,6 @@ public class KafkaMetadata
     @Override
     public Map<String, ConnectorColumnHandle> getColumnHandles(ConnectorTableHandle tableHandle)
     {
-        LOGGER.debug("getColumnHandles(%s)", tableHandle);
-
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
         KafkaTable table = getDefinedTables().get(kafkaTableHandle.getTableName());
@@ -170,16 +146,12 @@ public class KafkaMetadata
             columnHandles.put(kafkaColumn.getName(), new KafkaColumnHandle(connectorId, index++, kafkaColumn));
         }
 
-        Map<String, ConnectorColumnHandle> result = columnHandles.build();
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return columnHandles.build();
     }
 
     @Override
     public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session, SchemaTablePrefix prefix)
     {
-        LOGGER.debug("listTableColumns(%s, %s)", session, prefix);
-
         checkNotNull(prefix, "prefix is null");
 
         ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> columns = ImmutableMap.builder();
@@ -199,15 +171,10 @@ public class KafkaMetadata
     @Override
     public ColumnMetadata getColumnMetadata(ConnectorTableHandle tableHandle, ConnectorColumnHandle columnHandle)
     {
-        LOGGER.debug("getColumnMetadata(%s, %s)", tableHandle, columnHandle);
-
         handleResolver.convertTableHandle(tableHandle);
         KafkaColumnHandle kafkaColumnHandle = handleResolver.convertColumnHandle(columnHandle);
 
-        ColumnMetadata result = kafkaColumnHandle.getColumnMetadata();
-
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return kafkaColumnHandle.getColumnMetadata();
     }
 
     @VisibleForTesting
@@ -230,10 +197,7 @@ public class KafkaMetadata
             builder.add(column.getColumnMetadata(index++));
         }
 
-        ConnectorTableMetadata result = new ConnectorTableMetadata(schemaTableName, builder.build());
-
-        LOGGER.debug("Result: %s", result);
-        return result;
+        return new ConnectorTableMetadata(schemaTableName, builder.build());
     }
 
     private class TableSupplier
@@ -248,24 +212,24 @@ public class KafkaMetadata
                 for (File file : listFiles(kafkaConfig.getTableDescriptionDir())) {
                     if (file.isFile() && file.getName().endsWith(".json")) {
                         KafkaTable table = tableCodec.fromJson(Files.toByteArray(file));
-                        LOGGER.debug("Kafka table %s: %s", table.getTableName(), table);
+                        LOG.debug("Kafka table %s: %s", table.getTableName(), table);
                         builder.put(table.getTableName(), table);
                     }
                 }
 
                 Map<String, KafkaTable> tableDefinitions = builder.build();
 
-                LOGGER.debug("Loaded Table definitions: %s", tableDefinitions.keySet());
+                LOG.debug("Loaded Table definitions: %s", tableDefinitions.keySet());
 
                 builder = ImmutableMap.builder();
                 for (String definedTable : kafkaConfig.getTableNames()) {
                     if (tableDefinitions.containsKey(definedTable)) {
                         KafkaTable kafkaTable = tableDefinitions.get(definedTable);
-                        LOGGER.debug("Found Table definition for %s: %s", definedTable, kafkaTable);
+                        LOG.debug("Found Table definition for %s: %s", definedTable, kafkaTable);
                         builder.put(kafkaTable.getTableName(), kafkaTable);
                     }
                     else {
-                        LOGGER.debug("Created basic Table definition for %s", definedTable);
+                        LOG.debug("Created basic Table definition for %s", definedTable);
                         builder.put(definedTable, new KafkaTable(definedTable,
                                 definedTable,
                                 JsonKafkaRowDecoder.NAME,
@@ -277,7 +241,7 @@ public class KafkaMetadata
                 return builder.build();
             }
             catch (IOException e) {
-                LOGGER.warn(e, "Error: ");
+                LOG.warn(e, "Error: ");
                 throw Throwables.propagate(e);
             }
         }
@@ -287,7 +251,7 @@ public class KafkaMetadata
             if (dir != null && dir.isDirectory()) {
                 File[] files = dir.listFiles();
                 if (files != null) {
-                    LOGGER.debug("Considering files: %s", Arrays.asList(files));
+                    LOG.debug("Considering files: %s", Arrays.asList(files));
                     return ImmutableList.copyOf(files);
                 }
             }

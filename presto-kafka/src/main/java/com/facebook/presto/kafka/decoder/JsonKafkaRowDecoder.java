@@ -18,11 +18,12 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class JsonKafkaRowDecoder
         implements KafkaRowDecoder
 {
-    private static final Logger LOGGER = Logger.get(JsonKafkaRowDecoder.class);
+    private static final Logger LOG = Logger.get(JsonKafkaRowDecoder.class);
 
     public static final String NAME = "json";
 
@@ -134,6 +135,7 @@ public class JsonKafkaRowDecoder
             }
 
             String mapping = columnHandles.get(field).getColumn().getMapping();
+            checkState(mapping != null, "No mapping for %s", columnHandles.get(field).getColumn().getName());
 
             JsonNode currentNode = tree;
             for (String pathElement : Splitter.on('/').omitEmptyStrings().split(mapping)) {

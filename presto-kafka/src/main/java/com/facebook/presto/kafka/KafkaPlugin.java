@@ -1,6 +1,8 @@
 package com.facebook.presto.kafka;
 
 import com.facebook.presto.spi.ConnectorFactory;
+import com.facebook.presto.spi.Node;
+import com.facebook.presto.spi.NodeManager;
 import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.type.TypeManager;
 import com.google.common.collect.ImmutableList;
@@ -20,6 +22,7 @@ public class KafkaPlugin
         implements Plugin
 {
     private TypeManager typeManager;
+    private NodeManager nodeManager;
     private Map<String, String> optionalConfig = ImmutableMap.of();
 
     @Override
@@ -31,14 +34,20 @@ public class KafkaPlugin
     @Inject
     public synchronized void setTypeManager(TypeManager typeManager)
     {
-        this.typeManager = typeManager;
+        this.typeManager = checkNotNull(typeManager, "typeManager is null");
+    }
+
+    @Inject
+    public synchronized void setNodeManager(NodeManager nodeManager)
+    {
+        this.nodeManager = checkNotNull(nodeManager, "node is null");
     }
 
     @Override
     public <T> List<T> getServices(Class<T> type)
     {
         if (type == ConnectorFactory.class) {
-            return ImmutableList.of(type.cast(new KafkaConnectorFactory(typeManager, optionalConfig)));
+            return ImmutableList.of(type.cast(new KafkaConnectorFactory(typeManager, nodeManager, optionalConfig)));
         }
         return ImmutableList.of();
     }

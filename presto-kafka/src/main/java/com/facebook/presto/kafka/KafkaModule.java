@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
-import com.google.inject.name.Names;
 
 import javax.inject.Inject;
 
@@ -21,21 +20,14 @@ import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
 public class KafkaModule
         implements Module
 {
-    private final String connectorId;
-    private final TypeManager typeManager;
 
-    KafkaModule(String connectorId, TypeManager typeManager)
+    KafkaModule()
     {
-        this.connectorId = checkNotNull(connectorId, "connector id is null");
-        this.typeManager = checkNotNull(typeManager, "typeManager is null");
     }
 
     @Override
     public void configure(Binder binder)
     {
-        binder.bind(TypeManager.class).toInstance(typeManager);
-        binder.bindConstant().annotatedWith(Names.named("connectorId")).to(connectorId);
-
         binder.bind(KafkaConnector.class).in(Scopes.SINGLETON);
 
         binder.bind(KafkaHandleResolver.class).in(Scopes.SINGLETON);

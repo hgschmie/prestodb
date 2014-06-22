@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
+import io.airlift.log.Logger;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -20,6 +21,8 @@ import static java.lang.String.format;
 
 public class KafkaDecoderRegistry
 {
+    private static final Logger LOG = Logger.get(KafkaDecoderRegistry.class);
+
     private final Map<String, KafkaRowDecoder> rowDecoders;
     private final Map<String, SetMultimap<Class<?>, KafkaFieldDecoder<?>>> fieldDecoders;
 
@@ -56,6 +59,7 @@ public class KafkaDecoderRegistry
         }
 
         this.fieldDecoders = fieldDecoderBuilder.build();
+        LOG.info("All field decoders found: %s", this.fieldDecoders);
     }
 
     public KafkaRowDecoder getRowDecoder(String decoderName)
@@ -77,7 +81,7 @@ public class KafkaDecoderRegistry
 
         for (String fieldName : fieldNames) {
             for (KafkaFieldDecoder decoder : decoders) {
-                if (fieldDecoderName.equals(decoder.getFieldDecoderName())) {
+                if (fieldName.equals(decoder.getFieldDecoderName())) {
                     return decoder;
                 }
             }

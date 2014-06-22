@@ -21,7 +21,6 @@ import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.google.common.collect.ImmutableList;
-import io.airlift.log.Logger;
 
 import javax.inject.Inject;
 
@@ -32,8 +31,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
 {
-    private static final Logger LOGGER = Logger.get(KafkaRecordSetProvider.class);
-
     private final KafkaHandleResolver handleResolver;
     private final KafkaSimpleConsumerManager consumerManager;
     private final KafkaDecoderRegistry registry;
@@ -55,19 +52,22 @@ public class KafkaRecordSetProvider
         KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
         KafkaRowDecoder rowDecoder = registry.getRowDecoder(kafkaSplit.getDecoderType());
 
-        ImmutableList.Builder<KafkaColumnHandle> handles = ImmutableList.builder();
-        ImmutableList.Builder<KafkaFieldDecoder<?>> fieldDecoders = ImmutableList.builder();
+        ImmutableList.Builder<KafkaColumnHandle> handleBuilder = ImmutableList.builder();
+        ImmutableList.Builder<KafkaFieldDecoder<?>> fieldDecoderBuilder = ImmutableList.builder();
 
         for (ConnectorColumnHandle handle : columns) {
             KafkaColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
-            handles.add(columnHandle);
+            handleBuilder.add(columnHandle);
 
             KafkaFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kafkaSplit.getDecoderType(),
                     columnHandle.getColumn().getType().getJavaType(),
-                    columnHandle.getColumn().getFormat());
-            fieldDecoders.add(fieldDecoder);
+                    columnHandle.getColumn().getDecoder());
+            fieldDecoderBuilder.add(fieldDecoder);
         }
 
-        return new KafkaRecordSet(kafkaSplit, consumerManager, rowDecoder, fieldDecoders.build(), handles.build());
+        ImmutableList<KafkaColumnHandle> handles = handleBuilder.build();
+        ImmutableList<KafkaFieldDecoder<?>> fieldDecoders = fieldDecoderBuilder.build();
+
+        return new KafkaRecordSet(kafkaSplit, consumerManager, rowDecoder, fieldDecoders, handles);
     }
 }

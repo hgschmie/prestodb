@@ -54,7 +54,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class KafkaSplitManager
         implements ConnectorSplitManager
 {
-    private static final Logger LOGGER = Logger.get(KafkaSplitManager.class);
+    private static final Logger LOG = Logger.get(KafkaSplitManager.class);
 
     private final String connectorId;
     private final KafkaConfig kafkaConfig;
@@ -97,10 +97,10 @@ public class KafkaSplitManager
 
             for (TopicMetadata metadata : resp.topicsMetadata()) {
                 for (PartitionMetadata part : metadata.partitionsMetadata()) {
-                    LOGGER.debug("Adding Partition %s/%s", metadata.topic(), part.partitionId());
+                    LOG.debug("Adding Partition %s/%s", metadata.topic(), part.partitionId());
                     Broker leader = part.leader();
                     if (leader == null) { // Leader election going on...
-                        LOGGER.warn("No leader for partition %s/%s found!", metadata.topic(), part.partitionId());
+                        LOG.warn("No leader for partition %s/%s found!", metadata.topic(), part.partitionId());
                     }
                     else {
                         builder.add(new KafkaPartition(metadata.topic(),

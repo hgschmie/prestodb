@@ -29,20 +29,20 @@ public class KafkaTable
 {
     private final String tableName;
     private final String topicName;
-    private final String decoderType;
+    private final String decoder;
     private final List<KafkaColumn> columns;
 
     @JsonCreator
     public KafkaTable(
             @JsonProperty("tableName") String tableName,
             @JsonProperty("topicName") String topicName,
-            @JsonProperty("decoderType") String decoderType,
+            @JsonProperty("decoder") String decoder,
             @JsonProperty("columns") List<KafkaColumn> columns)
     {
         checkArgument(!isNullOrEmpty(tableName), "tableName is null or is empty");
         this.tableName = tableName;
         this.topicName = checkNotNull(topicName, "topicName is null");
-        this.decoderType = checkNotNull(decoderType, "decoderType is null");
+        this.decoder = checkNotNull(decoder, "decoder is null");
         this.columns = ImmutableList.copyOf(checkNotNull(columns, "columns is null"));
     }
 
@@ -59,9 +59,9 @@ public class KafkaTable
     }
 
     @JsonProperty
-    public String getDecoderType()
+    public String getDecoder()
     {
-        return decoderType;
+        return decoder;
     }
 
     @JsonProperty
@@ -76,7 +76,7 @@ public class KafkaTable
         return Objects.toStringHelper(this)
                 .add("tableName", tableName)
                 .add("topicName", topicName)
-                .add("decoderType", decoderType)
+                .add("decoder", decoder)
                 .add("columns", columns)
                 .toString();
     }

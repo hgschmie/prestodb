@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class KafkaRecordSet
         implements RecordSet
 {
-    private static final Logger LOGGER = Logger.get(KafkaRecordSet.class);
+    private static final Logger LOG = Logger.get(KafkaRecordSet.class);
 
     private static final int KAFKA_READ_BUFFER_SIZE = 100_000;
 
@@ -155,7 +155,7 @@ public class KafkaRecordSet
         private boolean endOfData()
         {
             if (!reported.getAndSet(true)) {
-                LOGGER.debug("Found a total of %d messages with %d bytes (%d messages expected). Last Offset: %d", totalMessages, totalBytes,
+                LOG.debug("Found a total of %d messages with %d bytes (%d messages expected). Last Offset: %d", totalMessages, totalBytes,
                         split.getEnd() - split.getStart(), cursorOffset);
             }
             return false;
@@ -233,7 +233,7 @@ public class KafkaRecordSet
         private void openFetchRequest()
         {
             if (messageAndOffsetIterator == null) {
-                //                 LOGGER.info("Fetching %d bytes from offset %d (%d - %d). %d messages read so far", KAFKA_READ_BUFFER_SIZE, cursorOffset, split.getStart(), split.getEnd(), totalMessages);
+                //                 LOG.info("Fetching %d bytes from offset %d (%d - %d). %d messages read so far", KAFKA_READ_BUFFER_SIZE, cursorOffset, split.getStart(), split.getEnd(), totalMessages);
                 FetchRequest req = new FetchRequestBuilder()
                         .clientId("presto-worker-" + Thread.currentThread().getName())
                         .addFetch(split.getTopicName(), split.getPartitionId(), cursorOffset, KAFKA_READ_BUFFER_SIZE)
@@ -246,7 +246,7 @@ public class KafkaRecordSet
                 FetchResponse fetchResponse = consumer.fetch(req);
                 if (fetchResponse.hasError()) {
                     // TODO - this should probably do some actual error handling...
-                    LOGGER.warn("Fetch response has error: %s", fetchResponse.errorCode(split.getTopicName(), split.getPartitionId()));
+                    LOG.warn("Fetch response has error: %s", fetchResponse.errorCode(split.getTopicName(), split.getPartitionId()));
                     throw new IllegalStateException("Kafka split error!");
                 }
 

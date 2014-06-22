@@ -2,6 +2,7 @@ package com.facebook.presto.kafka.decoder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
+import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -14,6 +15,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class TimestampJsonKafkaFieldDecoders
 {
+    private static final Logger LOG = Logger.get(TimestampJsonKafkaFieldDecoders.class);
+
     private TimestampJsonKafkaFieldDecoders()
     {
         throw new AssertionError("Do not instantiate");

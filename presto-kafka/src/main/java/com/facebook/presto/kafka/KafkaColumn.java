@@ -40,7 +40,6 @@ public final class KafkaColumn
             @JsonProperty("format") String format)
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
-        checkArgument(!isNullOrEmpty(mapping), "mapping is null or is empty");
         this.name = name;
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
