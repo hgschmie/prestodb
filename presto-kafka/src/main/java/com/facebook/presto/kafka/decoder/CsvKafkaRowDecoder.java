@@ -3,6 +3,7 @@ package com.facebook.presto.kafka.decoder;
 import au.com.bytecode.opencsv.CSVParser;
 import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaRow;
+import com.facebook.presto.kafka.KafkaSplit;
 import com.google.common.collect.ImmutableSet;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
@@ -34,7 +35,7 @@ public class CsvKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles)
+    public KafkaRow decodeRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles, KafkaSplit split, long messageOffset, long messageCount)
     {
         return new KafkaCsvRow(data, fieldDecoders, columnHandles);
     }

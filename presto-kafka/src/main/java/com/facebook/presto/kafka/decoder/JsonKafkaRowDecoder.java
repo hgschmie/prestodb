@@ -2,9 +2,11 @@ package com.facebook.presto.kafka.decoder;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaRow;
+import com.facebook.presto.kafka.KafkaSplit;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
@@ -42,9 +44,9 @@ public class JsonKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles)
+    public KafkaRow decodeRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles, KafkaSplit split, long messageOffset, long messageCount)
     {
-        return new KafkaJsonRow(data, fieldDecoders, columnHandles);
+        return new KafkaJsonRow(data, fieldDecoders, columnHandles, split, messageOffset, messageCount);
     }
 
     public class KafkaJsonRow
@@ -55,10 +57,11 @@ public class JsonKafkaRowDecoder
         private final List<KafkaFieldDecoder<?>> fieldDecoders;
         private final List<KafkaColumnHandle> columnHandles;
 
-        KafkaJsonRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles)
+        KafkaJsonRow(byte[] data, List<KafkaFieldDecoder<?>> fieldDecoders, List<KafkaColumnHandle> columnHandles, KafkaSplit split, long messageOffset, long messageCount)
         {
             this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
             this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
+            checkNotNull(split, "split is null");
 
             JsonNode tree = null;
             cache = new JsonNode[columnHandles.size()];
@@ -74,15 +77,24 @@ public class JsonKafkaRowDecoder
 
             this.tree = tree;
 
+            ImmutableSet<SpecialColumnProvider> specialColumnProviders = ImmutableSet.<SpecialColumnProvider>of(
+                    new MessageColumnProvider(tree),
+                    new CorruptColumnProvider(corrupted),
+                    new PartitionProvider(split),
+                    new SegmentStartProvider(split),
+                    new SegmentEndProvider(split),
+                    new MessageCountProvider(messageCount),
+                    new MessageOffsetProvider(messageOffset),
+                    new ByteCountProvider(data.length)
+            );
+
             int cacheIndex = 0;
             for (KafkaColumnHandle columnHandle : columnHandles) {
-                // add the full line as _message
-                if (columnHandle.getColumn().getName().equals(COLUMN_MESSAGE)) {
-                    cache[cacheIndex] = tree;
-                }
-                // add the corrupt / not corrupt flag as _corrupt
-                else if (columnHandle.getColumn().getName().equals(COLUMN_CORRUPT)) {
-                    cache[cacheIndex] = BooleanNode.valueOf(corrupted);
+                for (SpecialColumnProvider specialColumnProvider : specialColumnProviders) {
+                    if (specialColumnProvider.accept(columnHandle)) {
+                        cache[cacheIndex] = specialColumnProvider.value();
+                        break; // for(SpecialColumnProvider ...
+                    }
                 }
                 cacheIndex++;
             }
@@ -204,6 +216,197 @@ public class JsonKafkaRowDecoder
         {
             checkNotNull(value, "value is null");
             return value.isMissingNode() || value.isNull();
+        }
+    }
+
+    private static interface SpecialColumnProvider
+    {
+        boolean accept(KafkaColumnHandle columnHandle);
+
+        JsonNode value();
+    }
+
+    private static class MessageColumnProvider
+            implements SpecialColumnProvider
+    {
+        private final JsonNode tree;
+
+        MessageColumnProvider(JsonNode tree)
+        {
+            this.tree = checkNotNull(tree, "tree is null");
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals(COLUMN_MESSAGE);
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return tree;
+        }
+    }
+
+    private static class CorruptColumnProvider
+            implements SpecialColumnProvider
+    {
+        private final boolean corrupt;
+
+        CorruptColumnProvider(boolean corrupt)
+        {
+            this.corrupt = corrupt;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals(COLUMN_CORRUPT);
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return BooleanNode.valueOf(corrupt);
+        }
+    }
+
+    private static class PartitionProvider
+            implements SpecialColumnProvider
+    {
+        private final KafkaSplit split;
+
+        PartitionProvider(KafkaSplit split)
+        {
+            this.split = split;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_partition");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(split.getPartitionId());
+        }
+    }
+
+    private static class SegmentStartProvider
+            implements SpecialColumnProvider
+    {
+        private final KafkaSplit split;
+
+        SegmentStartProvider(KafkaSplit split)
+        {
+            this.split = split;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_start");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(split.getStart());
+        }
+    }
+
+    private static class SegmentEndProvider
+            implements SpecialColumnProvider
+    {
+        private final KafkaSplit split;
+
+        SegmentEndProvider(KafkaSplit split)
+        {
+            this.split = split;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_end");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(split.getEnd());
+        }
+    }
+
+    private static class MessageCountProvider
+            implements SpecialColumnProvider
+    {
+        private final long messageCount;
+
+        MessageCountProvider(long messageCount)
+        {
+            this.messageCount = messageCount;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_count");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(messageCount);
+        }
+    }
+
+    private static class MessageOffsetProvider
+            implements SpecialColumnProvider
+    {
+        private final long messageOffset;
+
+        MessageOffsetProvider(long messageOffset)
+        {
+            this.messageOffset = messageOffset;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_offset");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(messageOffset);
+        }
+    }
+
+    private static class ByteCountProvider
+            implements SpecialColumnProvider
+    {
+        private final long byteCount;
+
+        ByteCountProvider(long byteCount)
+        {
+            this.byteCount = byteCount;
+        }
+
+        @Override
+        public boolean accept(KafkaColumnHandle columnHandle)
+        {
+            return columnHandle.getColumn().getName().equals("_bytes");
+        }
+
+        @Override
+        public JsonNode value()
+        {
+            return LongNode.valueOf(byteCount);
         }
     }
 }

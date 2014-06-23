@@ -1,7 +1,6 @@
 package com.facebook.presto.kafka;
 
 import com.facebook.presto.spi.HostAddress;
-import com.facebook.presto.spi.Node;
 import com.facebook.presto.spi.NodeManager;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;

@@ -155,8 +155,8 @@ public class KafkaRecordSet
         private boolean endOfData()
         {
             if (!reported.getAndSet(true)) {
-                LOG.debug("Found a total of %d messages with %d bytes (%d messages expected). Last Offset: %d", totalMessages, totalBytes,
-                        split.getEnd() - split.getStart(), cursorOffset);
+                LOG.debug("Found a total of %d messages with %d bytes (%d messages expected). Last Offset: %d (%d, %d)", totalMessages, totalBytes,
+                        split.getEnd() - split.getStart(), cursorOffset, split.getStart(), split.getEnd());
             }
             return false;
         }
@@ -170,7 +170,7 @@ public class KafkaRecordSet
             ByteBuffer payload = messageAndOffset.message().payload();
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
-            this.currentRow = rowDecoder.decodeRow(currentRow, fieldDecoders, columnHandles);
+            this.currentRow = rowDecoder.decodeRow(currentRow, fieldDecoders, columnHandles, split, messageAndOffset.offset(), totalMessages);
 
             return true; // Advanced successfully.
         }

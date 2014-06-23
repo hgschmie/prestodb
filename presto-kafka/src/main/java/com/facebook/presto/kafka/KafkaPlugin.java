@@ -1,7 +1,6 @@
 package com.facebook.presto.kafka;
 
 import com.facebook.presto.spi.ConnectorFactory;
-import com.facebook.presto.spi.Node;
 import com.facebook.presto.spi.NodeManager;
 import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.type.TypeManager;
