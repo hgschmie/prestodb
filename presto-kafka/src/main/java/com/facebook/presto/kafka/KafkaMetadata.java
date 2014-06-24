@@ -31,6 +31,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.inject.name.Named;
 import io.airlift.json.JsonCodec;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -57,12 +59,14 @@ public class KafkaMetadata
     private final JsonCodec<KafkaTable> tableCodec;
 
     private final Supplier<Map<String, KafkaTable>> tableDefinitions;
+    private final Set<KafkaColumn> specialColumns;
 
     @Inject
     KafkaMetadata(@Named("connectorId") String connectorId,
             KafkaConfig kafkaConfig,
             KafkaHandleResolver handleResolver,
-            JsonCodec<KafkaTable> tableCodec)
+            JsonCodec<KafkaTable> tableCodec,
+            Set<KafkaColumn> specialColumns)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
@@ -72,6 +76,7 @@ public class KafkaMetadata
         LOG.debug("Loading kafka table definitions from %s", kafkaConfig.getTableDescriptionDir().getAbsolutePath());
 
         this.tableDefinitions = Suppliers.memoize(new TableSupplier());
+        this.specialColumns = checkNotNull(specialColumns, "specialColumns is null");
     }
 
     @Override
@@ -143,7 +148,11 @@ public class KafkaMetadata
 
         int index = 0;
         for (KafkaColumn kafkaColumn : table.getColumns()) {
-            columnHandles.put(kafkaColumn.getName(), new KafkaColumnHandle(connectorId, index++, kafkaColumn));
+            columnHandles.put(kafkaColumn.getName(), kafkaColumn.getColumnHandle(connectorId, index++, false));
+        }
+
+        for (KafkaColumn kafkaColumn : specialColumns) {
+            columnHandles.put(kafkaColumn.getName(), kafkaColumn.getColumnHandle(connectorId, index++, true));
         }
 
         return columnHandles.build();
@@ -193,7 +202,8 @@ public class KafkaMetadata
 
         ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.builder();
         int index = 0;
-        for (KafkaColumn column : table.getColumns()) {
+
+        for (KafkaColumn column : Iterables.concat(table.getColumns(), specialColumns)) {
             builder.add(column.getColumnMetadata(index++));
         }
 
@@ -233,8 +243,7 @@ public class KafkaMetadata
                         builder.put(definedTable, new KafkaTable(definedTable,
                                 definedTable,
                                 JsonKafkaRowDecoder.NAME,
-                                ImmutableList.of(new KafkaColumn(JsonKafkaRowDecoder.NAME, VarcharType.VARCHAR, KafkaRowDecoder.COLUMN_MESSAGE, null, null),
-                                        new KafkaColumn(JsonKafkaRowDecoder.NAME, VarcharType.VARCHAR, KafkaRowDecoder.COLUMN_CORRUPT, null, null))));
+                                null));
                     }
                 }
 

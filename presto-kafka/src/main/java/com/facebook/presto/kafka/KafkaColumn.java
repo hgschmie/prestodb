@@ -30,6 +30,7 @@ public final class KafkaColumn
     private final String mapping;
     private final String decoder;
     private final String format;
+    private final boolean hidden;
 
     @JsonCreator
     public KafkaColumn(
@@ -37,7 +38,8 @@ public final class KafkaColumn
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
             @JsonProperty("decoder") String decoder,
-            @JsonProperty("format") String format)
+            @JsonProperty("format") String format,
+            @JsonProperty("hidden") boolean hidden)
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
         this.name = name;
@@ -45,6 +47,7 @@ public final class KafkaColumn
         this.mapping = mapping;
         this.decoder = decoder;
         this.format = format;
+        this.hidden = hidden;
     }
 
     @JsonProperty
@@ -77,15 +80,34 @@ public final class KafkaColumn
         return format;
     }
 
-    public ColumnMetadata getColumnMetadata(int index)
+    @JsonProperty
+    public boolean isHidden()
     {
-        return new ColumnMetadata(name, type, index, false);
+        return hidden;
+    }
+
+    KafkaColumnHandle getColumnHandle(String connectorId, int index, boolean internal)
+    {
+        return new KafkaColumnHandle(connectorId,
+                index,
+                name,
+                type,
+                mapping,
+                decoder,
+                format,
+                hidden,
+                internal);
+    }
+
+    ColumnMetadata getColumnMetadata(int index)
+    {
+        return new ColumnMetadata(name, type, index, hidden);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, type, mapping, decoder, format);
+        return Objects.hashCode(name, type, mapping, decoder, format, hidden);
     }
 
     @Override
@@ -103,7 +125,8 @@ public final class KafkaColumn
                 Objects.equal(this.type, other.type) &&
                 Objects.equal(this.mapping, other.mapping) &&
                 Objects.equal(this.decoder, other.decoder) &&
-                Objects.equal(this.format, other.format);
+                Objects.equal(this.format, other.format) &&
+                Objects.equal(this.hidden, other.hidden);
     }
 
     @Override
@@ -113,6 +136,9 @@ public final class KafkaColumn
                 .add("name", name)
                 .add("type", type)
                 .add("mapping", mapping)
+                .add("decoder", decoder)
+                .add("format", format)
+                .add("hidden", hidden)
                 .toString();
     }
 }

@@ -19,6 +19,7 @@ import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
 import kafka.api.FetchRequest;
@@ -46,29 +47,35 @@ public class KafkaRecordSet
     private final KafkaSimpleConsumerManager consumerManager;
 
     private final KafkaRowDecoder rowDecoder;
-    private final List<KafkaFieldDecoder<?>> fieldDecoders;
 
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
 
+    private final ImmutableSet<SpecialColumnProvider> splitProviders;
+
+
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
             KafkaRowDecoder rowDecoder,
-            List<KafkaFieldDecoder<?>> fieldDecoders,
             List<KafkaColumnHandle> columnHandles)
     {
         this.split = checkNotNull(split, "split is null");
+
+        this.splitProviders = ImmutableSet.<SpecialColumnProvider>of(
+                new PartitionProvider(split),
+                new SegmentStartProvider(split),
+                new SegmentEndProvider(split);
+
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
 
         this.rowDecoder = checkNotNull(rowDecoder, "rowDecoder is null");
-        this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
 
         this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
 
         ImmutableList.Builder<Type> typeBuilder = ImmutableList.builder();
 
         for (KafkaColumnHandle handle : columnHandles) {
-            typeBuilder.add(handle.getColumn().getType());
+            typeBuilder.add(handle.getType());
         }
 
         this.columnTypes = typeBuilder.build();
@@ -170,6 +177,15 @@ public class KafkaRecordSet
             ByteBuffer payload = messageAndOffset.message().payload();
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
+
+            ImmutableSet<SpecialColumnProvider> specialColumnProviders = ImmutableSet.<SpecialColumnProvider>builder()
+                .addAll(splitProviders)
+                .add(new MessageCountProvider(messageCount))
+                .add(new MessageOffsetProvider(messageOffset))
+                .add(new MessageProvider(currentRow))
+                .add(new ByteCountProvider(currentRow.length))
+                .build();
+
             this.currentRow = rowDecoder.decodeRow(currentRow, fieldDecoders, columnHandles, split, messageAndOffset.offset(), totalMessages);
 
             return true; // Advanced successfully.
