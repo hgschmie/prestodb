@@ -1,5 +1,7 @@
 package com.facebook.presto.kafka.decoder;
 
+import com.facebook.presto.kafka.decoder.csv.CsvKafkaDecoderModule;
+import com.facebook.presto.kafka.decoder.json.JsonKafkaDecoderModule;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
@@ -13,17 +15,19 @@ public class KafkaDecoderModule
     {
         binder.bind(KafkaDecoderRegistry.class).in(Scopes.SINGLETON);
 
-        Multibinder<KafkaRowDecoder> rowDecoderBinder = Multibinder.newSetBinder(binder, KafkaRowDecoder.class);
-        rowDecoderBinder.addBinding().to(JsonKafkaRowDecoder.class).in(Scopes.SINGLETON);
-        rowDecoderBinder.addBinding().to(CsvKafkaRowDecoder.class).in(Scopes.SINGLETON);
+        binder.install(new CsvKafkaDecoderModule());
+        binder.install(new JsonKafkaDecoderModule());
+    }
 
+    public static void bindRowDecoder(Binder binder, Class<? extends KafkaRowDecoder> decoderClass)
+    {
+        Multibinder<KafkaRowDecoder> rowDecoderBinder = Multibinder.newSetBinder(binder, KafkaRowDecoder.class);
+        rowDecoderBinder.addBinding().to(decoderClass).in(Scopes.SINGLETON);
+    }
+
+    public static void bindFieldDecoder(Binder binder, Class<? extends KafkaFieldDecoder> decoderClass)
+    {
         Multibinder<KafkaFieldDecoder> fieldDecoderBinder = Multibinder.newSetBinder(binder, KafkaFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(CsvKafkaRowDecoder.KafkaCsvFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(JsonKafkaRowDecoder.KafkaJsonFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(TimestampJsonKafkaFieldDecoders.ISO8601JsonKafkaFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(TimestampJsonKafkaFieldDecoders.RFC2822JsonKafkaFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(TimestampJsonKafkaFieldDecoders.SecondsSinceEpochJsonKafkaFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(TimestampJsonKafkaFieldDecoders.MilliSecondsSinceEpochJsonKafkaFieldDecoder.class);
-        fieldDecoderBinder.addBinding().to(TimestampJsonKafkaFieldDecoders.CustomDateTimeJsonKafkaFieldDecoder.class);
+        fieldDecoderBinder.addBinding().to(decoderClass).in(Scopes.SINGLETON);
     }
 }

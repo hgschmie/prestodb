@@ -14,12 +14,14 @@
 package com.facebook.presto.kafka;
 
 import com.facebook.presto.kafka.decoder.KafkaDecoderRegistry;
+import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoderFactory;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import javax.inject.Inject;
 
@@ -52,14 +54,24 @@ public class KafkaRecordSetProvider
         KafkaRowDecoderFactory rowDecoderFactory = registry.getRowDecoderFactory(kafkaSplit.getDecoderType());
 
         ImmutableList.Builder<KafkaColumnHandle> handleBuilder = ImmutableList.builder();
+        ImmutableMap.Builder<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoderBuilder = ImmutableMap.builder();
 
         for (ConnectorColumnHandle handle : columns) {
             KafkaColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
             handleBuilder.add(columnHandle);
+
+            if (!columnHandle.isInternal()) {
+                KafkaFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kafkaSplit.getDecoderType(),
+                        columnHandle.getType().getJavaType(),
+                        columnHandle.getDecoder());
+
+                fieldDecoderBuilder.put(columnHandle, fieldDecoder);
+            }
         }
 
         ImmutableList<KafkaColumnHandle> handles = handleBuilder.build();
+        ImmutableMap<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders = fieldDecoderBuilder.build();
 
-        return new KafkaRecordSet(kafkaSplit, consumerManager, rowDecoderFactory.buildRowDecoder(handles), handles);
+        return new KafkaRecordSet(kafkaSplit, consumerManager, handles, rowDecoderFactory.buildRowDecoder(handles), fieldDecoders);
     }
 }

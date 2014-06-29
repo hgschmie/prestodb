@@ -13,8 +13,7 @@
  */
 package com.facebook.presto.kafka;
 
-import com.facebook.presto.kafka.decoder.JsonKafkaRowDecoder;
-import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
+import com.facebook.presto.kafka.decoder.json.JsonKafkaRowDecoder;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
@@ -24,7 +23,6 @@ import com.facebook.presto.spi.ReadOnlyConnectorMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
 import com.facebook.presto.spi.TableNotFoundException;
-import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;

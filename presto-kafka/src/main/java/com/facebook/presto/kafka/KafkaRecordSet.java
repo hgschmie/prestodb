@@ -13,6 +13,9 @@
  */
 package com.facebook.presto.kafka;
 
+import com.facebook.presto.kafka.decoder.ConstantBytesProvider;
+import com.facebook.presto.kafka.decoder.ConstantLongProvider;
+import com.facebook.presto.kafka.decoder.InternalColumnProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.RecordCursor;
@@ -31,6 +34,8 @@ import kafka.message.MessageAndOffset;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -47,28 +52,30 @@ public class KafkaRecordSet
     private final KafkaSimpleConsumerManager consumerManager;
 
     private final KafkaRowDecoder rowDecoder;
+    private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
 
-    private final ImmutableSet<SpecialColumnProvider> splitProviders;
-
+    private final Set<InternalColumnProvider> splitProviders;
 
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
+            List<KafkaColumnHandle> columnHandles,
             KafkaRowDecoder rowDecoder,
-            List<KafkaColumnHandle> columnHandles)
+            Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
         this.split = checkNotNull(split, "split is null");
 
-        this.splitProviders = ImmutableSet.<SpecialColumnProvider>of(
-                new PartitionProvider(split),
-                new SegmentStartProvider(split),
-                new SegmentEndProvider(split);
+        this.splitProviders = ImmutableSet.<InternalColumnProvider>of(
+                new ConstantLongProvider("_partitionId", split.getPartitionId()),
+                new ConstantLongProvider("_segmentStart", split.getStart()),
+                new ConstantLongProvider("_segmentEnd", split.getEnd()));
 
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
 
         this.rowDecoder = checkNotNull(rowDecoder, "rowDecoder is null");
+        this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
 
         this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
 
@@ -130,7 +137,7 @@ public class KafkaRecordSet
         public Type getType(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
-            return columnHandles.get(field).getColumn().getType();
+            return columnHandles.get(field).getType();
         }
 
         @Override
@@ -178,15 +185,15 @@ public class KafkaRecordSet
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
 
-            ImmutableSet<SpecialColumnProvider> specialColumnProviders = ImmutableSet.<SpecialColumnProvider>builder()
-                .addAll(splitProviders)
-                .add(new MessageCountProvider(messageCount))
-                .add(new MessageOffsetProvider(messageOffset))
-                .add(new MessageProvider(currentRow))
-                .add(new ByteCountProvider(currentRow.length))
-                .build();
+            Set<InternalColumnProvider> internalColumnProviders = ImmutableSet.<InternalColumnProvider>builder()
+                    .addAll(splitProviders)
+                    .add(new ConstantLongProvider("_count", totalMessages))
+                    .add(new ConstantLongProvider("_offset", messageAndOffset.offset()))
+                    .add(new ConstantBytesProvider("_msg", currentRow))
+                    .add(new ConstantLongProvider("_length", currentRow.length))
+                    .build();
 
-            this.currentRow = rowDecoder.decodeRow(currentRow, fieldDecoders, columnHandles, split, messageAndOffset.offset(), totalMessages);
+            this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalColumnProviders);
 
             return true; // Advanced successfully.
         }

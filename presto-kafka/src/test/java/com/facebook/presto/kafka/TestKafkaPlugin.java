@@ -29,7 +29,8 @@ public class TestKafkaPlugin
             return null;
         }
     };
-    private static final NodeManager DUMMY_NODE_MANAGER = new NodeManager() {
+    private static final NodeManager DUMMY_NODE_MANAGER = new NodeManager()
+    {
         @Override
         public Set<Node> getActiveNodes()
         {
@@ -49,7 +50,8 @@ public class TestKafkaPlugin
         }
     };
 
-    private static final Node LOCAL_NODE = new Node() {
+    private static final Node LOCAL_NODE = new Node()
+    {
 
         @Override
         public HostAddress getHostAndPort()

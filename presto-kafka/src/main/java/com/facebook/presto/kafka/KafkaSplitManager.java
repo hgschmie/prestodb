@@ -74,12 +74,6 @@ public class KafkaSplitManager
     }
 
     @Override
-    public String getConnectorId()
-    {
-        return connectorId;
-    }
-
-    @Override
     public ConnectorPartitionResult getPartitions(ConnectorTableHandle tableHandle, TupleDomain<ConnectorColumnHandle> tupleDomain)
     {
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);

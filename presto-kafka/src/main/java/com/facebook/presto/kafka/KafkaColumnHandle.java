@@ -37,7 +37,6 @@ public final class KafkaColumnHandle
     private final boolean hidden;
     private final boolean internal;
 
-
     @JsonCreator
     public KafkaColumnHandle(
             @JsonProperty("connectorId") String connectorId,

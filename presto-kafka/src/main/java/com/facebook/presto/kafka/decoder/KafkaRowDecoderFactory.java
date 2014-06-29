@@ -1,7 +1,6 @@
 package com.facebook.presto.kafka.decoder;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import kafka.Kafka;
 
 import java.util.List;
 
