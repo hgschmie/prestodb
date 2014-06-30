@@ -23,21 +23,21 @@ public class KafkaDecoderRegistry
 {
     private static final Logger LOG = Logger.get(KafkaDecoderRegistry.class);
 
-    private final Map<String, KafkaRowDecoderFactory> rowDecoderFactories;
+    private final Map<String, KafkaRowDecoder> rowDecoders;
     private final Map<String, SetMultimap<Class<?>, KafkaFieldDecoder<?>>> fieldDecoders;
 
     @Inject
-    KafkaDecoderRegistry(Set<KafkaRowDecoderFactory> rowDecoderFactories,
+    KafkaDecoderRegistry(Set<KafkaRowDecoder> rowDecoders,
             Set<KafkaFieldDecoder> fieldDecoders)
     {
-        checkNotNull(rowDecoderFactories, "rowDecoders is null");
+        checkNotNull(rowDecoders, "rowDecoders is null");
 
-        ImmutableMap.Builder<String, KafkaRowDecoderFactory> rowBuilder = ImmutableMap.builder();
-        for (KafkaRowDecoderFactory rowDecoderFactory : rowDecoderFactories) {
-            rowBuilder.put(rowDecoderFactory.getName(), rowDecoderFactory);
+        ImmutableMap.Builder<String, KafkaRowDecoder> rowBuilder = ImmutableMap.builder();
+        for (KafkaRowDecoder rowDecoder : rowDecoders) {
+            rowBuilder.put(rowDecoder.getName(), rowDecoder);
         }
 
-        this.rowDecoderFactories = rowBuilder.build();
+        this.rowDecoders = rowBuilder.build();
 
         Map<String, ImmutableSetMultimap.Builder<Class<?>, KafkaFieldDecoder<?>>> fieldDecoderBuilders = new HashMap<>();
 
@@ -62,10 +62,10 @@ public class KafkaDecoderRegistry
         LOG.info("All field decoders found: %s", this.fieldDecoders);
     }
 
-    public KafkaRowDecoderFactory getRowDecoderFactory(String decoderName)
+    public KafkaRowDecoder getRowDecoder(String decoderName)
     {
-        checkState(rowDecoderFactories.containsKey(decoderName), "no row decoder for '%s' found", decoderName);
-        return rowDecoderFactories.get(decoderName);
+        checkState(rowDecoders.containsKey(decoderName), "no row decoder for '%s' found", decoderName);
+        return rowDecoders.get(decoderName);
     }
 
     public KafkaFieldDecoder<?> getFieldDecoder(String rowDecoderName, Class<?> fieldType, @Nullable String fieldDecoderName)

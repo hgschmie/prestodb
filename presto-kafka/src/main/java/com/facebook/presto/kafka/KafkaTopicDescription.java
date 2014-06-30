@@ -15,7 +15,6 @@ package com.facebook.presto.kafka;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
@@ -25,25 +24,28 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-public class KafkaTable
+/**
+ * Json description to parse a message on a Kafka topic.
+ */
+public class KafkaTopicDescription
 {
     private final String tableName;
     private final String topicName;
-    private final String decoder;
-    private final List<KafkaColumn> columns;
+    private final String dataFormat;
+    private final List<KafkaTopicFieldDescription> fields;
 
     @JsonCreator
-    public KafkaTable(
+    public KafkaTopicDescription(
             @JsonProperty("tableName") String tableName,
             @JsonProperty("topicName") String topicName,
-            @JsonProperty("decoder") String decoder,
-            @JsonProperty("columns") List<KafkaColumn> columns)
+            @JsonProperty("dataFormat") String dataFormat,
+            @JsonProperty("fields") List<KafkaTopicFieldDescription> fields)
     {
         checkArgument(!isNullOrEmpty(tableName), "tableName is null or is empty");
         this.tableName = tableName;
         this.topicName = checkNotNull(topicName, "topicName is null");
-        this.decoder = checkNotNull(decoder, "decoder is null");
-        this.columns = ImmutableList.copyOf(checkNotNull(columns, "columns is null"));
+        this.dataFormat = checkNotNull(dataFormat, "dataFormat is null");
+        this.fields = ImmutableList.copyOf(checkNotNull(fields, "fields is null"));
     }
 
     @JsonProperty
@@ -59,15 +61,15 @@ public class KafkaTable
     }
 
     @JsonProperty
-    public String getDecoder()
+    public String getDataFormat()
     {
-        return decoder;
+        return dataFormat;
     }
 
     @JsonProperty
-    public List<KafkaColumn> getColumns()
+    public List<KafkaTopicFieldDescription> getFields()
     {
-        return columns;
+        return fields;
     }
 
     @Override
@@ -76,20 +78,8 @@ public class KafkaTable
         return Objects.toStringHelper(this)
                 .add("tableName", tableName)
                 .add("topicName", topicName)
-                .add("decoder", decoder)
-                .add("columns", columns)
+                .add("dataFormat", dataFormat)
+                .add("fields", fields)
                 .toString();
-    }
-
-    public static Function<KafkaTable, String> tableNameGetter()
-    {
-        return new Function<KafkaTable, String>()
-        {
-            @Override
-            public String apply(KafkaTable table)
-            {
-                return table.getTableName();
-            }
-        };
     }
 }

@@ -23,21 +23,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-public final class KafkaColumn
+public final class KafkaTopicFieldDescription
 {
     private final String name;
     private final Type type;
     private final String mapping;
-    private final String decoder;
+    private final String dataFormat;
     private final String format;
     private final boolean hidden;
 
     @JsonCreator
-    public KafkaColumn(
+    public KafkaTopicFieldDescription(
             @JsonProperty("name") String name,
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
-            @JsonProperty("decoder") String decoder,
+            @JsonProperty("dataFormat") String dataFormat,
             @JsonProperty("format") String format,
             @JsonProperty("hidden") boolean hidden)
     {
@@ -45,7 +45,7 @@ public final class KafkaColumn
         this.name = name;
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
-        this.decoder = decoder;
+        this.dataFormat = dataFormat;
         this.format = format;
         this.hidden = hidden;
     }
@@ -69,9 +69,9 @@ public final class KafkaColumn
     }
 
     @JsonProperty
-    public String getDecoder()
+    public String getDataFormat()
     {
-        return decoder;
+        return dataFormat;
     }
 
     @JsonProperty
@@ -86,17 +86,17 @@ public final class KafkaColumn
         return hidden;
     }
 
-    KafkaColumnHandle getColumnHandle(String connectorId, int index, boolean internal)
+    KafkaColumnHandle getColumnHandle(String connectorId, int index)
     {
         return new KafkaColumnHandle(connectorId,
                 index,
                 name,
                 type,
                 mapping,
-                decoder,
+                dataFormat,
                 format,
                 hidden,
-                internal);
+                false);
     }
 
     ColumnMetadata getColumnMetadata(int index)
@@ -107,7 +107,7 @@ public final class KafkaColumn
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, type, mapping, decoder, format, hidden);
+        return Objects.hashCode(name, type, mapping, dataFormat, format, hidden);
     }
 
     @Override
@@ -120,11 +120,11 @@ public final class KafkaColumn
             return false;
         }
 
-        KafkaColumn other = (KafkaColumn) obj;
+        KafkaTopicFieldDescription other = (KafkaTopicFieldDescription) obj;
         return Objects.equal(this.name, other.name) &&
                 Objects.equal(this.type, other.type) &&
                 Objects.equal(this.mapping, other.mapping) &&
-                Objects.equal(this.decoder, other.decoder) &&
+                Objects.equal(this.dataFormat, other.dataFormat) &&
                 Objects.equal(this.format, other.format) &&
                 Objects.equal(this.hidden, other.hidden);
     }
@@ -136,7 +136,7 @@ public final class KafkaColumn
                 .add("name", name)
                 .add("type", type)
                 .add("mapping", mapping)
-                .add("decoder", decoder)
+                .add("dataFormat", dataFormat)
                 .add("format", format)
                 .add("hidden", hidden)
                 .toString();

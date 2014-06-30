@@ -13,9 +13,6 @@
  */
 package com.facebook.presto.kafka;
 
-import com.facebook.presto.kafka.decoder.ConstantBytesProvider;
-import com.facebook.presto.kafka.decoder.ConstantLongProvider;
-import com.facebook.presto.kafka.decoder.InternalColumnProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.RecordCursor;
@@ -57,7 +54,7 @@ public class KafkaRecordSet
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
 
-    private final Set<InternalColumnProvider> splitProviders;
+    private final Set<KafkaInternalColumnProvider> splitProviders;
 
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
@@ -67,10 +64,10 @@ public class KafkaRecordSet
     {
         this.split = checkNotNull(split, "split is null");
 
-        this.splitProviders = ImmutableSet.<InternalColumnProvider>of(
-                new ConstantLongProvider("_partitionId", split.getPartitionId()),
-                new ConstantLongProvider("_segmentStart", split.getStart()),
-                new ConstantLongProvider("_segmentEnd", split.getEnd()));
+        this.splitProviders = ImmutableSet.<KafkaInternalColumnProvider>of(
+                KafkaInternalFieldDescription.PARTITION_ID_FIELD.forLongValue(split.getPartitionId()),
+                KafkaInternalFieldDescription.SEGMENT_START_FIELD.forLongValue(split.getStart()),
+                KafkaInternalFieldDescription.SEGMENT_END_FIELD.forLongValue(split.getEnd()));
 
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
 
@@ -185,12 +182,12 @@ public class KafkaRecordSet
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
 
-            Set<InternalColumnProvider> internalColumnProviders = ImmutableSet.<InternalColumnProvider>builder()
+            Set<KafkaInternalColumnProvider> internalColumnProviders = ImmutableSet.<KafkaInternalColumnProvider>builder()
                     .addAll(splitProviders)
-                    .add(new ConstantLongProvider("_count", totalMessages))
-                    .add(new ConstantLongProvider("_offset", messageAndOffset.offset()))
-                    .add(new ConstantBytesProvider("_msg", currentRow))
-                    .add(new ConstantLongProvider("_length", currentRow.length))
+                    .add(KafkaInternalFieldDescription.COUNT_FIELD.forLongValue(totalMessages))
+                    .add(KafkaInternalFieldDescription.OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
+                    .add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(currentRow))
+                    .add(KafkaInternalFieldDescription.MESSAGE_LEN_FIELD.forLongValue(currentRow.length))
                     .build();
 
             this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalColumnProviders);

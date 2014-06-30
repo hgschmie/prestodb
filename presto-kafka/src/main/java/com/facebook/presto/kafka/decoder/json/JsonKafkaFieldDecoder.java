@@ -9,6 +9,7 @@ import io.airlift.slice.Slices;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
 
 public class JsonKafkaFieldDecoder
         implements KafkaFieldDecoder<JsonNode>
@@ -64,5 +65,11 @@ public class JsonKafkaFieldDecoder
     {
         checkNotNull(value, "value is null");
         return value.isMissingNode() || value.isNull();
+    }
+
+    @Override
+    public String toString()
+    {
+        return format("FieldDecoder[%s/%s]", getRowDecoderName(), getFieldDecoderName());
     }
 }

@@ -23,4 +23,6 @@ public interface KafkaFieldDecoder<T>
     Slice decodeSlice(T value, String format);
 
     boolean isNull(T value, String format);
+
+    String toString();
 }

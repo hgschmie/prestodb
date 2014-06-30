@@ -8,11 +8,15 @@ import com.facebook.presto.spi.ConnectorOutputHandleResolver;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorRecordSinkProvider;
 import com.facebook.presto.spi.ConnectorSplitManager;
+import com.facebook.presto.spi.PrestoException;
 
 import javax.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Kafka specific implementation of the Presto Connector SPI. This is a read only connector.
+ */
 public class KafkaConnector
         implements Connector
 {
@@ -62,18 +66,18 @@ public class KafkaConnector
     @Override
     public ConnectorOutputHandleResolver getOutputHandleResolver()
     {
-        throw new UnsupportedOperationException();
+        throw new PrestoException(KafkaErrorCode.KAFKA_OPERATION_NOT_SUPPORTED.toErrorCode(), "connector is read-only");
     }
 
     @Override
     public ConnectorRecordSinkProvider getRecordSinkProvider()
     {
-        throw new UnsupportedOperationException();
+        throw new PrestoException(KafkaErrorCode.KAFKA_OPERATION_NOT_SUPPORTED.toErrorCode(), "connector is read-only");
     }
 
     @Override
     public ConnectorIndexResolver getIndexResolver()
     {
-        throw new UnsupportedOperationException();
+        throw new PrestoException(KafkaErrorCode.KAFKA_OPERATION_NOT_SUPPORTED.toErrorCode(), "connector does not support index operations");
     }
 }

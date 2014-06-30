@@ -15,7 +15,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Support Apache Kafka as a data source.
+ * Presto plugin to use Apache Kafka as a data source.
  */
 public class KafkaPlugin
         implements Plugin

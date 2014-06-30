@@ -7,6 +7,8 @@ import io.airlift.slice.Slices;
 
 import java.util.Set;
 
+import static java.lang.String.format;
+
 public class CsvKafkaFieldDecoder
         implements KafkaFieldDecoder<String>
 {
@@ -71,5 +73,11 @@ public class CsvKafkaFieldDecoder
     public boolean isNull(String value, String format)
     {
         return value == null;
+    }
+
+    @Override
+    public String toString()
+    {
+        return format("FieldDecoder[%s/%s]", getRowDecoderName(), getFieldDecoderName());
     }
 }

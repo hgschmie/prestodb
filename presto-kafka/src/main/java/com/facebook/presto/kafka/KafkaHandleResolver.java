@@ -13,6 +13,9 @@ import javax.inject.Inject;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Kafka specific {@link com.facebook.presto.spi.ConnectorHandleResolver} implementation.
+ */
 public class KafkaHandleResolver
         implements ConnectorHandleResolver
 {

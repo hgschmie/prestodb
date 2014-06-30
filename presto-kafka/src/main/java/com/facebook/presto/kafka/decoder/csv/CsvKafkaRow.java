@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka.decoder.csv;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
+import com.facebook.presto.kafka.KafkaInternalColumnProvider;
 import com.facebook.presto.kafka.decoder.AbstractKafkaRow;
-import com.facebook.presto.kafka.decoder.InternalColumnProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import io.airlift.slice.Slice;
 
@@ -19,7 +19,7 @@ public class CsvKafkaRow
     private final List<KafkaColumnHandle> columnHandles;
     private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
-    CsvKafkaRow(String[] fields, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<InternalColumnProvider> internalColumnProviders)
+    CsvKafkaRow(String[] fields, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
     {
         super(columnHandles, internalColumnProviders);
 

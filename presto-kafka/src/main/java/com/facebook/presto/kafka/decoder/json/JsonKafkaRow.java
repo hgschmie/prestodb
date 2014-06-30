@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
+import com.facebook.presto.kafka.KafkaInternalColumnProvider;
 import com.facebook.presto.kafka.decoder.AbstractKafkaRow;
-import com.facebook.presto.kafka.decoder.InternalColumnProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
@@ -23,7 +23,7 @@ public class JsonKafkaRow
     private final JsonNode[] cache;
     private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
-    JsonKafkaRow(JsonNode tree, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<InternalColumnProvider> internalColumnProviders)
+    JsonKafkaRow(JsonNode tree, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
     {
         super(columnHandles, internalColumnProviders);
 

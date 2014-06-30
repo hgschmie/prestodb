@@ -1,6 +1,7 @@
 package com.facebook.presto.kafka.decoder;
 
 import com.facebook.presto.kafka.decoder.csv.CsvKafkaDecoderModule;
+import com.facebook.presto.kafka.decoder.dummy.DummyKafkaDecoderModule;
 import com.facebook.presto.kafka.decoder.json.JsonKafkaDecoderModule;
 import com.google.inject.Binder;
 import com.google.inject.Module;
@@ -15,6 +16,7 @@ public class KafkaDecoderModule
     {
         binder.bind(KafkaDecoderRegistry.class).in(Scopes.SINGLETON);
 
+        binder.install(new DummyKafkaDecoderModule());
         binder.install(new CsvKafkaDecoderModule());
         binder.install(new JsonKafkaDecoderModule());
     }

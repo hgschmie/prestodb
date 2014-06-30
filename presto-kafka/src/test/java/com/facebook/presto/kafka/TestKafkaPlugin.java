@@ -52,7 +52,6 @@ public class TestKafkaPlugin
 
     private static final Node LOCAL_NODE = new Node()
     {
-
         @Override
         public HostAddress getHostAndPort()
         {

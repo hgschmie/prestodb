@@ -15,7 +15,7 @@ package com.facebook.presto.kafka;
 
 import com.facebook.presto.kafka.decoder.KafkaDecoderRegistry;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
-import com.facebook.presto.kafka.decoder.KafkaRowDecoderFactory;
+import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.facebook.presto.spi.ConnectorColumnHandle;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
@@ -51,7 +51,7 @@ public class KafkaRecordSetProvider
     public RecordSet getRecordSet(ConnectorSplit split, List<? extends ConnectorColumnHandle> columns)
     {
         KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
-        KafkaRowDecoderFactory rowDecoderFactory = registry.getRowDecoderFactory(kafkaSplit.getDecoderType());
+        KafkaRowDecoder rowDecoder = registry.getRowDecoder(kafkaSplit.getDecoderType());
 
         ImmutableList.Builder<KafkaColumnHandle> handleBuilder = ImmutableList.builder();
         ImmutableMap.Builder<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoderBuilder = ImmutableMap.builder();
@@ -72,6 +72,6 @@ public class KafkaRecordSetProvider
         ImmutableList<KafkaColumnHandle> handles = handleBuilder.build();
         ImmutableMap<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders = fieldDecoderBuilder.build();
 
-        return new KafkaRecordSet(kafkaSplit, consumerManager, handles, rowDecoderFactory.buildRowDecoder(handles), fieldDecoders);
+        return new KafkaRecordSet(kafkaSplit, consumerManager, handles, rowDecoder, fieldDecoders);
     }
 }

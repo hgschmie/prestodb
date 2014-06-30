@@ -16,6 +16,9 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Create new Kafka Connectors.
+ */
 public class KafkaConnectorFactory
         implements ConnectorFactory
 {
@@ -47,7 +50,7 @@ public class KafkaConnectorFactory
         try {
             Bootstrap app = new Bootstrap(
                     new JsonModule(),
-                    new KafkaModule(),
+                    new KafkaConnectorModule(),
                     new Module()
                     {
                         @Override
