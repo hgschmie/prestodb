@@ -33,35 +33,35 @@ public class JsonKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(JsonNode value, String format)
+    public boolean decodeBoolean(JsonNode value, String formatHint)
     {
         checkNotNull(value, "value is null");
         return value.asBoolean();
     }
 
     @Override
-    public long decodeLong(JsonNode value, String format)
+    public long decodeLong(JsonNode value, String formatHint)
     {
         checkNotNull(value, "value is null");
         return value.asLong();
     }
 
     @Override
-    public double decodeDouble(JsonNode value, String format)
+    public double decodeDouble(JsonNode value, String formatHint)
     {
         checkNotNull(value, "value is null");
         return value.asDouble();
     }
 
     @Override
-    public Slice decodeSlice(JsonNode value, String format)
+    public Slice decodeSlice(JsonNode value, String formatHint)
     {
         checkNotNull(value, "value is null");
-        return isNull(value, format) ? Slices.EMPTY_SLICE : Slices.utf8Slice(value.isValueNode() ? value.asText() : value.toString());
+        return isNull(value, formatHint) ? Slices.EMPTY_SLICE : Slices.utf8Slice(value.isValueNode() ? value.asText() : value.toString());
     }
 
     @Override
-    public boolean isNull(JsonNode value, String format)
+    public boolean isNull(JsonNode value, String formatHint)
     {
         checkNotNull(value, "value is null");
         return value.isMissingNode() || value.isNull();

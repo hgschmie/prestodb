@@ -1,8 +1,8 @@
 {
     "tableName": "twitter",
     "topicName": "twitter_feed",
-    "decoder": "json",
-    "columns": [
+    "dataFormat": "json",
+    "fields": [
         {
             "name": "text",
             "mapping": "text",
@@ -22,7 +22,7 @@
             "name": "created_at",
             "mapping": "created_at",
             "type": "TIMESTAMP",
-            "decoder": "rfc2822"
+            "dataFormat": "rfc2822"
         },
         {
             "name": "favorite_count",

@@ -58,8 +58,8 @@ public class KafkaInternalFieldDescription
     {
         return new KafkaColumnHandle(connectorId,
                 index,
-                name,
-                type,
+                getName(),
+                getType(),
                 null,
                 null,
                 null,

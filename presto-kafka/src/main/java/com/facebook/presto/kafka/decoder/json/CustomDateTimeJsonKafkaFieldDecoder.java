@@ -31,27 +31,27 @@ public class CustomDateTimeJsonKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(JsonNode value, String format)
+    public boolean decodeBoolean(JsonNode value, String formatHint)
     {
         throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
     }
 
     @Override
-    public double decodeDouble(JsonNode value, String format)
+    public double decodeDouble(JsonNode value, String formatHint)
     {
         throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
     }
 
     @Override
-    public long decodeLong(JsonNode value, String format)
+    public long decodeLong(JsonNode value, String formatHint)
     {
-        checkNotNull(format, "format is null");
+        checkNotNull(formatHint, "formatHint is null");
 
         if (value == null) {
             return 0;
         }
 
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(format).withLocale(Locale.ENGLISH).withZoneUTC();
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatHint).withLocale(Locale.ENGLISH).withZoneUTC();
 
         return formatter.parseMillis(value.asText());
     }

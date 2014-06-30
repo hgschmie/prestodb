@@ -59,24 +59,24 @@ public class KafkaDecoderRegistry
         }
 
         this.fieldDecoders = fieldDecoderBuilder.build();
-        LOG.info("All field decoders found: %s", this.fieldDecoders);
+        LOG.debug("Field decoders found: %s", this.fieldDecoders);
     }
 
-    public KafkaRowDecoder getRowDecoder(String decoderName)
+    public KafkaRowDecoder getRowDecoder(String dataFormat)
     {
-        checkState(rowDecoders.containsKey(decoderName), "no row decoder for '%s' found", decoderName);
-        return rowDecoders.get(decoderName);
+        checkState(rowDecoders.containsKey(dataFormat), "no row decoder for '%s' found", dataFormat);
+        return rowDecoders.get(dataFormat);
     }
 
-    public KafkaFieldDecoder<?> getFieldDecoder(String rowDecoderName, Class<?> fieldType, @Nullable String fieldDecoderName)
+    public KafkaFieldDecoder<?> getFieldDecoder(String rowDataFormat, Class<?> fieldType, @Nullable String fieldDataFormat)
     {
-        checkNotNull(rowDecoderName, "rowDecoderName is null");
+        checkNotNull(rowDataFormat, "rowDataFormat is null");
         checkNotNull(fieldType, "fieldType is null");
 
-        checkState(fieldDecoders.containsKey(rowDecoderName), "no field decoders for java type '%s' found", rowDecoderName);
-        Set<KafkaFieldDecoder<?>> decoders = fieldDecoders.get(rowDecoderName).get(fieldType);
+        checkState(fieldDecoders.containsKey(rowDataFormat), "no field decoders for '%s' found", rowDataFormat);
+        Set<KafkaFieldDecoder<?>> decoders = fieldDecoders.get(rowDataFormat).get(fieldType);
 
-        ImmutableSet<String> fieldNames = ImmutableSet.of(Objects.firstNonNull(fieldDecoderName, DEFAULT_FIELD_DECODER_NAME),
+        ImmutableSet<String> fieldNames = ImmutableSet.of(Objects.firstNonNull(fieldDataFormat, DEFAULT_FIELD_DECODER_NAME),
                 DEFAULT_FIELD_DECODER_NAME);
 
         for (String fieldName : fieldNames) {
@@ -87,6 +87,6 @@ public class KafkaDecoderRegistry
             }
         }
 
-        throw new IllegalStateException(format("No decoder for %s/%s found!", rowDecoderName, fieldType));
+        throw new IllegalStateException(format("No field decoder for %s/%s found!", rowDataFormat, fieldType));
     }
 }

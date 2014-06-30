@@ -28,19 +28,19 @@ public class ISO8601JsonKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(JsonNode value, String format)
+    public boolean decodeBoolean(JsonNode value, String formatHint)
     {
         throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
     }
 
     @Override
-    public double decodeDouble(JsonNode value, String format)
+    public double decodeDouble(JsonNode value, String formatHint)
     {
         throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
     }
 
     @Override
-    public long decodeLong(JsonNode value, String format)
+    public long decodeLong(JsonNode value, String formatHint)
     {
         if (value == null) {
             return 0;

@@ -44,34 +44,34 @@ public class CsvKafkaRow
     public boolean getBoolean(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
-        return fieldDecoder.decodeBoolean(cache[field], columnHandle.getFormat());
+        return fieldDecoder.decodeBoolean(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public long getLong(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
-        return fieldDecoder.decodeLong(cache[field], columnHandle.getFormat());
+        return fieldDecoder.decodeLong(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public double getDouble(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
-        return fieldDecoder.decodeDouble(cache[field], columnHandle.getFormat());
+        return fieldDecoder.decodeDouble(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public Slice getSlice(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
-        return fieldDecoder.decodeSlice(cache[field], columnHandle.getFormat());
+        return fieldDecoder.decodeSlice(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public boolean isNull(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
-        return fieldDecoder.isNull(cache[field], columnHandle.getFormat());
+        return fieldDecoder.isNull(cache[field], columnHandle.getFormatHint());
     }
 }

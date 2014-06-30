@@ -37,35 +37,35 @@ public class JsonKafkaRow
     protected boolean getBoolean(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
-        return fieldDecoder.decodeBoolean(locateNode(columnHandle, field), columnHandle.getFormat());
+        return fieldDecoder.decodeBoolean(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
 
     @Override
     protected long getLong(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
-        return fieldDecoder.decodeLong(locateNode(columnHandle, field), columnHandle.getFormat());
+        return fieldDecoder.decodeLong(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
 
     @Override
     protected double getDouble(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
-        return fieldDecoder.decodeDouble(locateNode(columnHandle, field), columnHandle.getFormat());
+        return fieldDecoder.decodeDouble(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
 
     @Override
     protected Slice getSlice(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
-        return fieldDecoder.decodeSlice(locateNode(columnHandle, field), columnHandle.getFormat());
+        return fieldDecoder.decodeSlice(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
 
     @Override
     protected boolean isNull(KafkaColumnHandle columnHandle, int field)
     {
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
-        return fieldDecoder.isNull(locateNode(columnHandle, field), columnHandle.getFormat());
+        return fieldDecoder.isNull(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
 
     private JsonNode locateNode(KafkaColumnHandle columnHandle, int field)

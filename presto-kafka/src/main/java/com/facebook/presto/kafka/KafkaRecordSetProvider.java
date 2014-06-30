@@ -51,7 +51,7 @@ public class KafkaRecordSetProvider
     public RecordSet getRecordSet(ConnectorSplit split, List<? extends ConnectorColumnHandle> columns)
     {
         KafkaSplit kafkaSplit = handleResolver.convertSplit(split);
-        KafkaRowDecoder rowDecoder = registry.getRowDecoder(kafkaSplit.getDecoderType());
+        KafkaRowDecoder rowDecoder = registry.getRowDecoder(kafkaSplit.getDataFormat());
 
         ImmutableList.Builder<KafkaColumnHandle> handleBuilder = ImmutableList.builder();
         ImmutableMap.Builder<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoderBuilder = ImmutableMap.builder();
@@ -61,9 +61,9 @@ public class KafkaRecordSetProvider
             handleBuilder.add(columnHandle);
 
             if (!columnHandle.isInternal()) {
-                KafkaFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kafkaSplit.getDecoderType(),
+                KafkaFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kafkaSplit.getDataFormat(),
                         columnHandle.getType().getJavaType(),
-                        columnHandle.getDecoder());
+                        columnHandle.getDataFormat());
 
                 fieldDecoderBuilder.put(columnHandle, fieldDecoder);
             }

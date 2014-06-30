@@ -14,15 +14,13 @@ public interface KafkaFieldDecoder<T>
 
     public String getFieldDecoderName();
 
-    boolean decodeBoolean(T value, String format);
+    boolean decodeBoolean(T value, String formatHint);
 
-    long decodeLong(T value, String format);
+    long decodeLong(T value, String formatHint);
 
-    double decodeDouble(T value, String format);
+    double decodeDouble(T value, String formatHint);
 
-    Slice decodeSlice(T value, String format);
+    Slice decodeSlice(T value, String formatHint);
 
-    boolean isNull(T value, String format);
-
-    String toString();
+    boolean isNull(T value, String formatHint);
 }

@@ -29,7 +29,7 @@ public final class KafkaTopicFieldDescription
     private final Type type;
     private final String mapping;
     private final String dataFormat;
-    private final String format;
+    private final String formatHint;
     private final boolean hidden;
 
     @JsonCreator
@@ -38,7 +38,7 @@ public final class KafkaTopicFieldDescription
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
             @JsonProperty("dataFormat") String dataFormat,
-            @JsonProperty("format") String format,
+            @JsonProperty("formatHint") String formatHint,
             @JsonProperty("hidden") boolean hidden)
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
@@ -46,7 +46,7 @@ public final class KafkaTopicFieldDescription
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
         this.dataFormat = dataFormat;
-        this.format = format;
+        this.formatHint = formatHint;
         this.hidden = hidden;
     }
 
@@ -75,9 +75,9 @@ public final class KafkaTopicFieldDescription
     }
 
     @JsonProperty
-    public String getFormat()
+    public String getFormatHint()
     {
-        return format;
+        return formatHint;
     }
 
     @JsonProperty
@@ -90,12 +90,12 @@ public final class KafkaTopicFieldDescription
     {
         return new KafkaColumnHandle(connectorId,
                 index,
-                name,
-                type,
-                mapping,
-                dataFormat,
-                format,
-                hidden,
+                getName(),
+                getType(),
+                getMapping(),
+                getDataFormat(),
+                getFormatHint(),
+                isHidden(),
                 false);
     }
 
@@ -107,7 +107,7 @@ public final class KafkaTopicFieldDescription
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, type, mapping, dataFormat, format, hidden);
+        return Objects.hashCode(name, type, mapping, dataFormat, formatHint, hidden);
     }
 
     @Override
@@ -125,7 +125,7 @@ public final class KafkaTopicFieldDescription
                 Objects.equal(this.type, other.type) &&
                 Objects.equal(this.mapping, other.mapping) &&
                 Objects.equal(this.dataFormat, other.dataFormat) &&
-                Objects.equal(this.format, other.format) &&
+                Objects.equal(this.formatHint, other.formatHint) &&
                 Objects.equal(this.hidden, other.hidden);
     }
 
@@ -137,7 +137,7 @@ public final class KafkaTopicFieldDescription
                 .add("type", type)
                 .add("mapping", mapping)
                 .add("dataFormat", dataFormat)
-                .add("format", format)
+                .add("formatHint", formatHint)
                 .add("hidden", hidden)
                 .toString();
     }

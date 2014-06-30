@@ -32,8 +32,8 @@ public final class KafkaColumnHandle
     private final String name;
     private final Type type;
     private final String mapping;
-    private final String decoder;
-    private final String format;
+    private final String dataFormat;
+    private final String formatHint;
     private final boolean hidden;
     private final boolean internal;
 
@@ -44,8 +44,8 @@ public final class KafkaColumnHandle
             @JsonProperty("name") String name,
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
-            @JsonProperty("decoder") String decoder,
-            @JsonProperty("format") String format,
+            @JsonProperty("dataFormat") String dataFormat,
+            @JsonProperty("formatHint") String formatHint,
             @JsonProperty("hidden") boolean hidden,
             @JsonProperty("internal") boolean internal)
 
@@ -55,8 +55,8 @@ public final class KafkaColumnHandle
         this.name = checkNotNull(name, "name is null");
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
-        this.decoder = decoder;
-        this.format = format;
+        this.dataFormat = dataFormat;
+        this.formatHint = formatHint;
         this.hidden = hidden;
         this.internal = internal;
     }
@@ -92,15 +92,15 @@ public final class KafkaColumnHandle
     }
 
     @JsonProperty
-    public String getDecoder()
+    public String getDataFormat()
     {
-        return decoder;
+        return dataFormat;
     }
 
     @JsonProperty
-    public String getFormat()
+    public String getFormatHint()
     {
-        return format;
+        return formatHint;
     }
 
     @JsonProperty
@@ -123,7 +123,7 @@ public final class KafkaColumnHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, ordinalPosition, name, type, mapping, decoder, format, hidden, internal);
+        return Objects.hashCode(connectorId, ordinalPosition, name, type, mapping, dataFormat, formatHint, hidden, internal);
     }
 
     @Override
@@ -142,8 +142,8 @@ public final class KafkaColumnHandle
                 Objects.equal(this.name, other.name) &&
                 Objects.equal(this.type, other.type) &&
                 Objects.equal(this.mapping, other.mapping) &&
-                Objects.equal(this.decoder, other.decoder) &&
-                Objects.equal(this.format, other.format) &&
+                Objects.equal(this.dataFormat, other.dataFormat) &&
+                Objects.equal(this.formatHint, other.formatHint) &&
                 Objects.equal(this.hidden, other.hidden) &&
                 Objects.equal(this.internal, other.internal);
     }
@@ -163,8 +163,8 @@ public final class KafkaColumnHandle
                 .add("name", name)
                 .add("type", type)
                 .add("mapping", mapping)
-                .add("decoder", decoder)
-                .add("format", format)
+                .add("dataFormat", dataFormat)
+                .add("formatHint", formatHint)
                 .add("hidden", hidden)
                 .add("internal", internal)
                 .toString();
