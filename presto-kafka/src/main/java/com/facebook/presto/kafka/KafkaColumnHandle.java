@@ -23,6 +23,9 @@ import com.google.common.primitives.Ints;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Kafka specific connector column handle.
+ */
 public final class KafkaColumnHandle
         implements ConnectorColumnHandle, Comparable<KafkaColumnHandle>
 {
@@ -115,7 +118,7 @@ public final class KafkaColumnHandle
         return internal;
     }
 
-    public ColumnMetadata getColumnMetadata()
+    ColumnMetadata getColumnMetadata()
     {
         return new ColumnMetadata(name, type, ordinalPosition, hidden);
     }

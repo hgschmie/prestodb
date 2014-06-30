@@ -16,6 +16,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+/**
+ * Describes an internal (managed by the connector) field which is added to each table row. The definition itself makes the row
+ * show up in the tables (the columns are hidden, so they must be explicitly selected) but unless the field is hooked in using the
+ * forBooleanValue/forLongValue/forBytesValue methods and the resulting FieldValueProvider is then passed into the appropriate row decoder, the fields
+ * will be null. Most values are assigned in the {@link com.facebook.presto.kafka.KafkaRecordSet}.
+ */
 public class KafkaInternalFieldDescription
 {
     public static final KafkaInternalFieldDescription MESSAGE_FIELD = new KafkaInternalFieldDescription("_message", VarcharType.VARCHAR);
@@ -72,19 +78,19 @@ public class KafkaInternalFieldDescription
         return new ColumnMetadata(name, type, index, true);
     }
 
-    public KafkaInternalColumnProvider forBooleanValue(boolean value)
+    public KafkaInternalFieldValueProvider forBooleanValue(boolean value)
     {
-        return new BooleanKafkaFieldProvider(value);
+        return new BooleanKafkaFieldValueProvider(value);
     }
 
-    public KafkaInternalColumnProvider forLongValue(long value)
+    public KafkaInternalFieldValueProvider forLongValue(long value)
     {
-        return new LongKafkaFieldProvider(value);
+        return new LongKafkaFieldValueProvider(value);
     }
 
-    public KafkaInternalColumnProvider forByteValue(byte[] value)
+    public KafkaInternalFieldValueProvider forByteValue(byte[] value)
     {
-        return new BytesKafkaFieldProvider(value);
+        return new BytesKafkaFieldValueProvider(value);
     }
 
     @Override
@@ -117,12 +123,12 @@ public class KafkaInternalFieldDescription
                 .toString();
     }
 
-    public class BooleanKafkaFieldProvider
-            extends KafkaInternalColumnProvider
+    public class BooleanKafkaFieldValueProvider
+            extends KafkaInternalFieldValueProvider
     {
         private final boolean value;
 
-        private BooleanKafkaFieldProvider(boolean value)
+        private BooleanKafkaFieldValueProvider(boolean value)
         {
             this.value = value;
         }
@@ -146,12 +152,12 @@ public class KafkaInternalFieldDescription
         }
     }
 
-    public class LongKafkaFieldProvider
-            extends KafkaInternalColumnProvider
+    public class LongKafkaFieldValueProvider
+            extends KafkaInternalFieldValueProvider
     {
         private final long value;
 
-        private LongKafkaFieldProvider(long value)
+        private LongKafkaFieldValueProvider(long value)
         {
             this.value = value;
         }
@@ -175,12 +181,12 @@ public class KafkaInternalFieldDescription
         }
     }
 
-    public class BytesKafkaFieldProvider
-            extends KafkaInternalColumnProvider
+    public class BytesKafkaFieldValueProvider
+            extends KafkaInternalFieldValueProvider
     {
         private final byte[] value;
 
-        private BytesKafkaFieldProvider(byte[] value)
+        private BytesKafkaFieldValueProvider(byte[] value)
         {
             this.value = value;
         }

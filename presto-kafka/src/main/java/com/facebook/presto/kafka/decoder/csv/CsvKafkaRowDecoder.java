@@ -2,7 +2,7 @@ package com.facebook.presto.kafka.decoder.csv;
 
 import au.com.bytecode.opencsv.CSVParser;
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
 import com.facebook.presto.kafka.KafkaInternalFieldDescription;
 import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
@@ -35,7 +35,7 @@ public class CsvKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
+    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
         boolean corrupted = false;
         String[] fields = null;
@@ -48,11 +48,11 @@ public class CsvKafkaRowDecoder
             corrupted = true;
         }
 
-        Set<KafkaInternalColumnProvider> allInternalColumnProviders = ImmutableSet.<KafkaInternalColumnProvider>builder()
-                .addAll(internalColumnProviders)
+        Set<KafkaInternalFieldValueProvider> rowInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
+                .addAll(internalFieldValueProviders)
                 .add(KafkaInternalFieldDescription.CORRUPTED_FIELD.forBooleanValue(corrupted))
                 .build();
 
-        return new CsvKafkaRow(fields, columnHandles, fieldDecoders, allInternalColumnProviders);
+        return new CsvKafkaRow(fields, columnHandles, fieldDecoders, rowInternalFieldValueProviders);
     }
 }

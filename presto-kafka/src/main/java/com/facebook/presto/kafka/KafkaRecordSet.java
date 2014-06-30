@@ -54,7 +54,7 @@ public class KafkaRecordSet
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
 
-    private final Set<KafkaInternalColumnProvider> splitProviders;
+    private final Set<KafkaInternalFieldValueProvider> globalInternalFieldValueProviders;
 
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
@@ -64,7 +64,7 @@ public class KafkaRecordSet
     {
         this.split = checkNotNull(split, "split is null");
 
-        this.splitProviders = ImmutableSet.<KafkaInternalColumnProvider>of(
+        this.globalInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>of(
                 KafkaInternalFieldDescription.PARTITION_ID_FIELD.forLongValue(split.getPartitionId()),
                 KafkaInternalFieldDescription.SEGMENT_START_FIELD.forLongValue(split.getStart()),
                 KafkaInternalFieldDescription.SEGMENT_END_FIELD.forLongValue(split.getEnd()));
@@ -182,15 +182,15 @@ public class KafkaRecordSet
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
 
-            Set<KafkaInternalColumnProvider> internalColumnProviders = ImmutableSet.<KafkaInternalColumnProvider>builder()
-                    .addAll(splitProviders)
+            Set<KafkaInternalFieldValueProvider> internalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
+                    .addAll(globalInternalFieldValueProviders)
                     .add(KafkaInternalFieldDescription.COUNT_FIELD.forLongValue(totalMessages))
                     .add(KafkaInternalFieldDescription.OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
                     .add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(currentRow))
                     .add(KafkaInternalFieldDescription.MESSAGE_LEN_FIELD.forLongValue(currentRow.length))
                     .build();
 
-            this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalColumnProviders);
+            this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalFieldValueProviders);
 
             return true; // Advanced successfully.
         }

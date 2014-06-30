@@ -1,7 +1,7 @@
 package com.facebook.presto.kafka.decoder;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
 import com.facebook.presto.kafka.KafkaRow;
 
 import java.util.List;
@@ -15,5 +15,5 @@ public interface KafkaRowDecoder
     KafkaRow decodeRow(byte[] data,
             List<KafkaColumnHandle> columnHandles,
             Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders,
-            Set<KafkaInternalColumnProvider> internalColumnProviders);
+            Set<KafkaInternalFieldValueProvider> internalFieldValueProviders);
 }

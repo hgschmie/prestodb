@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka.decoder.csv;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
-import com.facebook.presto.kafka.decoder.AbstractKafkaRow;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
+import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import io.airlift.slice.Slice;
 
@@ -13,15 +13,15 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class CsvKafkaRow
-        extends AbstractKafkaRow
+        extends KafkaRow
 {
     private final String[] cache;
     private final List<KafkaColumnHandle> columnHandles;
     private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
-    CsvKafkaRow(String[] fields, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
+    CsvKafkaRow(String[] fields, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
-        super(columnHandles, internalColumnProviders);
+        super(columnHandles, internalFieldValueProviders);
 
         checkNotNull(fields, "fields is null");
 

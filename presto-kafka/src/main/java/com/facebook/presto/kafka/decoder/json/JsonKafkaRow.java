@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
-import com.facebook.presto.kafka.decoder.AbstractKafkaRow;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
+import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
@@ -17,15 +17,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class JsonKafkaRow
-        extends AbstractKafkaRow
+        extends KafkaRow
 {
     private final JsonNode tree;
     private final JsonNode[] cache;
     private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
-    JsonKafkaRow(JsonNode tree, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
+    JsonKafkaRow(JsonNode tree, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
-        super(columnHandles, internalColumnProviders);
+        super(columnHandles, internalFieldValueProviders);
 
         this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
 

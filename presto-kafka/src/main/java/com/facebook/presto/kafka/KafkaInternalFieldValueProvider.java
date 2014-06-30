@@ -3,7 +3,10 @@ package com.facebook.presto.kafka;
 import com.facebook.presto.spi.PrestoException;
 import io.airlift.slice.Slice;
 
-public abstract class KafkaInternalColumnProvider
+/**
+ * Subclasses provide values for internal columns.
+ */
+public abstract class KafkaInternalFieldValueProvider
 {
     public abstract boolean accept(KafkaColumnHandle columnHandle);
 

@@ -17,7 +17,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Create new Kafka Connectors.
+ * Creates Kafka Connectors based off connectorId and specific configuration.
  */
 public class KafkaConnectorFactory
         implements ConnectorFactory

@@ -1,20 +1,20 @@
 package com.facebook.presto.kafka.decoder.dummy;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
-import com.facebook.presto.kafka.decoder.AbstractKafkaRow;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
+import com.facebook.presto.kafka.KafkaRow;
 import io.airlift.slice.Slice;
 
 import java.util.List;
 import java.util.Set;
 
 public class DummyKafkaRow
-        extends AbstractKafkaRow
+        extends KafkaRow
 
 {
-    public DummyKafkaRow(List<KafkaColumnHandle> columnHandles, Set<KafkaInternalColumnProvider> internalColumnProviders)
+    public DummyKafkaRow(List<KafkaColumnHandle> columnHandles, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
-        super(columnHandles, internalColumnProviders);
+        super(columnHandles, internalFieldValueProviders);
     }
 
     @Override

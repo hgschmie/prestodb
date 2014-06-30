@@ -2,6 +2,9 @@ package com.facebook.presto.kafka;
 
 import com.facebook.presto.spi.ErrorCode;
 
+/**
+ * Kafka connector specific error codes.
+ */
 public enum KafkaErrorCode
 {
     // Connectors can use error codes starting at EXTERNAL

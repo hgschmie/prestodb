@@ -1,7 +1,7 @@
 package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalColumnProvider;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
 import com.facebook.presto.kafka.KafkaInternalFieldDescription;
 import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
@@ -40,7 +40,7 @@ public class JsonKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalColumnProvider> internalColumnProviders)
+    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
         JsonNode tree;
         boolean corrupted = false;
@@ -53,11 +53,11 @@ public class JsonKafkaRowDecoder
             corrupted = true;
         }
 
-        Set<KafkaInternalColumnProvider> allInternalColumnProviders = ImmutableSet.<KafkaInternalColumnProvider>builder()
-                .addAll(internalColumnProviders)
+        Set<KafkaInternalFieldValueProvider> rowInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
+                .addAll(internalFieldValueProviders)
                 .add(KafkaInternalFieldDescription.CORRUPTED_FIELD.forBooleanValue(corrupted))
                 .build();
 
-        return new JsonKafkaRow(tree, columnHandles, fieldDecoders, allInternalColumnProviders);
+        return new JsonKafkaRow(tree, columnHandles, fieldDecoders, rowInternalFieldValueProviders);
     }
 }
