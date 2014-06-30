@@ -49,6 +49,11 @@ public class KafkaConfig
      */
     private File tableDescriptionDir = new File("etc/kafka/");
 
+    /**
+     * Whether internal columns are shown in table metadata or not. Default is not.
+     */
+    private boolean internalColumnsAreHidden = true;
+
     @NotNull
     public File getTableDescriptionDir()
     {
@@ -130,5 +135,16 @@ public class KafkaConfig
     public void setKafkaBufferSize(String kafkaBufferSize)
     {
         this.kafkaBufferSize = DataSize.valueOf(kafkaBufferSize);
+    }
+
+    public boolean isInternalColumnsAreHidden()
+    {
+        return internalColumnsAreHidden;
+    }
+
+    @Config("kafka.internal-columns-are-hidden")
+    public void setInternalColumnsAreHidden(boolean internalColumnsAreHidden)
+    {
+        this.internalColumnsAreHidden = internalColumnsAreHidden;
     }
 }

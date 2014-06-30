@@ -153,7 +153,7 @@ public class KafkaMetadata
         }
 
         for (KafkaInternalFieldDescription kafkaInternalFieldDescription : internalFieldDescriptions) {
-            columnHandles.put(kafkaInternalFieldDescription.getName(), kafkaInternalFieldDescription.getColumnHandle(connectorId, index++));
+            columnHandles.put(kafkaInternalFieldDescription.getName(), kafkaInternalFieldDescription.getColumnHandle(connectorId, index++, kafkaConfig.isInternalColumnsAreHidden()));
         }
 
         return columnHandles.build();
@@ -209,7 +209,7 @@ public class KafkaMetadata
         }
 
         for (KafkaInternalFieldDescription fieldDescription : internalFieldDescriptions) {
-            builder.add(fieldDescription.getColumnMetadata(index++));
+            builder.add(fieldDescription.getColumnMetadata(index++, kafkaConfig.isInternalColumnsAreHidden()));
         }
 
         return new ConnectorTableMetadata(schemaTableName, builder.build());

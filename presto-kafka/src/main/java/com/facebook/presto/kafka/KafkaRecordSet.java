@@ -184,10 +184,10 @@ public class KafkaRecordSet
 
             Set<KafkaInternalFieldValueProvider> internalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
                     .addAll(globalInternalFieldValueProviders)
-                    .add(KafkaInternalFieldDescription.COUNT_FIELD.forLongValue(totalMessages))
-                    .add(KafkaInternalFieldDescription.OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
+                    .add(KafkaInternalFieldDescription.SEGMENT_COUNT_FIELD.forLongValue(totalMessages))
+                    .add(KafkaInternalFieldDescription.PARTITION_OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
                     .add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(currentRow))
-                    .add(KafkaInternalFieldDescription.MESSAGE_LEN_FIELD.forLongValue(currentRow.length))
+                    .add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(currentRow.length))
                     .build();
 
             this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalFieldValueProviders);

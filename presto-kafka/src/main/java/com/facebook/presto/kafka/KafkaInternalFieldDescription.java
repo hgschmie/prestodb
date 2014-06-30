@@ -25,23 +25,23 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class KafkaInternalFieldDescription
 {
     public static final KafkaInternalFieldDescription MESSAGE_FIELD = new KafkaInternalFieldDescription("_message", VarcharType.VARCHAR);
-    public static final KafkaInternalFieldDescription CORRUPTED_FIELD = new KafkaInternalFieldDescription("_corrupted", BooleanType.BOOLEAN);
+    public static final KafkaInternalFieldDescription CORRUPT_FIELD = new KafkaInternalFieldDescription("_corrupt", BooleanType.BOOLEAN);
     public static final KafkaInternalFieldDescription PARTITION_ID_FIELD = new KafkaInternalFieldDescription("_partition_id", BigintType.BIGINT);
     public static final KafkaInternalFieldDescription SEGMENT_START_FIELD = new KafkaInternalFieldDescription("_segment_start", BigintType.BIGINT);
     public static final KafkaInternalFieldDescription SEGMENT_END_FIELD = new KafkaInternalFieldDescription("_segment_end", BigintType.BIGINT);
-    public static final KafkaInternalFieldDescription COUNT_FIELD = new KafkaInternalFieldDescription("_count", BigintType.BIGINT);
-    public static final KafkaInternalFieldDescription OFFSET_FIELD = new KafkaInternalFieldDescription("_offset", BigintType.BIGINT);
-    public static final KafkaInternalFieldDescription MESSAGE_LEN_FIELD = new KafkaInternalFieldDescription("_message_len", BigintType.BIGINT);
+    public static final KafkaInternalFieldDescription SEGMENT_COUNT_FIELD = new KafkaInternalFieldDescription("_segment_count", BigintType.BIGINT);
+    public static final KafkaInternalFieldDescription PARTITION_OFFSET_FIELD = new KafkaInternalFieldDescription("_partition_offset", BigintType.BIGINT);
+    public static final KafkaInternalFieldDescription MESSAGE_LENGTH_FIELD = new KafkaInternalFieldDescription("_message_length", BigintType.BIGINT);
 
     public static Set<KafkaInternalFieldDescription> getInternalFields()
     {
-        return ImmutableSet.of(MESSAGE_FIELD, CORRUPTED_FIELD, PARTITION_ID_FIELD, SEGMENT_START_FIELD, SEGMENT_END_FIELD, COUNT_FIELD, OFFSET_FIELD, MESSAGE_LEN_FIELD);
+        return ImmutableSet.of(MESSAGE_FIELD, CORRUPT_FIELD, PARTITION_ID_FIELD, SEGMENT_START_FIELD, SEGMENT_END_FIELD, SEGMENT_COUNT_FIELD, PARTITION_OFFSET_FIELD, MESSAGE_LENGTH_FIELD);
     }
 
     private final String name;
     private final Type type;
 
-    private KafkaInternalFieldDescription(
+    KafkaInternalFieldDescription(
             String name,
             Type type)
     {
@@ -60,7 +60,7 @@ public class KafkaInternalFieldDescription
         return type;
     }
 
-    KafkaColumnHandle getColumnHandle(String connectorId, int index)
+    KafkaColumnHandle getColumnHandle(String connectorId, int index, boolean hidden)
     {
         return new KafkaColumnHandle(connectorId,
                 index,
@@ -69,13 +69,13 @@ public class KafkaInternalFieldDescription
                 null,
                 null,
                 null,
-                true,
+                hidden,
                 true);
     }
 
-    ColumnMetadata getColumnMetadata(int index)
+    ColumnMetadata getColumnMetadata(int index, boolean hidden)
     {
-        return new ColumnMetadata(name, type, index, true);
+        return new ColumnMetadata(name, type, index, false, hidden);
     }
 
     public KafkaInternalFieldValueProvider forBooleanValue(boolean value)

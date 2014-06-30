@@ -1,8 +1,8 @@
 package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
 import com.facebook.presto.kafka.KafkaInternalFieldDescription;
+import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
 import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
@@ -55,7 +55,7 @@ public class JsonKafkaRowDecoder
 
         Set<KafkaInternalFieldValueProvider> rowInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
                 .addAll(internalFieldValueProviders)
-                .add(KafkaInternalFieldDescription.CORRUPTED_FIELD.forBooleanValue(corrupted))
+                .add(KafkaInternalFieldDescription.CORRUPT_FIELD.forBooleanValue(corrupted))
                 .build();
 
         return new JsonKafkaRow(tree, columnHandles, fieldDecoders, rowInternalFieldValueProviders);
