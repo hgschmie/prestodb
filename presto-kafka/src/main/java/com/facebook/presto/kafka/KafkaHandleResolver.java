@@ -24,12 +24,12 @@ public class KafkaHandleResolver
 
     @Inject
     KafkaHandleResolver(@Named("connectorId") String connectorId,
-            KafkaConfig kafkaConfig)
+            KafkaConnectorConfig kafkaConnectorConfig)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        checkNotNull(kafkaConfig, "kafkaConfig is null");
+        checkNotNull(kafkaConnectorConfig, "kafkaConfig is null");
 
-        this.schemaName = kafkaConfig.getSchemaName();
+        this.schemaName = kafkaConnectorConfig.getSchemaName();
     }
 
     @Override

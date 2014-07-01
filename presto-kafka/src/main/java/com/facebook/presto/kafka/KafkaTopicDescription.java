@@ -48,6 +48,9 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * }
  * }
  * </pre>
+ *
+ * TODO - rewrite this to have dataFormat and the fields inside a "value" dictionary and add a "key" dictionary that allows similar parsing of the
+ * key. Add a decoder type "raw" which can e.g. take the raw long bytes of a long key and turn it into a value.
  */
 public class KafkaTopicDescription
 {

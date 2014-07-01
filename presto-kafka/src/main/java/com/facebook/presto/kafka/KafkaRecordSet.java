@@ -181,6 +181,9 @@ public class KafkaRecordSet
             totalBytes += messageAndOffset.message().payloadSize();
             totalMessages++;
 
+            // TODO - an optional key exists here. (messageAndOffset.message().key()). This code should be
+            // rewritten to allow parsing of the key and mapping into columns.
+
             ByteBuffer payload = messageAndOffset.message().payload();
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
@@ -193,6 +196,9 @@ public class KafkaRecordSet
                     .add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(currentRow.length))
                     .build();
 
+            // TODO - Rewrite this to no longer pass the field value providers into the row but have a builder that takes
+            // all the fields and collects them. Then have a decoder add the fields from the key and another decoder to add
+            // the fields from the value. Will do this after finished the tpch tests. -- hpsngn
             this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalFieldValueProviders);
 
             return true; // Advanced successfully.

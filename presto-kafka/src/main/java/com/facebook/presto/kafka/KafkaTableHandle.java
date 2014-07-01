@@ -38,7 +38,7 @@ public final class KafkaTableHandle
     private final String dataFormat;
 
     /**
-     * The schema name for this table. Is set through configuration and read using {@link com.facebook.presto.kafka.KafkaConfig#getSchemaName()}. Usually 'default'.
+     * The schema name for this table. Is set through configuration and read using {@link KafkaConnectorConfig#getSchemaName()}. Usually 'default'.
      */
     private final String schemaName;
 

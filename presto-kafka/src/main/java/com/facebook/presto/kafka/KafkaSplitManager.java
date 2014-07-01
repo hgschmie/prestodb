@@ -57,18 +57,18 @@ public class KafkaSplitManager
     private static final Logger LOG = Logger.get(KafkaSplitManager.class);
 
     private final String connectorId;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaConnectorConfig kafkaConnectorConfig;
     private final KafkaHandleResolver handleResolver;
     private final KafkaSimpleConsumerManager consumerManager;
 
     @Inject
     public KafkaSplitManager(@Named("connectorId") String connectorId,
-            KafkaConfig kafkaConfig,
+            KafkaConnectorConfig kafkaConnectorConfig,
             KafkaHandleResolver handleResolver,
             KafkaSimpleConsumerManager consumerManager)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
+        this.kafkaConnectorConfig = checkNotNull(kafkaConnectorConfig, "kafkaConfig is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
     }
@@ -78,7 +78,7 @@ public class KafkaSplitManager
     {
         KafkaTableHandle kafkaTableHandle = handleResolver.convertTableHandle(tableHandle);
 
-        List<HostAddress> nodes = new ArrayList<>(kafkaConfig.getNodes());
+        List<HostAddress> nodes = new ArrayList<>(kafkaConnectorConfig.getNodes());
         Collections.shuffle(nodes);
 
         SimpleConsumer simpleConsumer = consumerManager.getConsumer(nodes.get(0));

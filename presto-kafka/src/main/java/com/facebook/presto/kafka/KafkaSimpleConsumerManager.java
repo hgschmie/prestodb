@@ -31,16 +31,16 @@ public class KafkaSimpleConsumerManager
     private final LoadingCache<HostAddress, SimpleConsumer> consumerCache;
 
     private final String connectorId;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaConnectorConfig kafkaConnectorConfig;
     private final NodeManager nodeManager;
 
     @Inject
     KafkaSimpleConsumerManager(@Named("connectorId") String connectorId,
-            KafkaConfig kafkaConfig,
+            KafkaConnectorConfig kafkaConnectorConfig,
             NodeManager nodeManager)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
+        this.kafkaConnectorConfig = checkNotNull(kafkaConnectorConfig, "kafkaConfig is null");
         this.nodeManager = checkNotNull(nodeManager, "nodeManager is null");
 
         this.consumerCache = CacheBuilder.newBuilder().build(new SimpleConsumerCacheLoader());
@@ -80,8 +80,8 @@ public class KafkaSimpleConsumerManager
             LOG.info("Creating new Consumer for %s", host);
             return new SimpleConsumer(host.getHostText(),
                     host.getPort(),
-                    Ints.checkedCast(kafkaConfig.getKafkaConnectTimeout().toMillis()),
-                    Ints.checkedCast(kafkaConfig.getKafkaBufferSize().toBytes()),
+                    Ints.checkedCast(kafkaConnectorConfig.getKafkaConnectTimeout().toMillis()),
+                    Ints.checkedCast(kafkaConnectorConfig.getKafkaBufferSize().toBytes()),
                     format("presto-kafka-%s-%s", connectorId, nodeManager.getCurrentNode().getNodeIdentifier()));
         }
     }

@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.util.Set;
 
-public class KafkaConfig
+public class KafkaConnectorConfig
 {
     /**
      * Seed nodes for Kafka cluster. At least one must exist.
@@ -61,7 +61,7 @@ public class KafkaConfig
     }
 
     @Config("kafka.table-description-dir")
-    public KafkaConfig setTableDescriptionDir(File tableDescriptionDir)
+    public KafkaConnectorConfig setTableDescriptionDir(File tableDescriptionDir)
     {
         this.tableDescriptionDir = tableDescriptionDir;
         return this;
@@ -74,7 +74,7 @@ public class KafkaConfig
     }
 
     @Config("kafka.table-names")
-    public KafkaConfig setTableNames(String tableNames)
+    public KafkaConnectorConfig setTableNames(String tableNames)
     {
         this.tableNames = ImmutableSet.copyOf(Splitter.on(',').omitEmptyStrings().trimResults().split(tableNames));
         return this;
@@ -87,7 +87,7 @@ public class KafkaConfig
     }
 
     @Config("kafka.schema-name")
-    public KafkaConfig setSchemaName(String schemaName)
+    public KafkaConnectorConfig setSchemaName(String schemaName)
     {
         this.schemaName = schemaName;
         return this;
@@ -100,7 +100,7 @@ public class KafkaConfig
     }
 
     @Config("kafka.nodes")
-    public KafkaConfig setNodes(String nodes)
+    public KafkaConnectorConfig setNodes(String nodes)
     {
         this.nodes = ImmutableSet.copyOf(Iterables.transform(Splitter.on(',').omitEmptyStrings().trimResults().split(nodes), new Function<String, HostAddress>()
         {

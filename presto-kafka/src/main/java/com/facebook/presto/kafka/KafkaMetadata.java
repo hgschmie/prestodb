@@ -56,7 +56,7 @@ public class KafkaMetadata
     private static final Logger LOG = Logger.get(KafkaMetadata.class);
 
     private final String connectorId;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaConnectorConfig kafkaConnectorConfig;
     private final KafkaHandleResolver handleResolver;
     private final JsonCodec<KafkaTopicDescription> tableCodec;
 
@@ -65,17 +65,17 @@ public class KafkaMetadata
 
     @Inject
     KafkaMetadata(@Named("connectorId") String connectorId,
-            KafkaConfig kafkaConfig,
+            KafkaConnectorConfig kafkaConnectorConfig,
             KafkaHandleResolver handleResolver,
             JsonCodec<KafkaTopicDescription> topicDescriptionCodec,
             Set<KafkaInternalFieldDescription> internalFieldDescriptions)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.kafkaConfig = checkNotNull(kafkaConfig, "kafkaConfig is null");
+        this.kafkaConnectorConfig = checkNotNull(kafkaConnectorConfig, "kafkaConfig is null");
         this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
         this.tableCodec = checkNotNull(topicDescriptionCodec, "topicDescriptionCodec is null");
 
-        LOG.debug("Loading kafka table definitions from %s", kafkaConfig.getTableDescriptionDir().getAbsolutePath());
+        LOG.debug("Loading kafka table definitions from %s", kafkaConnectorConfig.getTableDescriptionDir().getAbsolutePath());
 
         this.tableDefinitions = Suppliers.memoize(new TableSupplier());
         this.internalFieldDescriptions = checkNotNull(internalFieldDescriptions, "internalFieldDescriptions is null");
@@ -84,7 +84,7 @@ public class KafkaMetadata
     @Override
     public List<String> listSchemaNames(ConnectorSession session)
     {
-        return ImmutableList.of(kafkaConfig.getSchemaName());
+        return ImmutableList.of(kafkaConnectorConfig.getSchemaName());
     }
 
     @Override
@@ -115,9 +115,9 @@ public class KafkaMetadata
     public List<SchemaTableName> listTables(ConnectorSession session, String schemaNameOrNull)
     {
         ImmutableList.Builder<SchemaTableName> builder = ImmutableList.builder();
-        if (schemaNameOrNull == null || schemaNameOrNull.equals(kafkaConfig.getSchemaName())) {
+        if (schemaNameOrNull == null || schemaNameOrNull.equals(kafkaConnectorConfig.getSchemaName())) {
             for (String tableName : getDefinedTables().keySet()) {
-                builder.add(new SchemaTableName(kafkaConfig.getSchemaName(), tableName));
+                builder.add(new SchemaTableName(kafkaConnectorConfig.getSchemaName(), tableName));
             }
         }
 
@@ -154,7 +154,7 @@ public class KafkaMetadata
         }
 
         for (KafkaInternalFieldDescription kafkaInternalFieldDescription : internalFieldDescriptions) {
-            columnHandles.put(kafkaInternalFieldDescription.getName(), kafkaInternalFieldDescription.getColumnHandle(connectorId, index++, kafkaConfig.isInternalColumnsAreHidden()));
+            columnHandles.put(kafkaInternalFieldDescription.getName(), kafkaInternalFieldDescription.getColumnHandle(connectorId, index++, kafkaConnectorConfig.isInternalColumnsAreHidden()));
         }
 
         return columnHandles.build();
@@ -210,7 +210,7 @@ public class KafkaMetadata
         }
 
         for (KafkaInternalFieldDescription fieldDescription : internalFieldDescriptions) {
-            builder.add(fieldDescription.getColumnMetadata(index++, kafkaConfig.isInternalColumnsAreHidden()));
+            builder.add(fieldDescription.getColumnMetadata(index++, kafkaConnectorConfig.isInternalColumnsAreHidden()));
         }
 
         return new ConnectorTableMetadata(schemaTableName, builder.build());
@@ -225,7 +225,7 @@ public class KafkaMetadata
             ImmutableMap.Builder<String, KafkaTopicDescription> builder = ImmutableMap.builder();
 
             try {
-                for (File file : listFiles(kafkaConfig.getTableDescriptionDir())) {
+                for (File file : listFiles(kafkaConnectorConfig.getTableDescriptionDir())) {
                     if (file.isFile() && file.getName().endsWith(".json")) {
                         KafkaTopicDescription table = tableCodec.fromJson(Files.toByteArray(file));
                         LOG.debug("Kafka table %s: %s", table.getTableName(), table);
@@ -238,7 +238,7 @@ public class KafkaMetadata
                 LOG.debug("Loaded Table definitions: %s", tableDefinitions.keySet());
 
                 builder = ImmutableMap.builder();
-                for (String definedTable : kafkaConfig.getTableNames()) {
+                for (String definedTable : kafkaConnectorConfig.getTableNames()) {
                     if (tableDefinitions.containsKey(definedTable)) {
                         KafkaTopicDescription kafkaTable = tableDefinitions.get(definedTable);
                         LOG.debug("Found Table definition for %s: %s", definedTable, kafkaTable);
