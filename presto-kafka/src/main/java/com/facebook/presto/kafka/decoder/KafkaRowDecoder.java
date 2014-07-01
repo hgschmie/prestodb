@@ -13,7 +13,9 @@ import java.util.Set;
  */
 public interface KafkaRowDecoder
 {
-    /** Returns the row decoder specific name. This name will be selected with the {@link com.facebook.presto.kafka.KafkaTopicDescription#dataFormat} value. */
+    /**
+     * Returns the row decoder specific name. This name will be selected with the {@link com.facebook.presto.kafka.KafkaTopicDescription#dataFormat} value.
+     */
     String getName();
 
     KafkaRow decodeRow(byte[] data,

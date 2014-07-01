@@ -16,10 +16,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Milliseconds since the epoch date format decoder.
- *
+ * <p/>
  * Converts JSON long and string fields into timestamp compatible long values when the presto column definition is a TIMESTAMP or BIGINT.
  * Converts JSON long and string fields into ISO8601 formatted time strings when the presto column definition is a VARCHAR.
- *
+ * <p/>
  * Uses hardcoded UTC timezone and english locale.
  */
 public class MillisecondsSinceEpochJsonKafkaFieldDecoder

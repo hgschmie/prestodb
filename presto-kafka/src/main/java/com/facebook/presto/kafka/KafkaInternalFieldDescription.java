@@ -24,28 +24,44 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  */
 public class KafkaInternalFieldDescription
 {
-    /** <tt>_message</tt> - Represents the full topic as a text column. Format is UTF-8 which may be wrong for some topics. TODO - make charset configureable. */
+    /**
+     * <tt>_message</tt> - Represents the full topic as a text column. Format is UTF-8 which may be wrong for some topics. TODO - make charset configureable.
+     */
     public static final KafkaInternalFieldDescription MESSAGE_FIELD = new KafkaInternalFieldDescription("_message", VarcharType.VARCHAR);
 
-    /** <tt>_corrupt</tt> - True if the row converter could not read the a message. May be null if the row converter does not set a value (e.g. the dummy row converter does not). */
+    /**
+     * <tt>_corrupt</tt> - True if the row converter could not read the a message. May be null if the row converter does not set a value (e.g. the dummy row converter does not).
+     */
     public static final KafkaInternalFieldDescription CORRUPT_FIELD = new KafkaInternalFieldDescription("_corrupt", BooleanType.BOOLEAN);
 
-    /** <tt>_partition_id</tt> - Kafka partition id. */
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
     public static final KafkaInternalFieldDescription PARTITION_ID_FIELD = new KafkaInternalFieldDescription("_partition_id", BigintType.BIGINT);
 
-    /** <tt>_segment_start</tt> - Kafka start offset for the segment which contains the current message. This is per-partition. */
+    /**
+     * <tt>_segment_start</tt> - Kafka start offset for the segment which contains the current message. This is per-partition.
+     */
     public static final KafkaInternalFieldDescription SEGMENT_START_FIELD = new KafkaInternalFieldDescription("_segment_start", BigintType.BIGINT);
 
-    /** <tt>_segment_end</tt> - Kafka end offset for the segment which contains the current message. This is per-partition. The end offset is the first offset that is *not* in the segment. */
+    /**
+     * <tt>_segment_end</tt> - Kafka end offset for the segment which contains the current message. This is per-partition. The end offset is the first offset that is *not* in the segment.
+     */
     public static final KafkaInternalFieldDescription SEGMENT_END_FIELD = new KafkaInternalFieldDescription("_segment_end", BigintType.BIGINT);
 
-    /** <tt>_segment_count</tt> - Running count of messages in a segment. */
+    /**
+     * <tt>_segment_count</tt> - Running count of messages in a segment.
+     */
     public static final KafkaInternalFieldDescription SEGMENT_COUNT_FIELD = new KafkaInternalFieldDescription("_segment_count", BigintType.BIGINT);
 
-    /** <tt>_partition_offset</tt> - The current offset of the message in the partition. */
+    /**
+     * <tt>_partition_offset</tt> - The current offset of the message in the partition.
+     */
     public static final KafkaInternalFieldDescription PARTITION_OFFSET_FIELD = new KafkaInternalFieldDescription("_partition_offset", BigintType.BIGINT);
 
-    /** <tt>_message_length</tt> - length in bytes of the message. */
+    /**
+     * <tt>_message_length</tt> - length in bytes of the message.
+     */
     public static final KafkaInternalFieldDescription MESSAGE_LENGTH_FIELD = new KafkaInternalFieldDescription("_message_length", BigintType.BIGINT);
 
     public static Set<KafkaInternalFieldDescription> getInternalFields()

@@ -15,10 +15,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * RFC 2822 date format decoder.
- *
+ * <p/>
  * Converts JSON string fields formatted in RFC 2822 format into timestamp compatible long values when the presto column definition is a TIMESTAMP or BIGINT.
  * Returns the value of the JSON string field as is when the presto column definition is a VARCHAR.
- *
+ * <p/>
  * Uses hardcoded UTC timezone and english locale.
  */
 public class RFC2822JsonKafkaFieldDecoder

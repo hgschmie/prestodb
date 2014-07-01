@@ -25,7 +25,7 @@ public class KafkaPlugin
     private Map<String, String> optionalConfig = ImmutableMap.of();
 
     @Override
-    public void setOptionalConfig(Map<String, String> optionalConfig)
+    public synchronized void setOptionalConfig(Map<String, String> optionalConfig)
     {
         this.optionalConfig = ImmutableMap.copyOf(checkNotNull(optionalConfig, "optionalConfig is null"));
     }
@@ -43,7 +43,7 @@ public class KafkaPlugin
     }
 
     @Override
-    public <T> List<T> getServices(Class<T> type)
+    public synchronized <T> List<T> getServices(Class<T> type)
     {
         if (type == ConnectorFactory.class) {
             return ImmutableList.of(type.cast(new KafkaConnectorFactory(typeManager, nodeManager, optionalConfig)));

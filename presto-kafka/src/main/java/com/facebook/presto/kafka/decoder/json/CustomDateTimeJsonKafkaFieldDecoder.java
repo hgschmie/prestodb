@@ -16,12 +16,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Custom date format decoder.
- *
+ * <p/>
  * When the column type is BIGINT or timestamp: Converts JSON string or long fields into timestamp compatible long values using the format given in the <tt>formatHint</tt> field of the field definition.
  * When the column type is VARCHAR: Converts JSON string or long fields into a formatted string using the format given in the <tt>formatHint</tt> field of the field definition.
- *
+ * <p/>
  * <tt>formatHint</tt> uses {@link org.joda.time.format.DateTimeFormatter} format.
- *
+ * <p/>
  * Uses hardcoded UTC timezone and english locale.
  */
 public class CustomDateTimeJsonKafkaFieldDecoder

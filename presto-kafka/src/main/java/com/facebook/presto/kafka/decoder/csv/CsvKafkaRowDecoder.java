@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Decode a Kafka message as CSV. This is an extremely primitive CSV decoder using {@link au.com.bytecode.opencsv.CSVParser]}.
- *
+ * <p/>
  * It needs some work to be really useful but may work for simple, evenly structured topics.
  */
 public class CsvKafkaRowDecoder
@@ -26,7 +26,9 @@ public class CsvKafkaRowDecoder
 {
     public static final String NAME = "csv";
 
-    private static final CSVParser PARSER = new CSVParser();
+    private static final String[] EMPTY_FIELDS = new String[0];
+
+    private final CSVParser parser = new CSVParser();
 
     @Inject
     CsvKafkaRowDecoder()
@@ -43,11 +45,11 @@ public class CsvKafkaRowDecoder
     public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {
         boolean corrupted = false;
-        String[] fields = null;
+        String[] fields = EMPTY_FIELDS;
 
         try {
             String line = new String(data, StandardCharsets.UTF_8);
-            fields = PARSER.parseLine(line);
+            fields = parser.parseLine(line);
         }
         catch (Exception e) {
             corrupted = true;

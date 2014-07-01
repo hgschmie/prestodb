@@ -27,19 +27,29 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class KafkaTableHandle
         implements ConnectorTableHandle
 {
-    /** connector id */
+    /**
+     * connector id
+     */
     private final String connectorId;
 
-    /** Data format to use (selects the decoder). */
+    /**
+     * Data format to use (selects the decoder).
+     */
     private final String dataFormat;
 
-    /** The schema name for this table. Is set through configuration and read using {@link com.facebook.presto.kafka.KafkaConfig#getSchemaName()}. Usually 'default'. */
+    /**
+     * The schema name for this table. Is set through configuration and read using {@link com.facebook.presto.kafka.KafkaConfig#getSchemaName()}. Usually 'default'.
+     */
     private final String schemaName;
 
-    /** The table name used by presto. */
+    /**
+     * The table name used by presto.
+     */
     private final String tableName;
 
-    /** The topic name that is read from Kafka. */
+    /**
+     * The topic name that is read from Kafka.
+     */
     private final String topicName;
 
     @JsonCreator
@@ -105,7 +115,7 @@ public final class KafkaTableHandle
         if (this == obj) {
             return true;
         }
-        if ((obj == null) || (getClass() != obj.getClass())) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 

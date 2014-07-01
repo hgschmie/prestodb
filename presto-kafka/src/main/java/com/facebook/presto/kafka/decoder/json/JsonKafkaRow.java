@@ -39,6 +39,7 @@ public class JsonKafkaRow
     @Override
     protected boolean getBoolean(KafkaColumnHandle columnHandle, int field)
     {
+        @SuppressWarnings("unchecked")
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeBoolean(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
@@ -46,6 +47,7 @@ public class JsonKafkaRow
     @Override
     protected long getLong(KafkaColumnHandle columnHandle, int field)
     {
+        @SuppressWarnings("unchecked")
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeLong(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
@@ -53,6 +55,7 @@ public class JsonKafkaRow
     @Override
     protected double getDouble(KafkaColumnHandle columnHandle, int field)
     {
+        @SuppressWarnings("unchecked")
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeDouble(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
@@ -60,6 +63,7 @@ public class JsonKafkaRow
     @Override
     protected Slice getSlice(KafkaColumnHandle columnHandle, int field)
     {
+        @SuppressWarnings("unchecked")
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeSlice(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }
@@ -67,6 +71,7 @@ public class JsonKafkaRow
     @Override
     protected boolean isNull(KafkaColumnHandle columnHandle, int field)
     {
+        @SuppressWarnings("unchecked")
         KafkaFieldDecoder<JsonNode> fieldDecoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
         return fieldDecoder.isNull(locateNode(columnHandle, field), columnHandle.getFormatHint());
     }

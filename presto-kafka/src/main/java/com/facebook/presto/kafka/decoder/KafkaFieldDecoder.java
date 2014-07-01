@@ -9,16 +9,24 @@ import java.util.Set;
  */
 public interface KafkaFieldDecoder<T>
 {
-    /** Default name. Each decoder type *must* have a default decoder as fallback. */
+    /**
+     * Default name. Each decoder type *must* have a default decoder as fallback.
+     */
     String DEFAULT_FIELD_DECODER_NAME = "_default";
 
-    /** Returns the types which the field decoder can process. */
+    /**
+     * Returns the types which the field decoder can process.
+     */
     public Set<Class<?>> getJavaTypes();
 
-    /** Returns the name of the row decoder to which this field decoder belongs. */
+    /**
+     * Returns the name of the row decoder to which this field decoder belongs.
+     */
     public String getRowDecoderName();
 
-    /** Returns the field decoder specific name. This name will be selected with the {@link com.facebook.presto.kafka.KafkaTopicFieldDescription#dataFormat} value. */
+    /**
+     * Returns the field decoder specific name. This name will be selected with the {@link com.facebook.presto.kafka.KafkaTopicFieldDescription#dataFormat} value.
+     */
     public String getFieldDecoderName();
 
     /**
@@ -45,6 +53,8 @@ public interface KafkaFieldDecoder<T>
      */
     Slice decodeSlice(T value, String formatHint);
 
-    /** Do null check on an internal value. */
+    /**
+     * Do null check on an internal value.
+     */
     boolean isNull(T value, String formatHint);
 }

@@ -46,35 +46,40 @@ public class CsvKafkaRow
     @Override
     public boolean getBoolean(KafkaColumnHandle columnHandle, int field)
     {
-        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
+        @SuppressWarnings("unchecked")
+        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeBoolean(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public long getLong(KafkaColumnHandle columnHandle, int field)
     {
-        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
+        @SuppressWarnings("unchecked")
+        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeLong(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public double getDouble(KafkaColumnHandle columnHandle, int field)
     {
-        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
+        @SuppressWarnings("unchecked")
+        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeDouble(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public Slice getSlice(KafkaColumnHandle columnHandle, int field)
     {
-        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
+        @SuppressWarnings("unchecked")
+        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
         return fieldDecoder.decodeSlice(cache[field], columnHandle.getFormatHint());
     }
 
     @Override
     public boolean isNull(KafkaColumnHandle columnHandle, int field)
     {
-        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(field);
+        @SuppressWarnings("unchecked")
+        KafkaFieldDecoder<String> fieldDecoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
         return fieldDecoder.isNull(cache[field], columnHandle.getFormatHint());
     }
 }
