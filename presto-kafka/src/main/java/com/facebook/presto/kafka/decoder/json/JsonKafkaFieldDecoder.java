@@ -11,6 +11,9 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+/**
+ * Default field decoder for the JSON format. Supports json format coercions to implicitly convert e.g. string to long values.
+ */
 public class JsonKafkaFieldDecoder
         implements KafkaFieldDecoder<JsonNode>
 {

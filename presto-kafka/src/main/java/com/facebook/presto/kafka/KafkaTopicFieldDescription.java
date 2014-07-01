@@ -23,6 +23,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+/**
+ * Json description to parse a single field from a Kafka topic message. See {@link com.facebook.presto.kafka.KafkaTopicFieldDescription} for more details.
+ */
 public final class KafkaTopicFieldDescription
 {
     private final String name;

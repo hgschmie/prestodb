@@ -6,6 +6,9 @@ import com.google.inject.Module;
 import static com.facebook.presto.kafka.decoder.KafkaDecoderModule.bindFieldDecoder;
 import static com.facebook.presto.kafka.decoder.KafkaDecoderModule.bindRowDecoder;
 
+/**
+ * Guice module for the CSV decoder.
+ */
 public class CsvKafkaDecoderModule
         implements Module
 {

@@ -10,6 +10,9 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
+/**
+ * Default 'decoder' for the dummy format. Can not decode anything. This is intentional.
+ */
 public class DummyKafkaFieldDecoder
         implements KafkaFieldDecoder<Void>
 {

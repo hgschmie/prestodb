@@ -32,12 +32,25 @@ public final class KafkaColumnHandle
     private final String connectorId;
     private final int ordinalPosition;
 
+    /** Column Name */
     private final String name;
+
+    /** Column type */
     private final Type type;
+
+    /** Mapping hint for the decoder. Can be null. */
     private final String mapping;
+
+    /** Data format to use (selects the decoder). Can be null. */
     private final String dataFormat;
+
+    /** Additional format hint for the selected decoder. Selects a decoder subtype (e.g. which timestamp decoder). */
     private final String formatHint;
+
+    /** True if the column should be hidden. */
     private final boolean hidden;
+
+    /** True if the column is internal to the connector and not defined by a topic definition. */
     private final boolean internal;
 
     @JsonCreator
@@ -120,7 +133,7 @@ public final class KafkaColumnHandle
 
     ColumnMetadata getColumnMetadata()
     {
-        return new ColumnMetadata(name, type, ordinalPosition, hidden);
+        return new ColumnMetadata(getName(), getType(), getOrdinalPosition(), isHidden());
     }
 
     @Override

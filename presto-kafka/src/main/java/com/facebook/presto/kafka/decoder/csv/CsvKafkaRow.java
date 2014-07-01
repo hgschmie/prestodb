@@ -12,6 +12,9 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * CSV format specific representation of a Kafka message.
+ */
 public class CsvKafkaRow
         extends KafkaRow
 {

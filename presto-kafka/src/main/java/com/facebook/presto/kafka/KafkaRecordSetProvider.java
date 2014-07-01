@@ -29,6 +29,9 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Factory for Kafka specific {@link RecordSet} instances.
+ */
 public class KafkaRecordSetProvider
         implements ConnectorRecordSetProvider
 {

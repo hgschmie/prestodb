@@ -9,6 +9,10 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
+/**
+ * Default field decoder for the CSV format. Very simple string based conversion of field values. May
+ * not work for may CSV topics.
+ */
 public class CsvKafkaFieldDecoder
         implements KafkaFieldDecoder<String>
 {

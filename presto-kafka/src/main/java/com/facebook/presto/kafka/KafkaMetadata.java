@@ -47,7 +47,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Manages the Kafka connector specific metadata information. The Connector provides an additional set of columns
- * for each table that are created as hidden columns.
+ * for each table that are created as hidden columns. See {@link com.facebook.presto.kafka.KafkaInternalFieldDescription} for a list
+ * of per-topic additional columns.
  */
 public class KafkaMetadata
         extends ReadOnlyConnectorMetadata

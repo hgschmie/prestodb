@@ -8,9 +8,11 @@ import io.airlift.slice.Slice;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Represents a Message decoded in the 'dummy' format.
+ */
 public class DummyKafkaRow
         extends KafkaRow
-
 {
     public DummyKafkaRow(List<KafkaColumnHandle> columnHandles, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
     {

@@ -16,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Decode a Kafka message as CSV. This is an extremely primitive CSV decoder using {@link au.com.bytecode.opencsv.CSVParser]}.
+ *
+ * It needs some work to be really useful but may work for simple, evenly structured topics.
+ */
 public class CsvKafkaRowDecoder
         implements KafkaRowDecoder
 {

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.collect.ImmutableSet;
-import io.airlift.log.Logger;
 
 import javax.inject.Inject;
 
@@ -18,11 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * JSON specific Kafka row decoder. If a topic message can not be parsed, set the {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#CORRUPT_FIELD} to true.
+ */
 public class JsonKafkaRowDecoder
         implements KafkaRowDecoder
 {
-    private static final Logger LOG = Logger.get(JsonKafkaRowDecoder.class);
-
     public static final String NAME = "json";
 
     private final ObjectMapper objectMapper;

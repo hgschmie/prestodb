@@ -1,7 +1,7 @@
 package com.facebook.presto.kafka.decoder.json;
 
+import com.facebook.presto.kafka.KafkaErrorCode;
 import com.facebook.presto.spi.PrestoException;
-import com.facebook.presto.spi.StandardErrorCode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import io.airlift.slice.Slice;
@@ -11,9 +11,22 @@ import org.joda.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+/**
+ * RFC 2822 date format decoder.
+ *
+ * Converts JSON string fields formatted in RFC 2822 format into timestamp compatible long values when the presto column definition is a TIMESTAMP or BIGINT.
+ * Returns the value of the JSON string field as is when the presto column definition is a VARCHAR.
+ *
+ * Uses hardcoded UTC timezone and english locale.
+ */
 public class RFC2822JsonKafkaFieldDecoder
         extends JsonKafkaFieldDecoder
 {
+    /**
+     * Todo - configurable time zones and locales.
+     */
     private static final DateTimeFormatter formatter = DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z yyyy").withLocale(Locale.ENGLISH).withZoneUTC();
 
     @Override
@@ -31,22 +44,20 @@ public class RFC2822JsonKafkaFieldDecoder
     @Override
     public boolean decodeBoolean(JsonNode value, String formatHint)
     {
-        throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
+        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to boolean not supported");
     }
 
     @Override
     public double decodeDouble(JsonNode value, String formatHint)
     {
-        throw new PrestoException(StandardErrorCode.INTERNAL_ERROR.toErrorCode(), "conversion not supported");
+        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to double not supported");
     }
 
     @Override
     public long decodeLong(JsonNode value, String formatHint)
     {
-        if (value == null) {
-            return 0;
-        }
+        checkNotNull(value, "value is null");
 
-        return formatter.parseMillis(value.asText());
+        return isNull(value, formatHint) ? 0L : formatter.parseMillis(value.asText());
     }
 }

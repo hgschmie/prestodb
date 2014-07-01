@@ -24,6 +24,9 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Kafka specific partition representation. Each partition maps to a topic partition and is split along segment boundaries.
+ */
 public class KafkaPartition
         implements ConnectorPartition
 {

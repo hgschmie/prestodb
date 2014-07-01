@@ -26,6 +26,28 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * Json description to parse a message on a Kafka topic.
+ *
+ <pre>
+      {
+          "tableName":"...table name visible to presto...",
+          "topicName":"...topic name read from kafka...",
+          "dataFormat":"message parse. Currently supported are 'json', 'csv' and 'dummy' (the default)",
+          "fields":[
+            {
+              "name":"... column name for this definition ...",
+              "type":"... any presto data type ...",
+              "mapping":"... a decoder specific mapping hint. For JSON, e.g. this can be a/b/c to look into nested dictionaries",
+              "dataFormat":"... select a field specific decoder for this column. Default is '_default'. See the decoder module documentation for details...",
+              "formatHint":"... additional format hinting to the selected decoder ...",
+              "hidden":"... boolean, true to hide the column in DESCRIBE TABLE and from SELECT *"
+            },
+            {...},
+            {...},
+            {...},
+            ...
+          }
+      }
+ </pre>
  */
 public class KafkaTopicDescription
 {

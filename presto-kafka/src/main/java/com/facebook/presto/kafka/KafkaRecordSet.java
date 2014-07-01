@@ -38,6 +38,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Kafka specific record set. Returns a cursor for a topic which iterates over a Kafka partition segment.
+ */
 public class KafkaRecordSet
         implements RecordSet
 {

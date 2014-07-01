@@ -19,6 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
+/**
+ * Manages Row and Field decoders for the various dataFormat values.
+ */
 public class KafkaDecoderRegistry
 {
     private static final Logger LOG = Logger.get(KafkaDecoderRegistry.class);
@@ -62,12 +65,19 @@ public class KafkaDecoderRegistry
         LOG.debug("Field decoders found: %s", this.fieldDecoders);
     }
 
+    /**
+     * Return the specific row decoder for a given data format.
+     */
     public KafkaRowDecoder getRowDecoder(String dataFormat)
     {
         checkState(rowDecoders.containsKey(dataFormat), "no row decoder for '%s' found", dataFormat);
         return rowDecoders.get(dataFormat);
     }
 
+    /**
+     * Return the best matching field decoder for a given row data format, field type and a possible field data format name. If no
+     * name was given or an unknown field data type was given, fall back to the default decoder.
+     */
     public KafkaFieldDecoder<?> getFieldDecoder(String rowDataFormat, Class<?> fieldType, @Nullable String fieldDataFormat)
     {
         checkNotNull(rowDataFormat, "rowDataFormat is null");

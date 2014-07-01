@@ -20,6 +20,10 @@ import java.util.concurrent.ExecutionException;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+/**
+ * Manages connections to the Kafka nodes. A worker may connect to multiple Kafka nodes depending on the segments and partitions
+ * it needs to process. According to the Kafka source code, a Kafka {@link kafka.javaapi.consumer.SimpleConsumer} is thread-safe.
+ */
 public class KafkaSimpleConsumerManager
 {
     private static final Logger LOG = Logger.get(KafkaSimpleConsumerManager.class);

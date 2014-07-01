@@ -16,6 +16,9 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+/**
+ * JSON specific representation of a Kafka topic row.
+ */
 public class JsonKafkaRow
         extends KafkaRow
 {

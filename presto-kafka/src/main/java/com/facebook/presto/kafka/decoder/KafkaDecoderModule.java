@@ -8,6 +8,9 @@ import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
+/**
+ * Kafka decoder specific module. Installs the registry and all known decoder submodules.
+ */
 public class KafkaDecoderModule
         implements Module
 {
