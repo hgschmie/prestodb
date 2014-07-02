@@ -5,7 +5,8 @@ import kafka.utils.VerifiableProperties;
 
 import java.nio.ByteBuffer;
 
-public class NumberEncoder implements Encoder<Number>
+public class NumberEncoder
+        implements Encoder<Number>
 {
     public NumberEncoder(VerifiableProperties props)
     {

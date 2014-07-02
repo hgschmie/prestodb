@@ -12,7 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkState;
 
-public class EmbeddedKafka implements Closeable
+public class EmbeddedKafka
+        implements Closeable
 {
     private final int port;
     private final File kafkaDataDir;

@@ -3,29 +3,22 @@ package com.facebook.presto.kafka;
 import com.facebook.presto.metadata.InMemoryNodeManager;
 import com.facebook.presto.metadata.QualifiedTableName;
 import com.facebook.presto.metadata.TableHandle;
-import com.facebook.presto.server.testing.TestingPrestoServer;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.type.BigintType;
 import com.facebook.presto.testing.LocalQueryRunner;
 import com.facebook.presto.testing.MaterializedResult;
-import com.facebook.presto.testing.MaterializedRow;
-import com.facebook.presto.testing.QueryRunner;
 import com.facebook.presto.type.TypeRegistry;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.io.Closer;
 import io.airlift.log.Logging;
 import kafka.admin.AdminUtils;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
-import kafka.utils.ZKStringSerializer;
 import kafka.utils.ZKStringSerializer$;
 import org.I0Itec.zkclient.ZkClient;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -35,11 +28,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static com.facebook.presto.kafka.TestUtils.findUnusedPort;
-import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.TimeZoneKey.UTC_KEY;
-import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 public class TestEmbeddedKafka
@@ -92,9 +82,10 @@ public class TestEmbeddedKafka
     }
 
     @Test
-    public void testTopicExists() throws Exception
+    public void testTopicExists()
+            throws Exception
     {
-        QualifiedTableName name =  new QualifiedTableName("kafka", "default", "test");
+        QualifiedTableName name = new QualifiedTableName("kafka", "default", "test");
         Optional<TableHandle> handle = queryRunner.getMetadata().getTableHandle(SESSION, name);
         assertTrue(handle.isPresent());
     }

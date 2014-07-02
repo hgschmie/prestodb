@@ -1,10 +1,10 @@
 package com.facebook.presto.kafka.decoder.dummy;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
-import com.facebook.presto.kafka.KafkaRow;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +29,8 @@ public class DummyKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
+    public Set<KafkaFieldValueProvider> decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
-        return new DummyKafkaRow(columnHandles, internalFieldValueProviders);
+        return ImmutableSet.of();
     }
 }

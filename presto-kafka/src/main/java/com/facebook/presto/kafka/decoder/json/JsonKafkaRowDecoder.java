@@ -1,14 +1,14 @@
 package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.kafka.KafkaInternalFieldDescription;
-import com.facebook.presto.kafka.KafkaInternalFieldValueProvider;
-import com.facebook.presto.kafka.KafkaRow;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
 import javax.inject.Inject;
@@ -16,6 +16,8 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * JSON specific Kafka row decoder. If a topic message can not be parsed, set the {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#CORRUPT_FIELD} to true.
@@ -40,10 +42,12 @@ public class JsonKafkaRowDecoder
     }
 
     @Override
-    public KafkaRow decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders, Set<KafkaInternalFieldValueProvider> internalFieldValueProviders)
+    public Set<KafkaFieldValueProvider> decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
-        JsonNode tree;
         boolean corrupted = false;
+        JsonNode tree;
+
+        ImmutableSet.Builder<KafkaFieldValueProvider> builder = ImmutableSet.builder();
 
         try {
             tree = objectMapper.readTree(data);
@@ -53,11 +57,34 @@ public class JsonKafkaRowDecoder
             corrupted = true;
         }
 
-        Set<KafkaInternalFieldValueProvider> rowInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
-                .addAll(internalFieldValueProviders)
-                .add(KafkaInternalFieldDescription.CORRUPT_FIELD.forBooleanValue(corrupted))
-                .build();
+        builder.add(KafkaInternalFieldDescription.CORRUPT_FIELD.forBooleanValue(corrupted));
 
-        return new JsonKafkaRow(tree, columnHandles, fieldDecoders, rowInternalFieldValueProviders);
+        for (KafkaColumnHandle columnHandle : columnHandles) {
+            if (columnHandle.isInternal()) {
+                continue;
+            }
+            KafkaFieldDecoder<JsonNode> decoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
+            if (decoder != null) {
+                JsonNode node = locateNode(tree, columnHandle);
+                builder.add(decoder.decode(node, columnHandle));
+            }
+        }
+
+        return builder.build();
+    }
+
+    private JsonNode locateNode(JsonNode tree, KafkaColumnHandle columnHandle)
+    {
+        String mapping = columnHandle.getMapping();
+        checkState(mapping != null, "No mapping for %s", columnHandle.getName());
+
+        JsonNode currentNode = tree;
+        for (String pathElement : Splitter.on('/').omitEmptyStrings().split(mapping)) {
+            if (!currentNode.has(pathElement)) {
+                return MissingNode.getInstance();
+            }
+            currentNode = currentNode.path(pathElement);
+        }
+        return currentNode;
     }
 }

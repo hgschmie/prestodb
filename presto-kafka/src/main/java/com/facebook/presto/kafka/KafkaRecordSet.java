@@ -57,7 +57,7 @@ public class KafkaRecordSet
     private final List<KafkaColumnHandle> columnHandles;
     private final List<Type> columnTypes;
 
-    private final Set<KafkaInternalFieldValueProvider> globalInternalFieldValueProviders;
+    private final Set<KafkaFieldValueProvider> globalInternalFieldValueProviders;
 
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
@@ -67,7 +67,7 @@ public class KafkaRecordSet
     {
         this.split = checkNotNull(split, "split is null");
 
-        this.globalInternalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>of(
+        this.globalInternalFieldValueProviders = ImmutableSet.<KafkaFieldValueProvider>of(
                 KafkaInternalFieldDescription.PARTITION_ID_FIELD.forLongValue(split.getPartitionId()),
                 KafkaInternalFieldDescription.SEGMENT_START_FIELD.forLongValue(split.getStart()),
                 KafkaInternalFieldDescription.SEGMENT_END_FIELD.forLongValue(split.getEnd()));
@@ -188,18 +188,19 @@ public class KafkaRecordSet
             byte[] currentRow = new byte[payload.limit()];
             payload.get(currentRow);
 
-            Set<KafkaInternalFieldValueProvider> internalFieldValueProviders = ImmutableSet.<KafkaInternalFieldValueProvider>builder()
+            KafkaRowBuilder rowBuilder = new KafkaRowBuilder()
                     .addAll(globalInternalFieldValueProviders)
                     .add(KafkaInternalFieldDescription.SEGMENT_COUNT_FIELD.forLongValue(totalMessages))
                     .add(KafkaInternalFieldDescription.PARTITION_OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
                     .add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(currentRow))
-                    .add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(currentRow.length))
-                    .build();
+                    .add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(currentRow.length));
+
+            rowBuilder.addAll(rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders));
 
             // TODO - Rewrite this to no longer pass the field value providers into the row but have a builder that takes
             // all the fields and collects them. Then have a decoder add the fields from the key and another decoder to add
             // the fields from the value. Will do this after finished the tpch tests. -- hpsngn
-            this.currentRow = rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders, internalFieldValueProviders);
+            this.currentRow = rowBuilder.build(columnHandles);
 
             return true; // Advanced successfully.
         }

@@ -48,7 +48,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * }
  * }
  * </pre>
- *
+ * <p/>
  * TODO - rewrite this to have dataFormat and the fields inside a "value" dictionary and add a "key" dictionary that allows similar parsing of the
  * key. Add a decoder type "raw" which can e.g. take the raw long bytes of a long key and turn it into a value.
  */
@@ -56,21 +56,21 @@ public class KafkaTopicDescription
 {
     private final String tableName;
     private final String topicName;
-    private final String dataFormat;
-    private final List<KafkaTopicFieldDescription> fields;
+    private final KafkaTopicFieldGroup key;
+    private final KafkaTopicFieldGroup message;
 
     @JsonCreator
     public KafkaTopicDescription(
             @JsonProperty("tableName") String tableName,
             @JsonProperty("topicName") String topicName,
-            @JsonProperty("dataFormat") String dataFormat,
-            @JsonProperty("fields") List<KafkaTopicFieldDescription> fields)
+            @JsonProperty("key") KafkaTopicFieldGroup key,
+            @JsonProperty("message") KafkaTopicFieldGroup message)
     {
         checkArgument(!isNullOrEmpty(tableName), "tableName is null or is empty");
         this.tableName = tableName;
         this.topicName = checkNotNull(topicName, "topicName is null");
-        this.dataFormat = checkNotNull(dataFormat, "dataFormat is null");
-        this.fields = ImmutableList.copyOf(checkNotNull(fields, "fields is null"));
+        this.key = checkNotNull(key, "key is null");
+        this.message = checkNotNull(message, "message is null");
     }
 
     @JsonProperty
@@ -86,15 +86,15 @@ public class KafkaTopicDescription
     }
 
     @JsonProperty
-    public String getDataFormat()
+    public KafkaTopicFieldGroup getKey()
     {
-        return dataFormat;
+        return key;
     }
 
     @JsonProperty
-    public List<KafkaTopicFieldDescription> getFields()
+    public KafkaTopicFieldGroup getMessage()
     {
-        return fields;
+        return message;
     }
 
     @Override
@@ -103,8 +103,8 @@ public class KafkaTopicDescription
         return Objects.toStringHelper(this)
                 .add("tableName", tableName)
                 .add("topicName", topicName)
-                .add("dataFormat", dataFormat)
-                .add("fields", fields)
+                .add("key", key)
+                .add("message", message)
                 .toString();
     }
 }

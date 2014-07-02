@@ -1,5 +1,7 @@
 package com.facebook.presto.kafka.decoder.csv;
 
+import com.facebook.presto.kafka.KafkaColumnHandle;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.google.common.collect.ImmutableSet;
 import io.airlift.slice.Slice;
@@ -7,6 +9,7 @@ import io.airlift.slice.Slices;
 
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 /**
@@ -35,48 +38,44 @@ public class CsvKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(String value, String format)
+    public KafkaFieldValueProvider decode(final String value, final KafkaColumnHandle columnHandle)
     {
-        try {
-            return value == null ? false : Boolean.parseBoolean(value);
-        }
-        catch (Exception e) {
-            return false;
-        }
-    }
+        checkNotNull(columnHandle, "columnHandle is null");
 
-    @Override
-    public long decodeLong(String value, String format)
-    {
-        try {
-            return value == null ? 0L : Long.parseLong(value);
-        }
-        catch (Exception e) {
-            return 0L;
-        }
-    }
+        return new KafkaFieldValueProvider()
+        {
+            @Override
+            public boolean accept(KafkaColumnHandle handle)
+            {
+                return columnHandle.equals(handle);
+            }
 
-    @Override
-    public double decodeDouble(String value, String format)
-    {
-        try {
-            return value == null ? 0.0d : Double.parseDouble(value);
-        }
-        catch (Exception e) {
-            return 0.0d;
-        }
-    }
+            @Override
+            public boolean isNull()
+            {
+                return value != null;
+            }
 
-    @Override
-    public Slice decodeSlice(String value, String format)
-    {
-        return value == null ? Slices.EMPTY_SLICE : Slices.utf8Slice(value);
-    }
+            public boolean getBoolean()
+            {
+                return value == null ? false : Boolean.parseBoolean(value);
+            }
 
-    @Override
-    public boolean isNull(String value, String format)
-    {
-        return value == null;
+            public long getLong()
+            {
+                return value == null ? 0L : Long.parseLong(value);
+            }
+
+            public double getDouble()
+            {
+                return value == null ? 0.0d : Double.parseDouble(value);
+            }
+
+            public Slice getSlice()
+            {
+                return value == null ? Slices.EMPTY_SLICE : Slices.utf8Slice(value);
+            }
+        };
     }
 
     @Override

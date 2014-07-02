@@ -1,6 +1,8 @@
 package com.facebook.presto.kafka.decoder.json;
 
+import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaErrorCode;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.spi.PrestoException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
@@ -40,42 +42,59 @@ public class CustomDateTimeJsonKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(JsonNode value, String formatHint)
+    public KafkaFieldValueProvider decode(final JsonNode value, final KafkaColumnHandle columnHandle)
     {
-        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to boolean not supported");
-    }
-
-    @Override
-    public double decodeDouble(JsonNode value, String formatHint)
-    {
-        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to double not supported");
-    }
-
-    @Override
-    public long decodeLong(JsonNode value, String formatHint)
-    {
+        checkNotNull(columnHandle, "columnHandle is null");
         checkNotNull(value, "value is null");
-        checkNotNull(formatHint, "formatHint is null");
 
-        if (isNull(value, formatHint)) {
-            return 0L;
+        return new CustomDateTImeJsonKafkaValueProvider(value, columnHandle);
+    }
+
+    public static class CustomDateTImeJsonKafkaValueProvider
+            extends JsonKafkaValueProvider
+    {
+        public CustomDateTImeJsonKafkaValueProvider(JsonNode value, KafkaColumnHandle columnHandle)
+        {
+            super(value, columnHandle);
         }
 
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatHint).withLocale(Locale.ENGLISH).withZoneUTC();
-        return formatter.parseMillis(value.asText());
-    }
-
-    @Override
-    public Slice decodeSlice(JsonNode value, String formatHint)
-    {
-        checkNotNull(value, "value is null");
-        checkNotNull(formatHint, "formatHint is null");
-
-        if (isNull(value, formatHint)) {
-            return Slices.EMPTY_SLICE;
+        @Override
+        public boolean getBoolean()
+        {
+            throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to boolean not supported");
         }
 
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatHint).withLocale(Locale.ENGLISH).withZoneUTC();
-        return Slices.utf8Slice(formatter.print(value.asLong()));
+        @Override
+        public double getDouble()
+        {
+            throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to double not supported");
+        }
+
+        @Override
+        public long getLong()
+        {
+            if (isNull()) {
+                return 0L;
+            }
+
+            checkNotNull(columnHandle.getFormatHint(), "formatHint is null");
+            String textValue = value.isValueNode() ? value.asText() : value.toString();
+
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(columnHandle.getFormatHint()).withLocale(Locale.ENGLISH).withZoneUTC();
+            return formatter.parseMillis(value.asText());
+        }
+
+        @Override
+        public Slice getSlice()
+        {
+            if (isNull()) {
+                return Slices.EMPTY_SLICE;
+            }
+
+            checkNotNull(columnHandle.getFormatHint(), "formatHint is null");
+
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(columnHandle.getFormatHint()).withLocale(Locale.ENGLISH).withZoneUTC();
+            return Slices.utf8Slice(formatter.print(value.asLong()));
+        }
     }
 }

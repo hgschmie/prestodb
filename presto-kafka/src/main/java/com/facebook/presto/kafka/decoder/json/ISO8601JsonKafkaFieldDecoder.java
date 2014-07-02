@@ -1,6 +1,8 @@
 package com.facebook.presto.kafka.decoder.json;
 
+import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaErrorCode;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.spi.PrestoException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
@@ -42,22 +44,43 @@ public class ISO8601JsonKafkaFieldDecoder
     }
 
     @Override
-    public boolean decodeBoolean(JsonNode value, String formatHint)
+    public KafkaFieldValueProvider decode(final JsonNode value, final KafkaColumnHandle columnHandle)
     {
-        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to boolean not supported");
-    }
-
-    @Override
-    public double decodeDouble(JsonNode value, String formatHint)
-    {
-        throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to double not supported");
-    }
-
-    @Override
-    public long decodeLong(JsonNode value, String formatHint)
-    {
+        checkNotNull(columnHandle, "columnHandle is null");
         checkNotNull(value, "value is null");
 
-        return isNull(value, formatHint) ? 0L : formatter.parseMillis(value.asText());
+        return new ISO8601JsonKafkaValueProvider(value, columnHandle);
+    }
+
+    public static class ISO8601JsonKafkaValueProvider
+            extends JsonKafkaValueProvider
+    {
+        public ISO8601JsonKafkaValueProvider(JsonNode value, KafkaColumnHandle columnHandle)
+        {
+            super(value, columnHandle);
+        }
+
+        @Override
+        public boolean getBoolean()
+        {
+            throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to boolean not supported");
+        }
+
+        @Override
+        public double getDouble()
+        {
+            throw new PrestoException(KafkaErrorCode.KAFKA_CONVERSION_NOT_SUPPORTED.toErrorCode(), "conversion to double not supported");
+        }
+
+        @Override
+        public long getLong()
+        {
+            if (isNull()) {
+                return 0L;
+            }
+
+            String textValue = value.isValueNode() ? value.asText() : value.toString();
+            return formatter.parseMillis(textValue);
+        }
     }
 }

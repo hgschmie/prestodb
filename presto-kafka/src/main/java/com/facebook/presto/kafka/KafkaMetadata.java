@@ -98,7 +98,6 @@ public class KafkaMetadata
         }
 
         return new KafkaTableHandle(connectorId,
-                table.getDataFormat(),
                 schemaTableName.getSchemaName(),
                 schemaTableName.getTableName(),
                 table.getTopicName());
@@ -149,8 +148,12 @@ public class KafkaMetadata
         ImmutableMap.Builder<String, ConnectorColumnHandle> columnHandles = ImmutableMap.builder();
 
         int index = 0;
-        for (KafkaTopicFieldDescription kafkaTopicFieldDescription : kafkaTopicDescription.getFields()) {
-            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, index++));
+        for (KafkaTopicFieldDescription kafkaTopicFieldDescription : kafkaTopicDescription.getKey().getFields()) {
+            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, kafkaTopicDescription.getKey().getDataFormat(), index++));
+        }
+
+        for (KafkaTopicFieldDescription kafkaTopicFieldDescription : kafkaTopicDescription.getMessage().getFields()) {
+            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, kafkaTopicDescription.getMessage().getDataFormat(), index++));
         }
 
         for (KafkaInternalFieldDescription kafkaInternalFieldDescription : internalFieldDescriptions) {
@@ -205,7 +208,11 @@ public class KafkaMetadata
         ImmutableList.Builder<ColumnMetadata> builder = ImmutableList.builder();
         int index = 0;
 
-        for (KafkaTopicFieldDescription fieldDescription : table.getFields()) {
+        for (KafkaTopicFieldDescription fieldDescription : table.getKey().getFields()) {
+            builder.add(fieldDescription.getColumnMetadata(index++));
+        }
+
+        for (KafkaTopicFieldDescription fieldDescription : table.getMessage().getFields()) {
             builder.add(fieldDescription.getColumnMetadata(index++));
         }
 
@@ -249,8 +256,8 @@ public class KafkaMetadata
                         LOG.debug("Created dummy Table definition for %s", definedTable);
                         builder.put(definedTable, new KafkaTopicDescription(definedTable,
                                 definedTable,
-                                DummyKafkaRowDecoder.NAME,
-                                ImmutableList.<KafkaTopicFieldDescription>of()));
+                                new KafkaTopicFieldGroup(DummyKafkaRowDecoder.NAME, ImmutableList.<KafkaTopicFieldDescription>of()),
+                                new KafkaTopicFieldGroup(DummyKafkaRowDecoder.NAME, ImmutableList.<KafkaTopicFieldDescription>of())));
                     }
                 }
 

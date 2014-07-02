@@ -109,17 +109,17 @@ public class KafkaInternalFieldDescription
         return new ColumnMetadata(name, type, index, false, hidden);
     }
 
-    public KafkaInternalFieldValueProvider forBooleanValue(boolean value)
+    public KafkaFieldValueProvider forBooleanValue(boolean value)
     {
         return new BooleanKafkaFieldValueProvider(value);
     }
 
-    public KafkaInternalFieldValueProvider forLongValue(long value)
+    public KafkaFieldValueProvider forLongValue(long value)
     {
         return new LongKafkaFieldValueProvider(value);
     }
 
-    public KafkaInternalFieldValueProvider forByteValue(byte[] value)
+    public KafkaFieldValueProvider forByteValue(byte[] value)
     {
         return new BytesKafkaFieldValueProvider(value);
     }
@@ -155,7 +155,7 @@ public class KafkaInternalFieldDescription
     }
 
     public class BooleanKafkaFieldValueProvider
-            extends KafkaInternalFieldValueProvider
+            extends KafkaFieldValueProvider
     {
         private final boolean value;
 
@@ -184,7 +184,7 @@ public class KafkaInternalFieldDescription
     }
 
     public class LongKafkaFieldValueProvider
-            extends KafkaInternalFieldValueProvider
+            extends KafkaFieldValueProvider
     {
         private final long value;
 
@@ -213,7 +213,7 @@ public class KafkaInternalFieldDescription
     }
 
     public class BytesKafkaFieldValueProvider
-            extends KafkaInternalFieldValueProvider
+            extends KafkaFieldValueProvider
     {
         private final byte[] value;
 

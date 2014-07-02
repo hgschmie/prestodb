@@ -7,7 +7,7 @@ import io.airlift.slice.Slice;
  * Provides values for internal columns. Instances of this class are returned by {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#forBooleanValue(boolean)},
  * {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#forLongValue(long)} and {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#forByteValue(byte[])}.
  */
-public abstract class KafkaInternalFieldValueProvider
+public abstract class KafkaFieldValueProvider
 {
     public abstract boolean accept(KafkaColumnHandle columnHandle);
 

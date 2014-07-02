@@ -1,6 +1,7 @@
 package com.facebook.presto.kafka.decoder;
 
-import io.airlift.slice.Slice;
+import com.facebook.presto.kafka.KafkaColumnHandle;
+import com.facebook.presto.kafka.KafkaFieldValueProvider;
 
 import java.util.Set;
 
@@ -29,32 +30,5 @@ public interface KafkaFieldDecoder<T>
      */
     public String getFieldDecoderName();
 
-    /**
-     * Decode an internal value into a boolean. Can throw a {@link com.facebook.presto.kafka.KafkaErrorCode#KAFKA_CONVERSION_NOT_SUPPORTED} exception
-     * if the {@link KafkaFieldDecoder#getJavaTypes()} result does not contain {@link com.facebook.presto.spi.type.BooleanType#BOOLEAN}.
-     */
-    boolean decodeBoolean(T value, String formatHint);
-
-    /**
-     * Decode an internal value into a long. Can throw a {@link com.facebook.presto.kafka.KafkaErrorCode#KAFKA_CONVERSION_NOT_SUPPORTED} exception
-     * if the {@link KafkaFieldDecoder#getJavaTypes()} result does not contain {@link com.facebook.presto.spi.type.BigintType#BIGINT}.
-     */
-    long decodeLong(T value, String formatHint);
-
-    /**
-     * Decode an internal value into a double. Can throw a {@link com.facebook.presto.kafka.KafkaErrorCode#KAFKA_CONVERSION_NOT_SUPPORTED} exception
-     * if the {@link KafkaFieldDecoder#getJavaTypes()} result does not contain {@link com.facebook.presto.spi.type.DoubleType#DOUBLE}.
-     */
-    double decodeDouble(T value, String formatHint);
-
-    /**
-     * Decode an internal value into a Slice. Can throw a {@link com.facebook.presto.kafka.KafkaErrorCode#KAFKA_CONVERSION_NOT_SUPPORTED} exception
-     * if the {@link KafkaFieldDecoder#getJavaTypes()} result does not contain {@link com.facebook.presto.spi.type.VarcharType#VARCHAR}.
-     */
-    Slice decodeSlice(T value, String formatHint);
-
-    /**
-     * Do null check on an internal value.
-     */
-    boolean isNull(T value, String formatHint);
+    KafkaFieldValueProvider decode(T value, KafkaColumnHandle columnHandle);
 }

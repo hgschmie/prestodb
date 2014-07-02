@@ -33,11 +33,6 @@ public final class KafkaTableHandle
     private final String connectorId;
 
     /**
-     * Data format to use (selects the decoder).
-     */
-    private final String dataFormat;
-
-    /**
      * The schema name for this table. Is set through configuration and read using {@link KafkaConnectorConfig#getSchemaName()}. Usually 'default'.
      */
     private final String schemaName;
@@ -55,14 +50,11 @@ public final class KafkaTableHandle
     @JsonCreator
     public KafkaTableHandle(
             @JsonProperty("connectorId") String connectorId,
-            @JsonProperty("dataFormat") String dataFormat,
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
-            @JsonProperty("topicName") String topicName
-    )
+            @JsonProperty("topicName") String topicName)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.dataFormat = checkNotNull(dataFormat, "dataFormat is null");
         this.schemaName = checkNotNull(schemaName, "schemaName is null");
         this.tableName = checkNotNull(tableName, "tableName is null");
         this.topicName = checkNotNull(topicName, "topicName is null");
@@ -72,12 +64,6 @@ public final class KafkaTableHandle
     public String getConnectorId()
     {
         return connectorId;
-    }
-
-    @JsonProperty
-    public String getDataFormat()
-    {
-        return dataFormat;
     }
 
     @JsonProperty
@@ -106,7 +92,7 @@ public final class KafkaTableHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, dataFormat, schemaName, tableName, topicName);
+        return Objects.hashCode(connectorId, schemaName, tableName, topicName);
     }
 
     @Override
@@ -121,7 +107,6 @@ public final class KafkaTableHandle
 
         KafkaTableHandle other = (KafkaTableHandle) obj;
         return Objects.equal(this.connectorId, other.connectorId)
-                && Objects.equal(this.dataFormat, other.dataFormat)
                 && Objects.equal(this.schemaName, other.schemaName)
                 && Objects.equal(this.tableName, other.tableName)
                 && Objects.equal(this.topicName, other.topicName);
@@ -132,7 +117,6 @@ public final class KafkaTableHandle
     {
         return Objects.toStringHelper(this)
                 .add("connectorId", connectorId)
-                .add("dataFormat", dataFormat)
                 .add("schemaName", schemaName)
                 .add("tableName", tableName)
                 .add("topicName", topicName)
