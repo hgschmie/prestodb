@@ -3,6 +3,7 @@ package com.facebook.presto.kafka.decoder;
 import com.facebook.presto.kafka.decoder.csv.CsvKafkaDecoderModule;
 import com.facebook.presto.kafka.decoder.dummy.DummyKafkaDecoderModule;
 import com.facebook.presto.kafka.decoder.json.JsonKafkaDecoderModule;
+import com.facebook.presto.kafka.decoder.raw.RawKafkaDecoderModule;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
@@ -22,6 +23,7 @@ public class KafkaDecoderModule
         binder.install(new DummyKafkaDecoderModule());
         binder.install(new CsvKafkaDecoderModule());
         binder.install(new JsonKafkaDecoderModule());
+        binder.install(new RawKafkaDecoderModule());
     }
 
     public static void bindRowDecoder(Binder binder, Class<? extends KafkaRowDecoder> decoderClass)

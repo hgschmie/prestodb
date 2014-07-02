@@ -4,7 +4,6 @@ import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
-import com.google.common.collect.ImmutableSet;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +28,8 @@ public class DummyKafkaRowDecoder
     }
 
     @Override
-    public Set<KafkaFieldValueProvider> decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
+    public boolean decodeRow(byte[] data, Set<KafkaFieldValueProvider> fieldValueProviders, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
-        return ImmutableSet.of();
+        return false;
     }
 }

@@ -89,16 +89,16 @@ public final class KafkaTopicFieldDescription
         return hidden;
     }
 
-    KafkaColumnHandle getColumnHandle(String connectorId, String groupDataFormat, int index)
+    KafkaColumnHandle getColumnHandle(String connectorId, boolean keyDecoder, int index)
     {
         return new KafkaColumnHandle(connectorId,
                 index,
                 getName(),
                 getType(),
                 getMapping(),
-                groupDataFormat,
                 getDataFormat(),
                 getFormatHint(),
+                keyDecoder,
                 isHidden(),
                 false);
     }

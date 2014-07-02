@@ -2,14 +2,12 @@ package com.facebook.presto.kafka.decoder.json;
 
 import com.facebook.presto.kafka.KafkaColumnHandle;
 import com.facebook.presto.kafka.KafkaFieldValueProvider;
-import com.facebook.presto.kafka.KafkaInternalFieldDescription;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 
 import javax.inject.Inject;
 
@@ -20,7 +18,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
- * JSON specific Kafka row decoder. If a topic message can not be parsed, set the {@link com.facebook.presto.kafka.KafkaInternalFieldDescription#CORRUPT_FIELD} to true.
+ * JSON specific Kafka row decoder.
  */
 public class JsonKafkaRowDecoder
         implements KafkaRowDecoder
@@ -42,35 +40,31 @@ public class JsonKafkaRowDecoder
     }
 
     @Override
-    public Set<KafkaFieldValueProvider> decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
+    public boolean decodeRow(byte[] data, Set<KafkaFieldValueProvider> fieldValueProviders, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
-        boolean corrupted = false;
         JsonNode tree;
-
-        ImmutableSet.Builder<KafkaFieldValueProvider> builder = ImmutableSet.builder();
 
         try {
             tree = objectMapper.readTree(data);
         }
         catch (Exception e) {
-            tree = MissingNode.getInstance();
-            corrupted = true;
+            return true;
         }
-
-        builder.add(KafkaInternalFieldDescription.CORRUPT_FIELD.forBooleanValue(corrupted));
 
         for (KafkaColumnHandle columnHandle : columnHandles) {
             if (columnHandle.isInternal()) {
                 continue;
             }
+            @SuppressWarnings("unchecked")
             KafkaFieldDecoder<JsonNode> decoder = (KafkaFieldDecoder<JsonNode>) fieldDecoders.get(columnHandle);
+
             if (decoder != null) {
                 JsonNode node = locateNode(tree, columnHandle);
-                builder.add(decoder.decode(node, columnHandle));
+                fieldValueProviders.add(decoder.decode(node, columnHandle));
             }
         }
 
-        return builder.build();
+        return false;
     }
 
     private JsonNode locateNode(JsonNode tree, KafkaColumnHandle columnHandle)

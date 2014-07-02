@@ -2,11 +2,9 @@ package com.facebook.presto.kafka.decoder.csv;
 
 import au.com.bytecode.opencsv.CSVParser;
 import com.facebook.presto.kafka.KafkaColumnHandle;
-import com.facebook.presto.kafka.KafkaInternalFieldDescription;
 import com.facebook.presto.kafka.KafkaFieldValueProvider;
 import com.facebook.presto.kafka.decoder.KafkaFieldDecoder;
 import com.facebook.presto.kafka.decoder.KafkaRowDecoder;
-import com.google.common.collect.ImmutableSet;
 
 import javax.inject.Inject;
 
@@ -41,22 +39,16 @@ public class CsvKafkaRowDecoder
     }
 
     @Override
-    public Set<KafkaFieldValueProvider> decodeRow(byte[] data, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
+    public boolean decodeRow(byte[] data, Set<KafkaFieldValueProvider> fieldValueProviders, List<KafkaColumnHandle> columnHandles, Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
-        boolean corrupted = false;
-        String[] fields = EMPTY_FIELDS;
-
-        ImmutableSet.Builder<KafkaFieldValueProvider> builder = ImmutableSet.builder();
-
+        String[] fields;
         try {
             String line = new String(data, StandardCharsets.UTF_8);
             fields = parser.parseLine(line);
         }
         catch (Exception e) {
-            corrupted = true;
+            return true;
         }
-
-        builder.add(KafkaInternalFieldDescription.CORRUPT_FIELD.forBooleanValue(corrupted));
 
         int index = 0;
         for (KafkaColumnHandle columnHandle : columnHandles) {
@@ -66,12 +58,15 @@ public class CsvKafkaRowDecoder
             if (columnHandle.isInternal()) {
                 continue;
             }
-            KafkaFieldDecoder<String> decoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
-            if (decoder != null) {
-                builder.add(decoder.decode(fields[index++], columnHandle));
-            }
-        }
 
-        return builder.build();
+            @SuppressWarnings("unchecked")
+            KafkaFieldDecoder<String> decoder = (KafkaFieldDecoder<String>) fieldDecoders.get(columnHandle);
+
+            if (decoder != null) {
+                fieldValueProviders.add(decoder.decode(fields[index], columnHandle));
+            }
+            index++;
+        }
+        return false;
     }
 }

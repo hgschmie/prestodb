@@ -17,7 +17,8 @@ public interface KafkaRowDecoder
      */
     String getName();
 
-    Set<KafkaFieldValueProvider> decodeRow(byte[] data,
+    boolean decodeRow(byte[] data,
+            Set<KafkaFieldValueProvider> fieldValueProviders,
             List<KafkaColumnHandle> columnHandles,
             Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders);
 }

@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.javaapi.FetchResponse;
@@ -29,6 +30,7 @@ import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,8 @@ public class KafkaRecordSet
     private final KafkaSplit split;
     private final KafkaSimpleConsumerManager consumerManager;
 
-    private final KafkaRowDecoder rowDecoder;
+    private final KafkaRowDecoder keyDecoder;
+    private final KafkaRowDecoder messageDecoder;
     private final Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders;
 
     private final List<KafkaColumnHandle> columnHandles;
@@ -62,7 +65,8 @@ public class KafkaRecordSet
     KafkaRecordSet(KafkaSplit split,
             KafkaSimpleConsumerManager consumerManager,
             List<KafkaColumnHandle> columnHandles,
-            KafkaRowDecoder rowDecoder,
+            KafkaRowDecoder keyDecoder,
+            KafkaRowDecoder messageDecoder,
             Map<KafkaColumnHandle, KafkaFieldDecoder<?>> fieldDecoders)
     {
         this.split = checkNotNull(split, "split is null");
@@ -74,7 +78,8 @@ public class KafkaRecordSet
 
         this.consumerManager = checkNotNull(consumerManager, "consumerManager is null");
 
-        this.rowDecoder = checkNotNull(rowDecoder, "rowDecoder is null");
+        this.keyDecoder = checkNotNull(keyDecoder, "rowDecoder is null");
+        this.messageDecoder = checkNotNull(messageDecoder, "rowDecoder is null");
         this.fieldDecoders = checkNotNull(fieldDecoders, "fieldDecoders is null");
 
         this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
@@ -109,7 +114,7 @@ public class KafkaRecordSet
         private Iterator<MessageAndOffset> messageAndOffsetIterator;
         private final AtomicBoolean reported = new AtomicBoolean();
 
-        private KafkaRow currentRow;
+        private KafkaFieldValueProvider[] fieldValueProviders;
 
         KafkaRecordCursor()
         {
@@ -181,26 +186,40 @@ public class KafkaRecordSet
             totalBytes += messageAndOffset.message().payloadSize();
             totalMessages++;
 
-            // TODO - an optional key exists here. (messageAndOffset.message().key()). This code should be
-            // rewritten to allow parsing of the key and mapping into columns.
+            ByteBuffer key = messageAndOffset.message().key();
+            byte[] keyData = new byte[key.limit() - key.position()];
+            key.get(keyData);
 
-            ByteBuffer payload = messageAndOffset.message().payload();
-            byte[] currentRow = new byte[payload.limit()];
-            payload.get(currentRow);
+            ByteBuffer message = messageAndOffset.message().payload();
+            byte[] messageData = new byte[message.limit() - message.position()];
+            message.get(messageData);
 
-            KafkaRowBuilder rowBuilder = new KafkaRowBuilder()
-                    .addAll(globalInternalFieldValueProviders)
-                    .add(KafkaInternalFieldDescription.SEGMENT_COUNT_FIELD.forLongValue(totalMessages))
-                    .add(KafkaInternalFieldDescription.PARTITION_OFFSET_FIELD.forLongValue(messageAndOffset.offset()))
-                    .add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(currentRow))
-                    .add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(currentRow.length));
+            Set<KafkaFieldValueProvider> fieldValueProviders = new HashSet<>();
 
-            rowBuilder.addAll(rowDecoder.decodeRow(currentRow, columnHandles, fieldDecoders));
+            fieldValueProviders.addAll(globalInternalFieldValueProviders);
+            fieldValueProviders.add(KafkaInternalFieldDescription.SEGMENT_COUNT_FIELD.forLongValue(totalMessages));
+            fieldValueProviders.add(KafkaInternalFieldDescription.PARTITION_OFFSET_FIELD.forLongValue(messageAndOffset.offset()));
+            fieldValueProviders.add(KafkaInternalFieldDescription.MESSAGE_FIELD.forByteValue(messageData));
+            fieldValueProviders.add(KafkaInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(messageData.length));
+            fieldValueProviders.add(KafkaInternalFieldDescription.KEY_FIELD.forByteValue(keyData));
+            fieldValueProviders.add(KafkaInternalFieldDescription.KEY_LENGTH_FIELD.forLongValue(keyData.length));
+            fieldValueProviders.add(KafkaInternalFieldDescription.KEY_CORRUPT_FIELD.forBooleanValue(messageDecoder.decodeRow(keyData, fieldValueProviders, columnHandles, fieldDecoders)));
+            fieldValueProviders.add(KafkaInternalFieldDescription.MESSAGE_CORRUPT_FIELD.forBooleanValue(keyDecoder.decodeRow(messageData, fieldValueProviders, columnHandles, fieldDecoders)));
 
-            // TODO - Rewrite this to no longer pass the field value providers into the row but have a builder that takes
-            // all the fields and collects them. Then have a decoder add the fields from the key and another decoder to add
-            // the fields from the value. Will do this after finished the tpch tests. -- hpsngn
-            this.currentRow = rowBuilder.build(columnHandles);
+            this.fieldValueProviders = new KafkaFieldValueProvider[columnHandles.size()];
+
+            // If a value provider for a requested internal column is present, assign the
+            // value to the internal cache. It is possible that an internal column is present
+            // where no value provider exists (e.g. the '_corrupt' column with the DummyRowDecoder).
+            // In that case, the cache is null (and the column is reported as null).
+            for (int i = 0; i < columnHandles.size(); i++) {
+                for (KafkaFieldValueProvider fieldValueProvider : fieldValueProviders) {
+                    if (fieldValueProvider.accept(columnHandles.get(i))) {
+                        this.fieldValueProviders[i] = fieldValueProvider;
+                        break; // for(InternalColumnProvider...
+                    }
+                }
+            }
 
             return true; // Advanced successfully.
         }
@@ -211,7 +230,7 @@ public class KafkaRecordSet
             checkArgument(field < columnHandles.size(), "Invalid field index");
 
             checkFieldType(field, boolean.class);
-            return currentRow.getBoolean(field);
+            return isNull(field) ? false : fieldValueProviders[field].getBoolean();
         }
 
         @Override
@@ -220,7 +239,7 @@ public class KafkaRecordSet
             checkArgument(field < columnHandles.size(), "Invalid field index");
 
             checkFieldType(field, long.class);
-            return currentRow.getLong(field);
+            return isNull(field) ? 0L : fieldValueProviders[field].getLong();
         }
 
         @Override
@@ -229,7 +248,7 @@ public class KafkaRecordSet
             checkArgument(field < columnHandles.size(), "Invalid field index");
 
             checkFieldType(field, double.class);
-            return currentRow.getDouble(field);
+            return isNull(field) ? 0.0d : fieldValueProviders[field].getDouble();
         }
 
         @Override
@@ -238,7 +257,7 @@ public class KafkaRecordSet
             checkArgument(field < columnHandles.size(), "Invalid field index");
 
             checkFieldType(field, Slice.class);
-            return currentRow.getSlice(field);
+            return isNull(field) ? Slices.EMPTY_SLICE : fieldValueProviders[field].getSlice();
         }
 
         @Override
@@ -246,7 +265,7 @@ public class KafkaRecordSet
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
 
-            return currentRow.isNull(field);
+            return fieldValueProviders[field] == null || fieldValueProviders[field].isNull();
         }
 
         private void checkFieldType(int field, Class<?> expected)

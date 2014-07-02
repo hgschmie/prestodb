@@ -47,17 +47,24 @@ public final class KafkaTableHandle
      */
     private final String topicName;
 
+    private final String keyDataFormat;
+    private final String messageDataFormat;
+
     @JsonCreator
     public KafkaTableHandle(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("schemaName") String schemaName,
             @JsonProperty("tableName") String tableName,
-            @JsonProperty("topicName") String topicName)
+            @JsonProperty("topicName") String topicName,
+            @JsonProperty("keyDataFormat") String keyDataFormat,
+            @JsonProperty("messageDataFormat") String messageDataFormat)
     {
         this.connectorId = checkNotNull(connectorId, "connectorId is null");
         this.schemaName = checkNotNull(schemaName, "schemaName is null");
         this.tableName = checkNotNull(tableName, "tableName is null");
         this.topicName = checkNotNull(topicName, "topicName is null");
+        this.keyDataFormat = checkNotNull(keyDataFormat, "keyDataFormat is null");
+        this.messageDataFormat = checkNotNull(messageDataFormat, "messageDataFormat is null");
     }
 
     @JsonProperty
@@ -84,6 +91,18 @@ public final class KafkaTableHandle
         return topicName;
     }
 
+    @JsonProperty
+    public String getKeyDataFormat()
+    {
+        return keyDataFormat;
+    }
+
+    @JsonProperty
+    public String getMessageDataFormat()
+    {
+        return messageDataFormat;
+    }
+
     public SchemaTableName toSchemaTableName()
     {
         return new SchemaTableName(schemaName, tableName);
@@ -92,7 +111,7 @@ public final class KafkaTableHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, schemaName, tableName, topicName);
+        return Objects.hashCode(connectorId, schemaName, tableName, topicName, keyDataFormat, messageDataFormat);
     }
 
     @Override
@@ -109,7 +128,9 @@ public final class KafkaTableHandle
         return Objects.equal(this.connectorId, other.connectorId)
                 && Objects.equal(this.schemaName, other.schemaName)
                 && Objects.equal(this.tableName, other.tableName)
-                && Objects.equal(this.topicName, other.topicName);
+                && Objects.equal(this.topicName, other.topicName)
+                && Objects.equal(this.keyDataFormat, other.keyDataFormat)
+                && Objects.equal(this.messageDataFormat, other.messageDataFormat);
     }
 
     @Override
@@ -120,6 +141,8 @@ public final class KafkaTableHandle
                 .add("schemaName", schemaName)
                 .add("tableName", tableName)
                 .add("topicName", topicName)
+                .add("keyDataFormat", keyDataFormat)
+                .add("messageDataFormat", messageDataFormat)
                 .toString();
     }
 }

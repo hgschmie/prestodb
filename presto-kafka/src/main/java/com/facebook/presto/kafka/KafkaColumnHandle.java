@@ -50,17 +50,17 @@ public final class KafkaColumnHandle
     /**
      * Data format to use (selects the decoder). Can be null.
      */
-    private final String groupDataFormat;
-
-    /**
-     * Data format to use (selects the decoder). Can be null.
-     */
-    private final String fieldDataFormat;
+    private final String dataFormat;
 
     /**
      * Additional format hint for the selected decoder. Selects a decoder subtype (e.g. which timestamp decoder).
      */
     private final String formatHint;
+
+    /**
+     * True if the key decoder should be used, false if the message decoder should be used.
+     */
+    private final boolean keyDecoder;
 
     /**
      * True if the column should be hidden.
@@ -79,9 +79,9 @@ public final class KafkaColumnHandle
             @JsonProperty("name") String name,
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
-            @JsonProperty("groupDataFormat") String groupDataFormat,
-            @JsonProperty("fieldDataFormat") String fieldDataFormat,
+            @JsonProperty("dataFormat") String dataFormat,
             @JsonProperty("formatHint") String formatHint,
+            @JsonProperty("keyDecoder") boolean keyDecoder,
             @JsonProperty("hidden") boolean hidden,
             @JsonProperty("internal") boolean internal)
 
@@ -91,9 +91,9 @@ public final class KafkaColumnHandle
         this.name = checkNotNull(name, "name is null");
         this.type = checkNotNull(type, "type is null");
         this.mapping = mapping;
-        this.groupDataFormat = groupDataFormat;
-        this.fieldDataFormat = fieldDataFormat;
+        this.dataFormat = dataFormat;
         this.formatHint = formatHint;
+        this.keyDecoder = keyDecoder;
         this.hidden = hidden;
         this.internal = internal;
     }
@@ -129,21 +129,21 @@ public final class KafkaColumnHandle
     }
 
     @JsonProperty
-    public String getGroupDataFormat()
+    public String getDataFormat()
     {
-        return groupDataFormat;
-    }
-
-    @JsonProperty
-    public String getFieldDataFormat()
-    {
-        return fieldDataFormat;
+        return dataFormat;
     }
 
     @JsonProperty
     public String getFormatHint()
     {
         return formatHint;
+    }
+
+    @JsonProperty
+    public boolean isKeyDecoder()
+    {
+        return keyDecoder;
     }
 
     @JsonProperty
@@ -166,7 +166,7 @@ public final class KafkaColumnHandle
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(connectorId, ordinalPosition, name, type, mapping, groupDataFormat, fieldDataFormat, formatHint, hidden, internal);
+        return Objects.hashCode(connectorId, ordinalPosition, name, type, mapping, dataFormat, formatHint, keyDecoder, hidden, internal);
     }
 
     @Override
@@ -185,9 +185,9 @@ public final class KafkaColumnHandle
                 Objects.equal(this.name, other.name) &&
                 Objects.equal(this.type, other.type) &&
                 Objects.equal(this.mapping, other.mapping) &&
-                Objects.equal(this.groupDataFormat, other.groupDataFormat) &&
-                Objects.equal(this.fieldDataFormat, other.fieldDataFormat) &&
+                Objects.equal(this.dataFormat, other.dataFormat) &&
                 Objects.equal(this.formatHint, other.formatHint) &&
+                Objects.equal(this.keyDecoder, other.keyDecoder) &&
                 Objects.equal(this.hidden, other.hidden) &&
                 Objects.equal(this.internal, other.internal);
     }
@@ -207,9 +207,9 @@ public final class KafkaColumnHandle
                 .add("name", name)
                 .add("type", type)
                 .add("mapping", mapping)
-                .add("groupDataFormat", groupDataFormat)
-                .add("fieldDataFormat", fieldDataFormat)
+                .add("dataFormat", dataFormat)
                 .add("formatHint", formatHint)
+                .add("keyDecoder", keyDecoder)
                 .add("hidden", hidden)
                 .add("internal", internal)
                 .toString();

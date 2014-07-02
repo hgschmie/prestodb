@@ -131,7 +131,8 @@ public class KafkaSplitManager
             for (int i = endOffsets.length - 1; i > 0; i--) {
                 KafkaSplit split = new KafkaSplit(connectorId,
                         partition.getTopicName(),
-                        kafkaTableHandle.getDataFormat(),
+                        kafkaTableHandle.getKeyDataFormat(),
+                        kafkaTableHandle.getMessageDataFormat(),
                         partition.getPartitionIdAsInt(),
                         endOffsets[i],
                         endOffsets[i - 1],

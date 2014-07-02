@@ -47,13 +47,13 @@ public class CustomDateTimeJsonKafkaFieldDecoder
         checkNotNull(columnHandle, "columnHandle is null");
         checkNotNull(value, "value is null");
 
-        return new CustomDateTImeJsonKafkaValueProvider(value, columnHandle);
+        return new CustomDateTimeJsonKafkaValueProvider(value, columnHandle);
     }
 
-    public static class CustomDateTImeJsonKafkaValueProvider
+    public static class CustomDateTimeJsonKafkaValueProvider
             extends JsonKafkaValueProvider
     {
-        public CustomDateTImeJsonKafkaValueProvider(JsonNode value, KafkaColumnHandle columnHandle)
+        public CustomDateTimeJsonKafkaValueProvider(JsonNode value, KafkaColumnHandle columnHandle)
         {
             super(value, columnHandle);
         }
@@ -81,7 +81,7 @@ public class CustomDateTimeJsonKafkaFieldDecoder
             String textValue = value.isValueNode() ? value.asText() : value.toString();
 
             DateTimeFormatter formatter = DateTimeFormat.forPattern(columnHandle.getFormatHint()).withLocale(Locale.ENGLISH).withZoneUTC();
-            return formatter.parseMillis(value.asText());
+            return formatter.parseMillis(textValue);
         }
 
         @Override

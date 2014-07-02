@@ -25,19 +25,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class KafkaInternalFieldDescription
 {
     /**
-     * <tt>_message</tt> - Represents the full topic as a text column. Format is UTF-8 which may be wrong for some topics. TODO - make charset configureable.
-     */
-    public static final KafkaInternalFieldDescription MESSAGE_FIELD = new KafkaInternalFieldDescription("_message", VarcharType.VARCHAR);
-
-    /**
-     * <tt>_corrupt</tt> - True if the row converter could not read the a message. May be null if the row converter does not set a value (e.g. the dummy row converter does not).
-     */
-    public static final KafkaInternalFieldDescription CORRUPT_FIELD = new KafkaInternalFieldDescription("_corrupt", BooleanType.BOOLEAN);
-
-    /**
      * <tt>_partition_id</tt> - Kafka partition id.
      */
     public static final KafkaInternalFieldDescription PARTITION_ID_FIELD = new KafkaInternalFieldDescription("_partition_id", BigintType.BIGINT);
+
+    /**
+     * <tt>_partition_offset</tt> - The current offset of the message in the partition.
+     */
+    public static final KafkaInternalFieldDescription PARTITION_OFFSET_FIELD = new KafkaInternalFieldDescription("_partition_offset", BigintType.BIGINT);
 
     /**
      * <tt>_segment_start</tt> - Kafka start offset for the segment which contains the current message. This is per-partition.
@@ -55,18 +50,41 @@ public class KafkaInternalFieldDescription
     public static final KafkaInternalFieldDescription SEGMENT_COUNT_FIELD = new KafkaInternalFieldDescription("_segment_count", BigintType.BIGINT);
 
     /**
-     * <tt>_partition_offset</tt> - The current offset of the message in the partition.
+     * <tt>_message_corrupt</tt> - True if the row converter could not read the a message. May be null if the row converter does not set a value (e.g. the dummy row converter does not).
      */
-    public static final KafkaInternalFieldDescription PARTITION_OFFSET_FIELD = new KafkaInternalFieldDescription("_partition_offset", BigintType.BIGINT);
+    public static final KafkaInternalFieldDescription MESSAGE_CORRUPT_FIELD = new KafkaInternalFieldDescription("_message_corrupt", BooleanType.BOOLEAN);
+
+    /**
+     * <tt>_message</tt> - Represents the full topic as a text column. Format is UTF-8 which may be wrong for some topics. TODO - make charset configureable.
+     */
+    public static final KafkaInternalFieldDescription MESSAGE_FIELD = new KafkaInternalFieldDescription("_message", VarcharType.VARCHAR);
 
     /**
      * <tt>_message_length</tt> - length in bytes of the message.
      */
     public static final KafkaInternalFieldDescription MESSAGE_LENGTH_FIELD = new KafkaInternalFieldDescription("_message_length", BigintType.BIGINT);
 
+    /**
+     * <tt>_key_corrupt</tt> - True if the row converter could not read the a key. May be null if the row converter does not set a value (e.g. the dummy row converter does not).
+     */
+    public static final KafkaInternalFieldDescription KEY_CORRUPT_FIELD = new KafkaInternalFieldDescription("_key_corrupt", BooleanType.BOOLEAN);
+
+    /**
+     * <tt>_key</tt> - Represents the key as a text column. Format is UTF-8 which may be wrong for topics. TODO - make charset configureable.
+     */
+    public static final KafkaInternalFieldDescription KEY_FIELD = new KafkaInternalFieldDescription("_key", VarcharType.VARCHAR);
+
+    /**
+     * <tt>_key_length</tt> - length in bytes of the key.
+     */
+    public static final KafkaInternalFieldDescription KEY_LENGTH_FIELD = new KafkaInternalFieldDescription("_key_length", BigintType.BIGINT);
+
     public static Set<KafkaInternalFieldDescription> getInternalFields()
     {
-        return ImmutableSet.of(MESSAGE_FIELD, CORRUPT_FIELD, PARTITION_ID_FIELD, SEGMENT_START_FIELD, SEGMENT_END_FIELD, SEGMENT_COUNT_FIELD, PARTITION_OFFSET_FIELD, MESSAGE_LENGTH_FIELD);
+        return ImmutableSet.of(PARTITION_ID_FIELD, PARTITION_OFFSET_FIELD,
+                SEGMENT_START_FIELD, SEGMENT_END_FIELD, SEGMENT_COUNT_FIELD,
+                KEY_FIELD, KEY_CORRUPT_FIELD, KEY_LENGTH_FIELD,
+                MESSAGE_FIELD, MESSAGE_CORRUPT_FIELD, MESSAGE_LENGTH_FIELD);
     }
 
     private final String name;
@@ -100,6 +118,7 @@ public class KafkaInternalFieldDescription
                 null,
                 null,
                 null,
+                false,
                 hidden,
                 true);
     }

@@ -100,7 +100,9 @@ public class KafkaMetadata
         return new KafkaTableHandle(connectorId,
                 schemaTableName.getSchemaName(),
                 schemaTableName.getTableName(),
-                table.getTopicName());
+                table.getTopicName(),
+                table.getKey().getDataFormat(),
+                table.getMessage().getDataFormat());
     }
 
     @Override
@@ -149,11 +151,11 @@ public class KafkaMetadata
 
         int index = 0;
         for (KafkaTopicFieldDescription kafkaTopicFieldDescription : kafkaTopicDescription.getKey().getFields()) {
-            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, kafkaTopicDescription.getKey().getDataFormat(), index++));
+            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, true, index++));
         }
 
         for (KafkaTopicFieldDescription kafkaTopicFieldDescription : kafkaTopicDescription.getMessage().getFields()) {
-            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, kafkaTopicDescription.getMessage().getDataFormat(), index++));
+            columnHandles.put(kafkaTopicFieldDescription.getName(), kafkaTopicFieldDescription.getColumnHandle(connectorId, false, index++));
         }
 
         for (KafkaInternalFieldDescription kafkaInternalFieldDescription : internalFieldDescriptions) {
