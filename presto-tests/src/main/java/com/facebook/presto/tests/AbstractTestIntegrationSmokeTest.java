@@ -44,7 +44,7 @@ public abstract class AbstractTestIntegrationSmokeTest
     private AbstractTestIntegrationSmokeTest(QueryRunner queryRunner, Optional<ConnectorSession> sampledSession)
     {
         super(queryRunner);
-        this.sampledSession = checkNotNull(sampledSession, "sampledSession is null");
+        this.sampledSession = sampledSession;
     }
 
     @Test
