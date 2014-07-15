@@ -12,6 +12,7 @@ Presto Documentation
     functions
     language
     sql
+    plugins
     migration
     spi
     release
