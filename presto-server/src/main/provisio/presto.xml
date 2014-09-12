@@ -32,6 +32,12 @@
         </artifact>
     </artifactSet>
 
+    <artifactSet to="plugin/kafka">
+        <artifact id="${project.groupId}:presto-kafka:zip:${project.version}">
+            <unpack />
+        </artifact>
+    </artifactSet>
+
     <artifactSet to="plugin/example-http">
         <artifact id="${project.groupId}:presto-example-http:zip:${project.version}">
             <unpack />
