@@ -22,9 +22,9 @@ import static java.util.Objects.requireNonNull;
 public class ConnectorNewTableLayout
 {
     private final ConnectorPartitioningHandle partitioning;
-    private final List<String> partitionColumns;
+    private final List<ColumnName> partitionColumns;
 
-    public ConnectorNewTableLayout(ConnectorPartitioningHandle partitioning, List<String> partitionColumns)
+    public ConnectorNewTableLayout(ConnectorPartitioningHandle partitioning, List<ColumnName> partitionColumns)
     {
         this.partitioning = requireNonNull(partitioning, "partitioning is null");
         this.partitionColumns = requireNonNull(partitionColumns, "partitionColumns is null");
@@ -35,7 +35,7 @@ public class ConnectorNewTableLayout
         return partitioning;
     }
 
-    public List<String> getPartitionColumns()
+    public List<ColumnName> getPartitionColumns()
     {
         return partitionColumns;
     }

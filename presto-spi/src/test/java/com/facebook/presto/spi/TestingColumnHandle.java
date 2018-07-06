@@ -24,16 +24,16 @@ import static java.util.Objects.requireNonNull;
 public class TestingColumnHandle
         implements ColumnHandle
 {
-    private final String name;
+    private final ColumnName name;
 
     @JsonCreator
-    public TestingColumnHandle(@JsonProperty("name") String name)
+    public TestingColumnHandle(@JsonProperty("name") ColumnName name)
     {
         this.name = requireNonNull(name, "name is null");
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

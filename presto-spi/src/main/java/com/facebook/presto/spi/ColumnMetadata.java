@@ -11,49 +11,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.facebook.presto.spi;
 
 import com.facebook.presto.spi.type.Type;
 
 import java.util.Objects;
 
-import static java.util.Locale.ENGLISH;
-
 public class ColumnMetadata
 {
-    private final String name;
+    private final ColumnName name;
     private final Type type;
     private final String comment;
     private final String extraInfo;
     private final boolean hidden;
 
-    public ColumnMetadata(String name, Type type)
+    public ColumnMetadata(ColumnName name, Type type)
     {
         this(name, type, null, false);
     }
 
-    public ColumnMetadata(String name, Type type, String comment, boolean hidden)
+    public ColumnMetadata(ColumnName name, Type type, String comment, boolean hidden)
     {
         this(name, type, comment, null, hidden);
     }
 
-    public ColumnMetadata(String name, Type type, String comment, String extraInfo, boolean hidden)
+    public ColumnMetadata(ColumnName name, Type type, String comment, String extraInfo, boolean hidden)
     {
-        if (name == null || name.isEmpty()) {
-            throw new NullPointerException("name is null or empty");
+        if (name == null) {
+            throw new NullPointerException("name is null");
         }
         if (type == null) {
             throw new NullPointerException("type is null");
         }
 
-        this.name = name.toLowerCase(ENGLISH);
+        this.name = name;
         this.type = type;
         this.comment = comment;
         this.extraInfo = extraInfo;
         this.hidden = hidden;
     }
 
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

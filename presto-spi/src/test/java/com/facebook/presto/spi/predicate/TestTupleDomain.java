@@ -34,6 +34,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.predicate.TupleDomain.columnWiseUnion;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
@@ -46,12 +47,12 @@ import static org.testng.Assert.assertTrue;
 
 public class TestTupleDomain
 {
-    private static final ColumnHandle A = new TestingColumnHandle("a");
-    private static final ColumnHandle B = new TestingColumnHandle("b");
-    private static final ColumnHandle C = new TestingColumnHandle("c");
-    private static final ColumnHandle D = new TestingColumnHandle("d");
-    private static final ColumnHandle E = new TestingColumnHandle("e");
-    private static final ColumnHandle F = new TestingColumnHandle("f");
+    private static final ColumnHandle A = new TestingColumnHandle(createColumnName("a"));
+    private static final ColumnHandle B = new TestingColumnHandle(createColumnName("b"));
+    private static final ColumnHandle C = new TestingColumnHandle(createColumnName("c"));
+    private static final ColumnHandle D = new TestingColumnHandle(createColumnName("d"));
+    private static final ColumnHandle E = new TestingColumnHandle(createColumnName("e"));
+    private static final ColumnHandle F = new TestingColumnHandle(createColumnName("f"));
 
     @Test
     public void testNone()

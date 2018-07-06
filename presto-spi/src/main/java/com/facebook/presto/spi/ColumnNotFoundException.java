@@ -17,14 +17,14 @@ public class ColumnNotFoundException
         extends NotFoundException
 {
     private final SchemaTableName tableName;
-    private final String columnName;
+    private final ColumnName columnName;
 
-    public ColumnNotFoundException(SchemaTableName tableName, String columnName)
+    public ColumnNotFoundException(SchemaTableName tableName, ColumnName columnName)
     {
         this(tableName, columnName, "Column " + columnName + " not found in table " + tableName);
     }
 
-    public ColumnNotFoundException(SchemaTableName tableName, String columnName, String message)
+    public ColumnNotFoundException(SchemaTableName tableName, ColumnName columnName, String message)
     {
         super(message);
         if (tableName == null) {
@@ -37,12 +37,12 @@ public class ColumnNotFoundException
         this.columnName = columnName;
     }
 
-    public ColumnNotFoundException(SchemaTableName tableName, String columnName, Throwable cause)
+    public ColumnNotFoundException(SchemaTableName tableName, ColumnName columnName, Throwable cause)
     {
         this(tableName, columnName, "Table " + tableName + " not found", cause);
     }
 
-    public ColumnNotFoundException(SchemaTableName tableName, String columnName, String message, Throwable cause)
+    public ColumnNotFoundException(SchemaTableName tableName, ColumnName columnName, String message, Throwable cause)
     {
         super(message, cause);
         if (tableName == null) {
@@ -60,7 +60,7 @@ public class ColumnNotFoundException
         return tableName;
     }
 
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }
