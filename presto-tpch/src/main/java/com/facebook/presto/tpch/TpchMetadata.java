@@ -15,6 +15,7 @@ package com.facebook.presto.tpch;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayout;
@@ -65,6 +66,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.DateType.DATE;
 import static com.facebook.presto.spi.type.DoubleType.DOUBLE;
@@ -90,7 +92,7 @@ public class TpchMetadata
     public static final List<String> SCHEMA_NAMES = ImmutableList.of(
             TINY_SCHEMA_NAME, "sf1", "sf100", "sf300", "sf1000", "sf3000", "sf10000", "sf30000", "sf100000");
 
-    public static final String ROW_NUMBER_COLUMN_NAME = "row_number";
+    public static final ColumnName ROW_NUMBER_COLUMN_NAME = createColumnName("row_number");
 
     private static final Set<Slice> ORDER_STATUS_VALUES = ImmutableSet.of("F", "O", "P").stream()
             .map(Slices::utf8Slice)
@@ -183,7 +185,7 @@ public class TpchMetadata
 
         TupleDomain<ColumnHandle> predicate = TupleDomain.all();
         TupleDomain<ColumnHandle> unenforcedConstraint = constraint.getSummary();
-        Map<String, ColumnHandle> columns = getColumnHandles(session, tableHandle);
+        Map<ColumnName, ColumnHandle> columns = getColumnHandles(session, tableHandle);
         if (tableHandle.getTableName().equals(TpchTable.ORDERS.getTableName())) {
             ColumnHandle orderKeyColumn = columns.get(columnNaming.getName(OrderColumn.ORDER_KEY));
             nodePartition = Optional.of(new ConnectorTablePartitioning(
@@ -277,9 +279,9 @@ public class TpchMetadata
     }
 
     @Override
-    public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
+    public Map<ColumnName, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
     {
-        ImmutableMap.Builder<String, ColumnHandle> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<ColumnName, ColumnHandle> builder = ImmutableMap.builder();
         for (ColumnMetadata columnMetadata : getTableMetadata(session, tableHandle).getColumns()) {
             builder.put(columnMetadata.getName(), new TpchColumnHandle(columnMetadata.getName(), columnMetadata.getType()));
         }
@@ -313,7 +315,7 @@ public class TpchMetadata
         }
         Optional<TableStatisticsData> optionalTableStatisticsData = statisticsEstimator.estimateStats(tpchTable, columnValuesRestrictions, tpchTableHandle.getScaleFactor());
 
-        Map<String, ColumnHandle> columnHandles = getColumnHandles(session, tpchTableHandle);
+        Map<ColumnName, ColumnHandle> columnHandles = getColumnHandles(session, tpchTableHandle);
         return optionalTableStatisticsData
                 .map(tableStatisticsData -> toTableStatistics(optionalTableStatisticsData.get(), tpchTableHandle, columnHandles))
                 .orElse(TableStatistics.EMPTY_STATISTICS);
@@ -352,7 +354,7 @@ public class TpchMetadata
         }
     }
 
-    private TableStatistics toTableStatistics(TableStatisticsData tableStatisticsData, TpchTableHandle tpchTableHandle, Map<String, ColumnHandle> columnHandles)
+    private TableStatistics toTableStatistics(TableStatisticsData tableStatisticsData, TpchTableHandle tpchTableHandle, Map<ColumnName, ColumnHandle> columnHandles)
     {
         TableStatistics.Builder builder = TableStatistics.builder()
                 .setRowCount(new Estimate(tableStatisticsData.getRowCount()));
@@ -363,10 +365,10 @@ public class TpchMetadata
         return builder.build();
     }
 
-    private ColumnHandle getColumnHandle(TpchTableHandle tpchTableHandle, Map<String, ColumnHandle> columnHandles, String columnName)
+    private ColumnHandle getColumnHandle(TpchTableHandle tpchTableHandle, Map<ColumnName, ColumnHandle> columnHandles, ColumnName columnName)
     {
         TpchTable<?> table = TpchTable.getTable(tpchTableHandle.getTableName());
-        return columnHandles.get(columnNaming.getName(table.getColumn(columnName)));
+        return columnHandles.get(columnNaming.getName(table.getColumn(columnName.getColumnName())));
     }
 
     private ColumnStatistics toColumnStatistics(ColumnStatisticsData stats, Type columnType)
@@ -405,10 +407,10 @@ public class TpchMetadata
     public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle columnHandle)
     {
         ConnectorTableMetadata tableMetadata = getTableMetadata(session, tableHandle);
-        String columnName = ((TpchColumnHandle) columnHandle).getColumnName();
+        ColumnName columnName = ((TpchColumnHandle) columnHandle).getColumnName();
 
         for (ColumnMetadata column : tableMetadata.getColumns()) {
-            if (column.getName().equals(columnName)) {
+            if (column.getName().sqlEquals(columnName)) {
                 return column;
             }
         }

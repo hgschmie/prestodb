@@ -221,7 +221,7 @@ public class TpchRecordSet<E extends TpchEntity>
                             column -> {
                                 TpchColumnHandle tpchColumnHandle = (TpchColumnHandle) column;
                                 Type type = tpchColumnHandle.getType();
-                                TpchColumn tpchColumn = table.getColumn(tpchColumnHandle.getColumnName());
+                                TpchColumn tpchColumn = table.getColumn(tpchColumnHandle.getColumnName().getColumnName());
                                 return NullableValue.of(type, getPrestoObject(tpchColumn, type));
                             }));
 

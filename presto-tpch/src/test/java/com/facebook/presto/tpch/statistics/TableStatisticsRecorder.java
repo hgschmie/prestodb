@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.tpch.statistics;
 
+import com.facebook.presto.spi.ColumnName;
 import io.airlift.tpch.TpchColumn;
 import io.airlift.tpch.TpchColumnType;
 import io.airlift.tpch.TpchEntity;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static java.lang.String.format;
 import static java.util.function.Function.identity;
@@ -49,10 +51,10 @@ class TableStatisticsRecorder
             }
         }
 
-        Map<String, ColumnStatisticsData> columnSampleStatistics = statisticsRecorders.entrySet().stream()
+        Map<ColumnName, ColumnStatisticsData> columnSampleStatistics = statisticsRecorders.entrySet().stream()
                 .collect(toImmutableMap(
-                        e -> e.getKey().getColumnName(),
-                        e -> e.getValue().getRecording()));
+                        key -> createColumnName(key.getKey().getColumnName()),
+                        value -> value.getValue().getRecording()));
         return new TableStatisticsData(rowCount, columnSampleStatistics);
     }
 

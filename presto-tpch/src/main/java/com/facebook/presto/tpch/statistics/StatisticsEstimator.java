@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.tpch.statistics;
 
+import com.facebook.presto.spi.ColumnName;
 import io.airlift.slice.Slice;
 import io.airlift.tpch.TpchColumn;
 import io.airlift.tpch.TpchTable;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.tpch.util.Optionals.combine;
 import static com.facebook.presto.tpch.util.Types.checkSameType;
 import static com.facebook.presto.tpch.util.Types.checkType;
@@ -72,12 +74,12 @@ public class StatisticsEstimator
                 addPartitionStats(left.getColumns(), right.getColumns(), partitionColumn));
     }
 
-    private Map<String, ColumnStatisticsData> addPartitionStats(Map<String, ColumnStatisticsData> leftColumns, Map<String, ColumnStatisticsData> rightColumns, TpchColumn<?> partitionColumn)
+    private Map<ColumnName, ColumnStatisticsData> addPartitionStats(Map<ColumnName, ColumnStatisticsData> leftColumns, Map<ColumnName, ColumnStatisticsData> rightColumns, TpchColumn<?> partitionColumn)
     {
         return leftColumns.entrySet().stream().collect(toImmutableMap(
                 Map.Entry::getKey,
                 entry -> {
-                    String columnName = entry.getKey();
+                    ColumnName columnName = entry.getKey();
                     ColumnStatisticsData leftStats = entry.getValue();
                     ColumnStatisticsData rightStats = rightColumns.get(columnName);
                     return new ColumnStatisticsData(
@@ -87,12 +89,12 @@ public class StatisticsEstimator
                 }));
     }
 
-    private Optional<Long> addUniqueValuesCount(TpchColumn<?> partitionColumn, String columnName, ColumnStatisticsData leftStats, ColumnStatisticsData rightStats)
+    private Optional<Long> addUniqueValuesCount(TpchColumn<?> partitionColumn, ColumnName columnName, ColumnStatisticsData leftStats, ColumnStatisticsData rightStats)
     {
         //unique values count can't be added between different partitions
         //for columns other than the partition column (because almost certainly there are duplicates)
         return combine(leftStats.getDistinctValuesCount(), rightStats.getDistinctValuesCount(), (a, b) -> a + b)
-                .filter(v -> columnName.equals(partitionColumn.getColumnName()));
+                .filter(v -> columnName.sqlEquals(createColumnName(partitionColumn.getColumnName())));
     }
 
     @SuppressWarnings("unchecked")
@@ -116,7 +118,7 @@ public class StatisticsEstimator
     private TableStatisticsData zeroStatistics(TpchTable<?> table)
     {
         return new TableStatisticsData(0, table.getColumns().stream().collect(toImmutableMap(
-                TpchColumn::getColumnName,
+                key -> createColumnName(key.getColumnName()),
                 column -> ColumnStatisticsData.zero())));
     }
 }

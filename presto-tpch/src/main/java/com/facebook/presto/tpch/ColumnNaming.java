@@ -13,10 +13,13 @@
  */
 package com.facebook.presto.tpch;
 
+import com.facebook.presto.spi.ColumnName;
 import io.airlift.tpch.TpchColumn;
 import io.airlift.tpch.TpchEntity;
 
 import java.util.function.Function;
+
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 
 public enum ColumnNaming
 {
@@ -30,8 +33,8 @@ public enum ColumnNaming
         this.columnNameGetter = columnNameGetter;
     }
 
-    public String getName(TpchColumn<? extends TpchEntity> tpchColumn)
+    public ColumnName getName(TpchColumn<? extends TpchEntity> tpchColumn)
     {
-        return columnNameGetter.apply(tpchColumn);
+        return createColumnName(columnNameGetter.apply(tpchColumn));
     }
 }

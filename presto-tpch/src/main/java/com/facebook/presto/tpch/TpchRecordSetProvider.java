@@ -14,6 +14,7 @@
 package com.facebook.presto.tpch;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
@@ -56,12 +57,12 @@ public class TpchRecordSetProvider
     {
         ImmutableList.Builder<TpchColumn<E>> builder = ImmutableList.builder();
         for (ColumnHandle column : columns) {
-            String columnName = ((TpchColumnHandle) column).getColumnName();
-            if (columnName.equalsIgnoreCase(TpchMetadata.ROW_NUMBER_COLUMN_NAME)) {
+            ColumnName columnName = ((TpchColumnHandle) column).getColumnName();
+            if (columnName.sqlEquals(TpchMetadata.ROW_NUMBER_COLUMN_NAME)) {
                 builder.add(new RowNumberTpchColumn<E>());
             }
             else {
-                builder.add(table.getColumn(columnName));
+                builder.add(table.getColumn(columnName.getColumnName()));
             }
         }
 
@@ -74,7 +75,7 @@ public class TpchRecordSetProvider
         @Override
         public String getColumnName()
         {
-            return TpchMetadata.ROW_NUMBER_COLUMN_NAME;
+            return TpchMetadata.ROW_NUMBER_COLUMN_NAME.getColumnName();
         }
 
         @Override
