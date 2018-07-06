@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.decoder;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +35,7 @@ public final class DecoderTestColumnHandle
     /**
      * Column Name
      */
-    private final String name;
+    private final ColumnName name;
 
     /**
      * Column type
@@ -75,7 +76,7 @@ public final class DecoderTestColumnHandle
     public DecoderTestColumnHandle(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("ordinalPosition") int ordinalPosition,
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("type") Type type,
             @JsonProperty("mapping") String mapping,
             @JsonProperty("dataFormat") String dataFormat,
@@ -109,7 +110,7 @@ public final class DecoderTestColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

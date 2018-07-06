@@ -34,6 +34,7 @@ import java.util.Set;
 
 import static com.facebook.presto.decoder.util.DecoderTestUtil.checkIsNull;
 import static com.facebook.presto.decoder.util.DecoderTestUtil.checkValue;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.VarcharType.createVarcharType;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -59,11 +60,11 @@ public class TestJsonDecoder
         byte[] json = ByteStreams.toByteArray(TestJsonDecoder.class.getResourceAsStream("/decoder/json/message.json"));
 
         JsonRowDecoder rowDecoder = new JsonRowDecoder(PROVIDER.get());
-        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, "row1", createVarcharType(100), "source", null, null, false, false, false);
-        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, "row2", createVarcharType(10), "user/screen_name", null, null, false, false, false);
-        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, "row3", BigintType.BIGINT, "id", null, null, false, false, false);
-        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, "row4", BigintType.BIGINT, "user/statuses_count", null, null, false, false, false);
-        DecoderTestColumnHandle row5 = new DecoderTestColumnHandle("", 4, "row5", BooleanType.BOOLEAN, "user/geo_enabled", null, null, false, false, false);
+        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, createColumnName("row1"), createVarcharType(100), "source", null, null, false, false, false);
+        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, createColumnName("row2"), createVarcharType(10), "user/screen_name", null, null, false, false, false);
+        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, createColumnName("row3"), BigintType.BIGINT, "id", null, null, false, false, false);
+        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, createColumnName("row4"), BigintType.BIGINT, "user/statuses_count", null, null, false, false, false);
+        DecoderTestColumnHandle row5 = new DecoderTestColumnHandle("", 4, createColumnName("row5"), BooleanType.BOOLEAN, "user/geo_enabled", null, null, false, false, false);
 
         List<DecoderColumnHandle> columns = ImmutableList.of(row1, row2, row3, row4, row5);
         Set<FieldValueProvider> providers = new HashSet<>();
@@ -86,10 +87,10 @@ public class TestJsonDecoder
         byte[] json = "{}".getBytes(StandardCharsets.UTF_8);
 
         JsonRowDecoder rowDecoder = new JsonRowDecoder(PROVIDER.get());
-        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, "row1", createVarcharType(100), "very/deep/varchar", null, null, false, false, false);
-        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, "row2", BigintType.BIGINT, "no_bigint", null, null, false, false, false);
-        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, "row3", DoubleType.DOUBLE, "double/is_missing", null, null, false, false, false);
-        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, "row4", BooleanType.BOOLEAN, "hello", null, null, false, false, false);
+        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, createColumnName("row1"), createVarcharType(100), "very/deep/varchar", null, null, false, false, false);
+        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, createColumnName("row2"), BigintType.BIGINT, "no_bigint", null, null, false, false, false);
+        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, createColumnName("row3"), DoubleType.DOUBLE, "double/is_missing", null, null, false, false, false);
+        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, createColumnName("row4"), BooleanType.BOOLEAN, "hello", null, null, false, false, false);
 
         List<DecoderColumnHandle> columns = ImmutableList.of(row1, row2, row3, row4);
         Set<FieldValueProvider> providers = new HashSet<>();
@@ -111,10 +112,10 @@ public class TestJsonDecoder
         byte[] json = "{\"a_number\":481516,\"a_string\":\"2342\"}".getBytes(StandardCharsets.UTF_8);
 
         JsonRowDecoder rowDecoder = new JsonRowDecoder(PROVIDER.get());
-        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, "row1", createVarcharType(100), "a_number", null, null, false, false, false);
-        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, "row2", BigintType.BIGINT, "a_number", null, null, false, false, false);
-        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, "row3", createVarcharType(100), "a_string", null, null, false, false, false);
-        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, "row4", BigintType.BIGINT, "a_string", null, null, false, false, false);
+        DecoderTestColumnHandle row1 = new DecoderTestColumnHandle("", 0, createColumnName("row1"), createVarcharType(100), "a_number", null, null, false, false, false);
+        DecoderTestColumnHandle row2 = new DecoderTestColumnHandle("", 1, createColumnName("row2"), BigintType.BIGINT, "a_number", null, null, false, false, false);
+        DecoderTestColumnHandle row3 = new DecoderTestColumnHandle("", 2, createColumnName("row3"), createVarcharType(100), "a_string", null, null, false, false, false);
+        DecoderTestColumnHandle row4 = new DecoderTestColumnHandle("", 3, createColumnName("row4"), BigintType.BIGINT, "a_string", null, null, false, false, false);
 
         List<DecoderColumnHandle> columns = ImmutableList.of(row1, row2, row3, row4);
         Set<FieldValueProvider> providers = new HashSet<>();

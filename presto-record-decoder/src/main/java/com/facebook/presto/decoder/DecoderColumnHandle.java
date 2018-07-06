@@ -14,6 +14,7 @@
 package com.facebook.presto.decoder;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 
 // Connectors that have rows that can be decoded into
@@ -28,7 +29,7 @@ public interface DecoderColumnHandle
 
     Type getType();
 
-    String getName();
+    ColumnName getName();
 
     String getMapping();
 
