@@ -17,6 +17,7 @@ import com.facebook.presto.execution.TaskInfo;
 import com.facebook.presto.execution.TaskManager;
 import com.facebook.presto.execution.TaskStatus;
 import com.facebook.presto.operator.TaskStats;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -34,6 +35,7 @@ import org.joda.time.DateTime;
 import javax.inject.Inject;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.SystemTable.Distribution.ALL_NODES;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.TimestampType.TIMESTAMP;
@@ -45,38 +47,38 @@ public class TaskSystemTable
     public static final SchemaTableName TASK_TABLE_NAME = new SchemaTableName("runtime", "tasks");
 
     public static final ConnectorTableMetadata TASK_TABLE = tableMetadataBuilder(TASK_TABLE_NAME)
-            .column("node_id", createUnboundedVarcharType())
+            .column(createColumnName("node_id"), createUnboundedVarcharType())
 
-            .column("task_id", createUnboundedVarcharType())
-            .column("stage_id", createUnboundedVarcharType())
-            .column("query_id", createUnboundedVarcharType())
-            .column("state", createUnboundedVarcharType())
+            .column(createColumnName("task_id"), createUnboundedVarcharType())
+            .column(createColumnName("stage_id"), createUnboundedVarcharType())
+            .column(createColumnName("query_id"), createUnboundedVarcharType())
+            .column(createColumnName("state"), createUnboundedVarcharType())
 
-            .column("splits", BIGINT)
-            .column("queued_splits", BIGINT)
-            .column("running_splits", BIGINT)
-            .column("completed_splits", BIGINT)
+            .column(createColumnName("splits"), BIGINT)
+            .column(createColumnName("queued_splits"), BIGINT)
+            .column(createColumnName("running_splits"), BIGINT)
+            .column(createColumnName("completed_splits"), BIGINT)
 
-            .column("split_scheduled_time_ms", BIGINT)
-            .column("split_cpu_time_ms", BIGINT)
-            .column("split_user_time_ms", BIGINT)
-            .column("split_blocked_time_ms", BIGINT)
+            .column(createColumnName("split_scheduled_time_ms"), BIGINT)
+            .column(createColumnName("split_cpu_time_ms"), BIGINT)
+            .column(createColumnName("split_user_time_ms"), BIGINT)
+            .column(createColumnName("split_blocked_time_ms"), BIGINT)
 
-            .column("raw_input_bytes", BIGINT)
-            .column("raw_input_rows", BIGINT)
+            .column(createColumnName("raw_input_bytes"), BIGINT)
+            .column(createColumnName("raw_input_rows"), BIGINT)
 
-            .column("processed_input_bytes", BIGINT)
-            .column("processed_input_rows", BIGINT)
+            .column(createColumnName("processed_input_bytes"), BIGINT)
+            .column(createColumnName("processed_input_rows"), BIGINT)
 
-            .column("output_bytes", BIGINT)
-            .column("output_rows", BIGINT)
+            .column(createColumnName("output_bytes"), BIGINT)
+            .column(createColumnName("output_rows"), BIGINT)
 
-            .column("physical_written_bytes", BIGINT)
+            .column(createColumnName("physical_written_bytes"), BIGINT)
 
-            .column("created", TIMESTAMP)
-            .column("start", TIMESTAMP)
-            .column("last_heartbeat", TIMESTAMP)
-            .column("end", TIMESTAMP)
+            .column(createColumnName("created"), TIMESTAMP)
+            .column(createColumnName("start"), TIMESTAMP)
+            .column(createColumnName("last_heartbeat"), TIMESTAMP)
+            .column(createColumnName("end"), TIMESTAMP)
             .build();
 
     private final TaskManager taskManager;

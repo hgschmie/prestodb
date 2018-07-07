@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.connector.system.jdbc;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -35,6 +36,7 @@ import static com.facebook.presto.connector.system.jdbc.ColumnJdbcTable.columnSi
 import static com.facebook.presto.connector.system.jdbc.ColumnJdbcTable.jdbcDataType;
 import static com.facebook.presto.connector.system.jdbc.ColumnJdbcTable.numPrecRadix;
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
@@ -46,24 +48,24 @@ public class TypesJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "types");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("type_name", createUnboundedVarcharType())
-            .column("data_type", BIGINT)
-            .column("precision", BIGINT)
-            .column("literal_prefix", createUnboundedVarcharType())
-            .column("literal_suffix", createUnboundedVarcharType())
-            .column("create_params", createUnboundedVarcharType())
-            .column("nullable", BIGINT)
-            .column("case_sensitive", BOOLEAN)
-            .column("searchable", BIGINT)
-            .column("unsigned_attribute", BOOLEAN)
-            .column("fixed_prec_scale", BOOLEAN)
-            .column("auto_increment", BOOLEAN)
-            .column("local_type_name", createUnboundedVarcharType())
-            .column("minimum_scale", BIGINT)
-            .column("maximum_scale", BIGINT)
-            .column("sql_data_type", BIGINT)
-            .column("sql_datetime_sub", BIGINT)
-            .column("num_prec_radix", BIGINT)
+            .column(createColumnName("type_name"), createUnboundedVarcharType())
+            .column(createColumnName("data_type"), BIGINT)
+            .column(createColumnName("precision"), BIGINT)
+            .column(createColumnName("literal_prefix"), createUnboundedVarcharType())
+            .column(createColumnName("literal_suffix"), createUnboundedVarcharType())
+            .column(createColumnName("create_params"), createUnboundedVarcharType())
+            .column(createColumnName("nullable"), BIGINT)
+            .column(createColumnName("case_sensitive"), BOOLEAN)
+            .column(createColumnName("searchable"), BIGINT)
+            .column(createColumnName("unsigned_attribute"), BOOLEAN)
+            .column(createColumnName("fixed_prec_scale"), BOOLEAN)
+            .column(createColumnName("auto_increment"), BOOLEAN)
+            .column(createColumnName("local_type_name"), createUnboundedVarcharType())
+            .column(createColumnName("minimum_scale"), BIGINT)
+            .column(createColumnName("maximum_scale"), BIGINT)
+            .column(createColumnName("sql_data_type"), BIGINT)
+            .column(createColumnName("sql_datetime_sub"), BIGINT)
+            .column(createColumnName("num_prec_radix"), BIGINT)
             .build();
 
     private final TypeManager typeManager;

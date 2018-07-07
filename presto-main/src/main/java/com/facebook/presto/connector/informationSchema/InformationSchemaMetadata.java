@@ -20,6 +20,7 @@ import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.metadata.QualifiedTablePrefix;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayout;
@@ -51,6 +52,8 @@ import java.util.stream.Stream;
 import static com.facebook.presto.metadata.MetadataUtil.SchemaMetadataBuilder.schemaMetadataBuilder;
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
 import static com.facebook.presto.metadata.MetadataUtil.findColumnMetadata;
+import static com.facebook.presto.spi.ColumnName.*;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
@@ -76,48 +79,48 @@ public class InformationSchemaMetadata
 
     public static final Map<SchemaTableName, ConnectorTableMetadata> TABLES = schemaMetadataBuilder()
             .table(tableMetadataBuilder(TABLE_COLUMNS)
-                    .column("table_catalog", createUnboundedVarcharType())
-                    .column("table_schema", createUnboundedVarcharType())
-                    .column("table_name", createUnboundedVarcharType())
-                    .column("column_name", createUnboundedVarcharType())
-                    .column("ordinal_position", BIGINT)
-                    .column("column_default", createUnboundedVarcharType())
-                    .column("is_nullable", createUnboundedVarcharType())
-                    .column("data_type", createUnboundedVarcharType())
-                    .column("comment", createUnboundedVarcharType())
-                    .column("extra_info", createUnboundedVarcharType())
+                    .column(createColumnName("table_catalog"), createUnboundedVarcharType())
+                    .column(createColumnName("table_schema"), createUnboundedVarcharType())
+                    .column(createColumnName("table_name"), createUnboundedVarcharType())
+                    .column(createColumnName("column_name"), createUnboundedVarcharType())
+                    .column(createColumnName("ordinal_position"), BIGINT)
+                    .column(createColumnName("column_default"), createUnboundedVarcharType())
+                    .column(createColumnName("is_nullable"), createUnboundedVarcharType())
+                    .column(createColumnName("data_type"), createUnboundedVarcharType())
+                    .column(createColumnName("comment"), createUnboundedVarcharType())
+                    .column(createColumnName("extra_info"), createUnboundedVarcharType())
                     .build())
             .table(tableMetadataBuilder(TABLE_TABLES)
-                    .column("table_catalog", createUnboundedVarcharType())
-                    .column("table_schema", createUnboundedVarcharType())
-                    .column("table_name", createUnboundedVarcharType())
-                    .column("table_type", createUnboundedVarcharType())
+                    .column(createColumnName("table_catalog"), createUnboundedVarcharType())
+                    .column(createColumnName("table_schema"), createUnboundedVarcharType())
+                    .column(createColumnName("table_name"), createUnboundedVarcharType())
+                    .column(createColumnName("table_type"), createUnboundedVarcharType())
                     .build())
             .table(tableMetadataBuilder(TABLE_VIEWS)
-                    .column("table_catalog", createUnboundedVarcharType())
-                    .column("table_schema", createUnboundedVarcharType())
-                    .column("table_name", createUnboundedVarcharType())
-                    .column("view_definition", createUnboundedVarcharType())
+                    .column(createColumnName("table_catalog"), createUnboundedVarcharType())
+                    .column(createColumnName("table_schema"), createUnboundedVarcharType())
+                    .column(createColumnName("table_name"), createUnboundedVarcharType())
+                    .column(createColumnName("view_definition"), createUnboundedVarcharType())
                     .build())
             .table(tableMetadataBuilder(TABLE_SCHEMATA)
-                    .column("catalog_name", createUnboundedVarcharType())
-                    .column("schema_name", createUnboundedVarcharType())
+                    .column(createColumnName("catalog_name"), createUnboundedVarcharType())
+                    .column(createColumnName("schema_name"), createUnboundedVarcharType())
                     .build())
             .table(tableMetadataBuilder(TABLE_TABLE_PRIVILEGES)
-                    .column("grantor", createUnboundedVarcharType())
-                    .column("grantee", createUnboundedVarcharType())
-                    .column("table_catalog", createUnboundedVarcharType())
-                    .column("table_schema", createUnboundedVarcharType())
-                    .column("table_name", createUnboundedVarcharType())
-                    .column("privilege_type", createUnboundedVarcharType())
-                    .column("is_grantable", BOOLEAN)
-                    .column("with_hierarchy", BOOLEAN)
+                    .column(createColumnName("grantor"), createUnboundedVarcharType())
+                    .column(createColumnName("grantee"), createUnboundedVarcharType())
+                    .column(createColumnName("table_catalog"), createUnboundedVarcharType())
+                    .column(createColumnName("table_schema"), createUnboundedVarcharType())
+                    .column(createColumnName("table_name"), createUnboundedVarcharType())
+                    .column(createColumnName("privilege_type"), createUnboundedVarcharType())
+                    .column(createColumnName("is_grantable"), BOOLEAN)
+                    .column(createColumnName("with_hierarchy"), BOOLEAN)
                     .build())
             .build();
 
-    private static final InformationSchemaColumnHandle CATALOG_COLUMN_HANDLE = new InformationSchemaColumnHandle("table_catalog");
-    private static final InformationSchemaColumnHandle SCHEMA_COLUMN_HANDLE = new InformationSchemaColumnHandle("table_schema");
-    private static final InformationSchemaColumnHandle TABLE_NAME_COLUMN_HANDLE = new InformationSchemaColumnHandle("table_name");
+    private static final InformationSchemaColumnHandle CATALOG_COLUMN_HANDLE = new InformationSchemaColumnHandle(createColumnName("table_catalog"));
+    private static final InformationSchemaColumnHandle SCHEMA_COLUMN_HANDLE = new InformationSchemaColumnHandle(createColumnName("table_schema"));
+    private static final InformationSchemaColumnHandle TABLE_NAME_COLUMN_HANDLE = new InformationSchemaColumnHandle(createColumnName("table_name"));
     private static final int MAX_PREFIXES_COUNT = 100;
 
     private final String catalogName;
@@ -178,7 +181,7 @@ public class InformationSchemaMetadata
         InformationSchemaTableHandle informationSchemaTableHandle = checkTableHandle(tableHandle);
         ConnectorTableMetadata tableMetadata = TABLES.get(informationSchemaTableHandle.getSchemaTableName());
 
-        String columnName = ((InformationSchemaColumnHandle) columnHandle).getColumnName();
+        ColumnName columnName = ((InformationSchemaColumnHandle) columnHandle).getColumnName();
 
         ColumnMetadata columnMetadata = findColumnMetadata(tableMetadata, columnName);
         checkArgument(columnMetadata != null, "Column %s on table %s does not exist", columnName, tableMetadata.getTable());
@@ -186,7 +189,7 @@ public class InformationSchemaMetadata
     }
 
     @Override
-    public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
+    public Map<ColumnName, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
     {
         InformationSchemaTableHandle informationSchemaTableHandle = checkTableHandle(tableHandle);
 

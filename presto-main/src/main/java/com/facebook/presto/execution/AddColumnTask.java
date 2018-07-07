@@ -20,6 +20,7 @@ import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.analyzer.SemanticException;
 import com.facebook.presto.sql.tree.AddColumn;
@@ -62,7 +63,7 @@ public class AddColumnTask
 
         accessControl.checkCanAddColumns(session.getRequiredTransactionId(), session.getIdentity(), tableName);
 
-        Map<String, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle.get());
+        Map<ColumnName, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle.get());
 
         ColumnDefinition element = statement.getColumn();
         Type type;
@@ -79,7 +80,8 @@ public class AddColumnTask
             throw new SemanticException(COLUMN_ALREADY_EXISTS, statement, "Column '%s' already exists", element.getName());
         }
 
-        ColumnMetadata column = new ColumnMetadata(element.getName().getValue(), type, element.getComment().orElse(null), false);
+        ColumnMetadata column = new ColumnMetadata(ColumnName.createQuotedColumnName(element.getName().getValue(), element.getName().isDelimited()),
+                type, element.getComment().orElse(null), false);
 
         metadata.addColumn(session, tableHandle.get(), column);
 

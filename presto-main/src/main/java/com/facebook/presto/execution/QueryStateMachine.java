@@ -22,6 +22,7 @@ import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.operator.BlockedReason;
 import com.facebook.presto.operator.OperatorStats;
 import com.facebook.presto.security.AccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ErrorCode;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.QueryId;
@@ -513,7 +514,7 @@ public class QueryStateMachine
         outputManager.addOutputInfoListener(listener);
     }
 
-    public void setColumns(List<String> columnNames, List<Type> columnTypes)
+    public void setColumns(List<ColumnName> columnNames, List<Type> columnTypes)
     {
         outputManager.setColumns(columnNames, columnTypes);
     }
@@ -945,7 +946,7 @@ public class QueryStateMachine
         private final List<Consumer<QueryOutputInfo>> outputInfoListeners = new ArrayList<>();
 
         @GuardedBy("this")
-        private List<String> columnNames;
+        private List<ColumnName> columnNames;
         @GuardedBy("this")
         private List<Type> columnTypes;
         @GuardedBy("this")
@@ -970,7 +971,7 @@ public class QueryStateMachine
             queryOutputInfo.ifPresent(info -> executor.execute(() -> listener.accept(info)));
         }
 
-        public void setColumns(List<String> columnNames, List<Type> columnTypes)
+        public void setColumns(List<ColumnName> columnNames, List<Type> columnTypes)
         {
             requireNonNull(columnNames, "columnNames is null");
             requireNonNull(columnTypes, "columnTypes is null");

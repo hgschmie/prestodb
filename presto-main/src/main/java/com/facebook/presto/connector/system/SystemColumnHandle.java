@@ -16,6 +16,7 @@ package com.facebook.presto.connector.system;
 import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,12 +31,12 @@ public class SystemColumnHandle
         implements ColumnHandle
 {
     private final ConnectorId connectorId;
-    private final String columnName;
+    private final ColumnName columnName;
 
     @JsonCreator
     public SystemColumnHandle(
             @JsonProperty("connectorId") ConnectorId connectorId,
-            @JsonProperty("columnName") String columnName)
+            @JsonProperty("columnName") ColumnName columnName)
     {
         this.connectorId = requireNonNull(connectorId, "connectorId is null");
         this.columnName = requireNonNull(columnName, "columnName is null");
@@ -48,7 +49,7 @@ public class SystemColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }
@@ -79,9 +80,9 @@ public class SystemColumnHandle
         return connectorId + ":" + columnName;
     }
 
-    public static Map<String, ColumnHandle> toSystemColumnHandles(ConnectorId connectorId, ConnectorTableMetadata tableMetadata)
+    public static Map<ColumnName, ColumnHandle> toSystemColumnHandles(ConnectorId connectorId, ConnectorTableMetadata tableMetadata)
     {
-        ImmutableMap.Builder<String, ColumnHandle> columnHandles = ImmutableMap.builder();
+        ImmutableMap.Builder<ColumnName, ColumnHandle> columnHandles = ImmutableMap.builder();
         for (ColumnMetadata columnMetadata : tableMetadata.getColumns()) {
             columnHandles.put(columnMetadata.getName(), new SystemColumnHandle(connectorId, columnMetadata.getName()));
         }

@@ -17,6 +17,7 @@ import com.facebook.presto.Session;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.QualifiedTablePrefix;
 import com.facebook.presto.security.AccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -38,6 +39,7 @@ import static com.facebook.presto.metadata.MetadataListing.listCatalogs;
 import static com.facebook.presto.metadata.MetadataListing.listTables;
 import static com.facebook.presto.metadata.MetadataListing.listViews;
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 import static java.util.Objects.requireNonNull;
 
@@ -47,16 +49,16 @@ public class TableJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "tables");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("table_cat", createUnboundedVarcharType())
-            .column("table_schem", createUnboundedVarcharType())
-            .column("table_name", createUnboundedVarcharType())
-            .column("table_type", createUnboundedVarcharType())
-            .column("remarks", createUnboundedVarcharType())
-            .column("type_cat", createUnboundedVarcharType())
-            .column("type_schem", createUnboundedVarcharType())
-            .column("type_name", createUnboundedVarcharType())
-            .column("self_referencing_col_name", createUnboundedVarcharType())
-            .column("ref_generation", createUnboundedVarcharType())
+            .column(createColumnName("table_cat"), createUnboundedVarcharType())
+            .column(createColumnName("table_schem"), createUnboundedVarcharType())
+            .column(createColumnName("table_name"), createUnboundedVarcharType())
+            .column(createColumnName("table_type"), createUnboundedVarcharType())
+            .column(createColumnName("remarks"), createUnboundedVarcharType())
+            .column(createColumnName("type_cat"), createUnboundedVarcharType())
+            .column(createColumnName("type_schem"), createUnboundedVarcharType())
+            .column(createColumnName("type_name"), createUnboundedVarcharType())
+            .column(createColumnName("self_referencing_col_name"), createUnboundedVarcharType())
+            .column(createColumnName("ref_generation"), createUnboundedVarcharType())
             .build();
 
     private final Metadata metadata;

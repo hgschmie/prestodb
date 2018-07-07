@@ -14,6 +14,7 @@
 package com.facebook.presto.connector.system;
 
 import com.facebook.presto.connector.ConnectorId;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.SystemTable.Distribution.SINGLE_COORDINATOR;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
@@ -58,14 +60,14 @@ public class TransactionsSystemTable
     public TransactionsSystemTable(TypeManager typeManager, TransactionManager transactionManager)
     {
         this.transactionsTable = tableMetadataBuilder(TRANSACTIONS_TABLE_NAME)
-                .column("transaction_id", createUnboundedVarcharType())
-                .column("isolation_level", createUnboundedVarcharType())
-                .column("read_only", BOOLEAN)
-                .column("auto_commit_context", BOOLEAN)
-                .column("create_time", TIMESTAMP)
-                .column("idle_time_secs", BIGINT)
-                .column("written_catalog", createUnboundedVarcharType())
-                .column("catalogs", typeManager.getParameterizedType(ARRAY, ImmutableList.of(TypeSignatureParameter.of(createUnboundedVarcharType().getTypeSignature()))))
+                .column(createColumnName("transaction_id"), createUnboundedVarcharType())
+                .column(createColumnName("isolation_level"), createUnboundedVarcharType())
+                .column(createColumnName("read_only"), BOOLEAN)
+                .column(createColumnName("auto_commit_context"), BOOLEAN)
+                .column(createColumnName("create_time"), TIMESTAMP)
+                .column(createColumnName("idle_time_secs"), BIGINT)
+                .column(createColumnName("written_catalog"), createUnboundedVarcharType())
+                .column(createColumnName("catalogs"), typeManager.getParameterizedType(ARRAY, ImmutableList.of(TypeSignatureParameter.of(createUnboundedVarcharType().getTypeSignature()))))
                 .build();
         this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");
     }

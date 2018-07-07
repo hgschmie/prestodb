@@ -17,6 +17,7 @@ import com.facebook.presto.Session;
 import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.security.AccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -34,6 +35,7 @@ import java.util.Map;
 import static com.facebook.presto.connector.system.SystemConnectorSessionUtil.toSession;
 import static com.facebook.presto.metadata.MetadataListing.listCatalogs;
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.SystemTable.Distribution.SINGLE_COORDINATOR;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 import static java.util.Objects.requireNonNull;
@@ -44,8 +46,8 @@ public class CatalogSystemTable
     public static final SchemaTableName CATALOG_TABLE_NAME = new SchemaTableName("metadata", "catalogs");
 
     public static final ConnectorTableMetadata CATALOG_TABLE = tableMetadataBuilder(CATALOG_TABLE_NAME)
-            .column("catalog_name", createUnboundedVarcharType())
-            .column("connector_id", createUnboundedVarcharType())
+            .column(createColumnName("catalog_name"), createUnboundedVarcharType())
+            .column(createColumnName("connector_id"), createUnboundedVarcharType())
             .build();
     private final Metadata metadata;
     private final AccessControl accessControl;

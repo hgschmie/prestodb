@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.execution;
 
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,12 +24,12 @@ import static java.util.Objects.requireNonNull;
 
 public final class Column
 {
-    private final String name;
+    private final ColumnName name;
     private final String type;
 
     @JsonCreator
     public Column(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("type") String type)
     {
         this.name = requireNonNull(name, "name is null");
@@ -36,7 +37,7 @@ public final class Column
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

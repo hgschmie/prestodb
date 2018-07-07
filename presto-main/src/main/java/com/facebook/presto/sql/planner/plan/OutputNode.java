@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.sql.planner.plan;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.sql.planner.Symbol;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,13 +32,13 @@ public class OutputNode
         extends PlanNode
 {
     private final PlanNode source;
-    private final List<String> columnNames;
+    private final List<ColumnName> columnNames;
     private final List<Symbol> outputs; // column name = symbol
 
     @JsonCreator
     public OutputNode(@JsonProperty("id") PlanNodeId id,
             @JsonProperty("source") PlanNode source,
-            @JsonProperty("columns") List<String> columnNames,
+            @JsonProperty("columns") List<ColumnName> columnNames,
             @JsonProperty("outputs") List<Symbol> outputs)
     {
         super(id);
@@ -65,7 +66,7 @@ public class OutputNode
     }
 
     @JsonProperty("columns")
-    public List<String> getColumnNames()
+    public List<ColumnName> getColumnNames()
     {
         return columnNames;
     }

@@ -16,6 +16,7 @@ package com.facebook.presto.connector.system;
 import com.facebook.presto.execution.QueryInfo;
 import com.facebook.presto.execution.QueryManager;
 import com.facebook.presto.execution.QueryStats;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -38,6 +39,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.SystemTable.Distribution.ALL_COORDINATORS;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.TimestampType.TIMESTAMP;
@@ -51,22 +53,22 @@ public class QuerySystemTable
     public static final SchemaTableName QUERY_TABLE_NAME = new SchemaTableName("runtime", "queries");
 
     public static final ConnectorTableMetadata QUERY_TABLE = tableMetadataBuilder(QUERY_TABLE_NAME)
-            .column("node_id", createUnboundedVarcharType())
-            .column("query_id", createUnboundedVarcharType())
-            .column("state", createUnboundedVarcharType())
-            .column("user", createUnboundedVarcharType())
-            .column("source", createUnboundedVarcharType())
-            .column("query", createUnboundedVarcharType())
-            .column("resource_group_id", new ArrayType(createUnboundedVarcharType()))
+            .column(createColumnName("node_id"), createUnboundedVarcharType())
+            .column(createColumnName("query_id"), createUnboundedVarcharType())
+            .column(createColumnName("state"), createUnboundedVarcharType())
+            .column(createColumnName("user"), createUnboundedVarcharType())
+            .column(createColumnName("source"), createUnboundedVarcharType())
+            .column(createColumnName("query"), createUnboundedVarcharType())
+            .column(createColumnName("resource_group_id"), new ArrayType(createUnboundedVarcharType()))
 
-            .column("queued_time_ms", BIGINT)
-            .column("analysis_time_ms", BIGINT)
-            .column("distributed_planning_time_ms", BIGINT)
+            .column(createColumnName("queued_time_ms"), BIGINT)
+            .column(createColumnName("analysis_time_ms"), BIGINT)
+            .column(createColumnName("distributed_planning_time_ms"), BIGINT)
 
-            .column("created", TIMESTAMP)
-            .column("started", TIMESTAMP)
-            .column("last_heartbeat", TIMESTAMP)
-            .column("end", TIMESTAMP)
+            .column(createColumnName("created"), TIMESTAMP)
+            .column(createColumnName("started"), TIMESTAMP)
+            .column(createColumnName("last_heartbeat"), TIMESTAMP)
+            .column(createColumnName("end"), TIMESTAMP)
             .build();
 
     private final QueryManager queryManager;

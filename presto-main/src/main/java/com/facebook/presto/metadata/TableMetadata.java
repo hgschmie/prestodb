@@ -15,6 +15,7 @@ package com.facebook.presto.metadata;
 
 import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 
@@ -56,10 +57,10 @@ public class TableMetadata
         return metadata.getColumns();
     }
 
-    public ColumnMetadata getColumn(String name)
+    public ColumnMetadata getColumn(ColumnName name)
     {
         return getColumns().stream()
-                .filter(columnMetadata -> columnMetadata.getName().equals(name))
+                .filter(columnMetadata -> columnMetadata.getName().sqlEquals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("Invalid column name: %s", name)));
     }

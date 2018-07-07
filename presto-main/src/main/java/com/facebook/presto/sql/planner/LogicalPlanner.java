@@ -21,6 +21,7 @@ import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.type.Type;
@@ -64,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.facebook.presto.spi.ColumnName.createQuotedColumnName;
 import static com.facebook.presto.spi.StandardErrorCode.NOT_FOUND;
 import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
@@ -156,7 +158,7 @@ public class LogicalPlanner
             checkState(analysis.getCreateTableDestination().isPresent(), "Table destination is missing");
             Symbol symbol = symbolAllocator.newSymbol("rows", BIGINT);
             PlanNode source = new ValuesNode(idAllocator.getNextId(), ImmutableList.of(symbol), ImmutableList.of(ImmutableList.of(new LongLiteral("0"))));
-            return new OutputNode(idAllocator.getNextId(), source, ImmutableList.of("rows"), ImmutableList.of(symbol));
+            return new OutputNode(idAllocator.getNextId(), source, ImmutableList.of(ColumnName.createColumnName("rows")), ImmutableList.of(symbol));
         }
         return createOutputPlan(planStatementWithoutOutput(analysis, statement), analysis);
     }
@@ -211,7 +213,7 @@ public class LogicalPlanner
                 analysis.getCreateTableComment());
         Optional<NewTableLayout> newTableLayout = metadata.getNewTableLayout(session, destination.getCatalogName(), tableMetadata);
 
-        List<String> columnNames = tableMetadata.getColumns().stream()
+        List<ColumnName> columnNames = tableMetadata.getColumns().stream()
                 .filter(column -> !column.isHidden())
                 .map(ColumnMetadata::getName)
                 .collect(toImmutableList());
@@ -233,19 +235,19 @@ public class LogicalPlanner
         List<ColumnMetadata> visibleTableColumns = tableMetadata.getColumns().stream()
                 .filter(column -> !column.isHidden())
                 .collect(toImmutableList());
-        List<String> visibleTableColumnNames = visibleTableColumns.stream()
+        List<ColumnName> visibleTableColumnNames = visibleTableColumns.stream()
                 .map(ColumnMetadata::getName)
                 .collect(toImmutableList());
 
         RelationPlan plan = createRelationPlan(analysis, insertStatement.getQuery());
 
-        Map<String, ColumnHandle> columns = metadata.getColumnHandles(session, insert.getTarget());
+        Map<ColumnName, ColumnHandle> columns = metadata.getColumnHandles(session, insert.getTarget());
         Assignments.Builder assignments = Assignments.builder();
         for (ColumnMetadata column : tableMetadata.getColumns()) {
             if (column.isHidden()) {
                 continue;
             }
-            Symbol output = symbolAllocator.newSymbol(column.getName(), column.getType());
+            Symbol output = symbolAllocator.newSymbol(column.getName().getColumnName(), column.getType()); // fishy
             int index = insert.getColumns().indexOf(columns.get(column.getName()));
             if (index < 0) {
                 Expression cast = new Cast(new NullLiteral(), column.getType().getTypeSignature().toString());
@@ -288,7 +290,7 @@ public class LogicalPlanner
             Analysis analysis,
             RelationPlan plan,
             WriterTarget target,
-            List<String> columnNames,
+            List<ColumnName> columnNames,
             Optional<NewTableLayout> writeTableLayout)
     {
         List<Symbol> writerOutputs = ImmutableList.of(
@@ -358,12 +360,12 @@ public class LogicalPlanner
     private PlanNode createOutputPlan(RelationPlan plan, Analysis analysis)
     {
         ImmutableList.Builder<Symbol> outputs = ImmutableList.builder();
-        ImmutableList.Builder<String> names = ImmutableList.builder();
+        ImmutableList.Builder<ColumnName> names = ImmutableList.builder();
 
         int columnNumber = 0;
         RelationType outputDescriptor = analysis.getOutputDescriptor();
         for (Field field : outputDescriptor.getVisibleFields()) {
-            String name = field.getName().orElse("_col" + columnNumber);
+            ColumnName name = field.getName().orElse(ColumnName.createColumnName("_col" + columnNumber));
             names.add(name);
 
             int fieldIndex = outputDescriptor.indexOf(field);
@@ -403,7 +405,8 @@ public class LogicalPlanner
         ImmutableList.Builder<ColumnMetadata> columns = ImmutableList.builder();
         int aliasPosition = 0;
         for (Field field : plan.getDescriptor().getVisibleFields()) {
-            String columnName = columnAliases.isPresent() ? columnAliases.get().get(aliasPosition).getValue() : field.getName().get();
+            ColumnName columnName = columnAliases.isPresent() ? createQuotedColumnName(columnAliases.get().get(aliasPosition).getValue(), columnAliases.get().get(aliasPosition).isDelimited())
+                    : field.getName().get();
             columns.add(new ColumnMetadata(columnName, field.getType()));
             aliasPosition++;
         }

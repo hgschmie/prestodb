@@ -33,6 +33,7 @@ import com.facebook.presto.execution.buffer.SerializedPage;
 import com.facebook.presto.metadata.SessionPropertyManager;
 import com.facebook.presto.operator.ExchangeClient;
 import com.facebook.presto.server.SessionContext;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ErrorCode;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.QueryId;
@@ -73,6 +74,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.facebook.presto.SystemSessionProperties.isExchangeCompressionEnabled;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
 import static com.facebook.presto.util.Failures.toFailure;
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -438,7 +440,7 @@ class Query
 
         // for queries with no output, return a fake result for clients that require it
         if ((queryInfo.getState() == QueryState.FINISHED) && !queryInfo.getOutputStage().isPresent()) {
-            columns = ImmutableList.of(new Column("result", BooleanType.BOOLEAN));
+            columns = ImmutableList.of(new Column(createColumnName("result"), BooleanType.BOOLEAN));
             data = ImmutableSet.of(ImmutableList.of(true));
         }
 
@@ -508,7 +510,7 @@ class Query
     {
         // if first callback, set column names
         if (columns == null) {
-            List<String> columnNames = outputInfo.getColumnNames();
+            List<ColumnName> columnNames = outputInfo.getColumnNames();
             List<Type> columnTypes = outputInfo.getColumnTypes();
             checkArgument(columnNames.size() == columnTypes.size(), "Column names and types size mismatch");
 

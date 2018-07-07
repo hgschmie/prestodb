@@ -16,6 +16,7 @@ package com.facebook.presto.security;
 import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.spi.CatalogSchemaName;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.connector.ConnectorAccessControl;
@@ -511,7 +512,7 @@ public class AccessControlManager
     }
 
     @Override
-    public void checkCanCreateViewWithSelectFromColumns(TransactionId transactionId, Identity identity, QualifiedObjectName tableName, Set<String> columnNames)
+    public void checkCanCreateViewWithSelectFromColumns(TransactionId transactionId, Identity identity, QualifiedObjectName tableName, Set<ColumnName> columnNames)
     {
         requireNonNull(identity, "identity is null");
         requireNonNull(tableName, "tableName is null");
@@ -587,7 +588,7 @@ public class AccessControlManager
     }
 
     @Override
-    public void checkCanSelectFromColumns(TransactionId transactionId, Identity identity, QualifiedObjectName tableName, Set<String> columnNames)
+    public void checkCanSelectFromColumns(TransactionId transactionId, Identity identity, QualifiedObjectName tableName, Set<ColumnName> columnNames)
     {
         requireNonNull(identity, "identity is null");
         requireNonNull(tableName, "tableName is null");

@@ -15,6 +15,7 @@ package com.facebook.presto.testing;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorInsertTableHandle;
 import com.facebook.presto.spi.ConnectorNewTableLayout;
 import com.facebook.presto.spi.ConnectorOutputTableHandle;
@@ -107,9 +108,9 @@ public class TestingMetadata
     }
 
     @Override
-    public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
+    public Map<ColumnName, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
     {
-        ImmutableMap.Builder<String, ColumnHandle> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<ColumnName, ColumnHandle> builder = ImmutableMap.builder();
         int index = 0;
         for (ColumnMetadata columnMetadata : getTableMetadata(session, tableHandle).getColumns()) {
             builder.put(columnMetadata.getName(), new TestingColumnHandle(columnMetadata.getName(), index, columnMetadata.getType()));
@@ -260,7 +261,7 @@ public class TestingMetadata
     }
 
     @Override
-    public void renameColumn(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle source, String target)
+    public void renameColumn(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle source, ColumnName target)
     {
         ConnectorTableMetadata tableMetadata = getTableMetadata(session, tableHandle);
         SchemaTableName tableName = getTableName(tableHandle);
@@ -316,23 +317,23 @@ public class TestingMetadata
     public static class TestingColumnHandle
             implements ColumnHandle
     {
-        private final String name;
+        private final ColumnName name;
         private final OptionalInt ordinalPosition;
         private final Optional<Type> type;
 
-        public TestingColumnHandle(String name)
+        public TestingColumnHandle(ColumnName name)
         {
             this(name, OptionalInt.empty(), Optional.empty());
         }
 
-        public TestingColumnHandle(String name, int ordinalPosition, Type type)
+        public TestingColumnHandle(ColumnName name, int ordinalPosition, Type type)
         {
             this(name, OptionalInt.of(ordinalPosition), Optional.of(type));
         }
 
         @JsonCreator
         public TestingColumnHandle(
-                @JsonProperty("name") String name,
+                @JsonProperty("name") ColumnName name,
                 @JsonProperty("ordinalPosition") OptionalInt ordinalPosition,
                 @JsonProperty("type") Optional<Type> type)
         {
@@ -342,7 +343,7 @@ public class TestingMetadata
         }
 
         @JsonProperty
-        public String getName()
+        public ColumnName getName()
         {
             return name;
         }

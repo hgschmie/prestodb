@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.connector.system.jdbc;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -22,6 +23,7 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.predicate.TupleDomain;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
@@ -31,18 +33,18 @@ public class PseudoColumnJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "pseudo_columns");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("table_cat", createUnboundedVarcharType())
-            .column("table_schem", createUnboundedVarcharType())
-            .column("table_name", createUnboundedVarcharType())
-            .column("column_name", createUnboundedVarcharType())
-            .column("data_type", BIGINT)
-            .column("column_size", BIGINT)
-            .column("decimal_digits", BIGINT)
-            .column("num_prec_radix", BIGINT)
-            .column("column_usage", createUnboundedVarcharType())
-            .column("remarks", createUnboundedVarcharType())
-            .column("char_octet_length", BIGINT)
-            .column("is_nullable", BIGINT)
+            .column(createColumnName("table_cat"), createUnboundedVarcharType())
+            .column(createColumnName("table_schem"), createUnboundedVarcharType())
+            .column(createColumnName("table_name"), createUnboundedVarcharType())
+            .column(createColumnName("column_name"), createUnboundedVarcharType())
+            .column(createColumnName("data_type"), BIGINT)
+            .column(createColumnName("column_size"), BIGINT)
+            .column(createColumnName("decimal_digits"), BIGINT)
+            .column(createColumnName("num_prec_radix"), BIGINT)
+            .column(createColumnName("column_usage"), createUnboundedVarcharType())
+            .column(createColumnName("remarks"), createUnboundedVarcharType())
+            .column(createColumnName("char_octet_length"), BIGINT)
+            .column(createColumnName("is_nullable"), BIGINT)
             .build();
 
     @Override

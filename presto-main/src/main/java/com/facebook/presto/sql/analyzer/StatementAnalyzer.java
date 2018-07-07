@@ -28,6 +28,7 @@ import com.facebook.presto.security.ViewAccessControl;
 import com.facebook.presto.spi.CatalogSchemaName;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.function.OperatorType;
 import com.facebook.presto.spi.security.Identity;
@@ -144,6 +145,9 @@ import static com.facebook.presto.SystemSessionProperties.getMaxGroupingSets;
 import static com.facebook.presto.metadata.FunctionKind.AGGREGATE;
 import static com.facebook.presto.metadata.FunctionKind.WINDOW;
 import static com.facebook.presto.metadata.MetadataUtil.createQualifiedObjectName;
+import static com.facebook.presto.spi.ColumnName.EMPTY_COLUMN_NAME;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
+import static com.facebook.presto.spi.ColumnName.createQuotedColumnName;
 import static com.facebook.presto.spi.StandardErrorCode.INVALID_FUNCTION_ARGUMENT;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
@@ -306,24 +310,23 @@ class StatementAnalyzer
             accessControl.checkCanInsertIntoTable(session.getRequiredTransactionId(), session.getIdentity(), targetTable);
 
             TableMetadata tableMetadata = metadata.getTableMetadata(session, targetTableHandle.get());
-            List<String> tableColumns = tableMetadata.getColumns().stream()
+            List<ColumnName> tableColumns = tableMetadata.getColumns().stream()
                     .filter(column -> !column.isHidden())
                     .map(ColumnMetadata::getName)
                     .collect(toImmutableList());
 
-            List<String> insertColumns;
+            List<ColumnName> insertColumns;
             if (insert.getColumns().isPresent()) {
                 insertColumns = insert.getColumns().get().stream()
-                        .map(Identifier::getValue)
-                        .map(String::toLowerCase)
+                        .map(identifier -> createQuotedColumnName(identifier.getValue(), identifier.isDelimited()))
                         .collect(toImmutableList());
 
                 Set<String> columnNames = new HashSet<>();
-                for (String insertColumn : insertColumns) {
+                for (ColumnName insertColumn : insertColumns) {
                     if (!tableColumns.contains(insertColumn)) {
                         throw new SemanticException(MISSING_COLUMN, insert, "Insert column name does not exist in target table: %s", insertColumn);
                     }
-                    if (!columnNames.add(insertColumn)) {
+                    if (!columnNames.add(insertColumn.getColumnName())) {
                         throw new SemanticException(DUPLICATE_COLUMN_NAME, insert, "Insert column name is specified more than once: %s", insertColumn);
                     }
                 }
@@ -332,7 +335,7 @@ class StatementAnalyzer
                 insertColumns = tableColumns;
             }
 
-            Map<String, ColumnHandle> columnHandles = metadata.getColumnHandles(session, targetTableHandle.get());
+            Map<ColumnName, ColumnHandle> columnHandles = metadata.getColumnHandles(session, targetTableHandle.get());
             analysis.setInsert(new Analysis.Insert(
                     targetTableHandle.get(),
                     insertColumns.stream().map(columnHandles::get).collect(toImmutableList())));
@@ -349,7 +352,7 @@ class StatementAnalyzer
                         "Query: [" + Joiner.on(", ").join(queryTypes) + "]");
             }
 
-            return createAndAssignScope(insert, scope, Field.newUnqualified("rows", BIGINT));
+            return createAndAssignScope(insert, scope, Field.newUnqualified(createColumnName("rows"), BIGINT));
         }
 
         private boolean typesMatchForInsert(Iterable<Type> tableTypes, Iterable<Type> queryTypes)
@@ -397,7 +400,7 @@ class StatementAnalyzer
 
             accessControl.checkCanDeleteFromTable(session.getRequiredTransactionId(), session.getIdentity(), tableName);
 
-            return createAndAssignScope(node, scope, Field.newUnqualified("rows", BIGINT));
+            return createAndAssignScope(node, scope, Field.newUnqualified(createColumnName("rows"), BIGINT));
         }
 
         @Override
@@ -413,7 +416,7 @@ class StatementAnalyzer
             if (targetTableHandle.isPresent()) {
                 if (node.isNotExists()) {
                     analysis.setCreateTableAsSelectNoOp(true);
-                    return createAndAssignScope(node, scope, Field.newUnqualified("rows", BIGINT));
+                    return createAndAssignScope(node, scope, Field.newUnqualified(createColumnName("rows"), BIGINT));
                 }
                 throw new SemanticException(TABLE_ALREADY_EXISTS, node, "Destination table '%s' already exists", targetTable);
             }
@@ -445,7 +448,7 @@ class StatementAnalyzer
                 validateColumns(node, queryScope.getRelationType());
             }
 
-            return createAndAssignScope(node, scope, Field.newUnqualified("rows", BIGINT));
+            return createAndAssignScope(node, scope, Field.newUnqualified(createColumnName("rows"), BIGINT));
         }
 
         @Override
@@ -621,9 +624,9 @@ class StatementAnalyzer
         {
             // verify that all column names are specified and unique
             // TODO: collect errors and return them all at once
-            Set<String> names = new HashSet<>();
+            Set<ColumnName> names = new HashSet<>();
             for (Field field : descriptor.getVisibleFields()) {
-                Optional<String> fieldName = field.getName();
+                Optional<ColumnName> fieldName = field.getName();
                 if (!fieldName.isPresent()) {
                     throw new SemanticException(COLUMN_NAME_NOT_SPECIFIED, node, "Column name not specified at position %s", descriptor.indexOf(field) + 1);
                 }
@@ -665,7 +668,7 @@ class StatementAnalyzer
             }
             process(node.getStatement(), scope);
             analysis.setUpdateType(null);
-            return createAndAssignScope(node, scope, Field.newUnqualified("Query Plan", VARCHAR));
+            return createAndAssignScope(node, scope, Field.newUnqualified(createQuotedColumnName("Query Plan", true), VARCHAR));
         }
 
         @Override
@@ -750,7 +753,7 @@ class StatementAnalyzer
                             Field inputField = queryDescriptor.getFieldByIndex(field);
                             fieldBuilder.add(Field.newQualified(
                                     QualifiedName.of(name),
-                                    Optional.of(columnName.getValue()),
+                                    Optional.of(createQuotedColumnName(columnName.getValue(), columnName.isDelimited())),
                                     inputField.getType(),
                                     false,
                                     inputField.getOriginTable(),
@@ -839,7 +842,7 @@ class StatementAnalyzer
             }
             accessControl.checkCanSelectFromTable(session.getRequiredTransactionId(), session.getIdentity(), name);
             TableMetadata tableMetadata = metadata.getTableMetadata(session, tableHandle.get());
-            Map<String, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle.get());
+            Map<ColumnName, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle.get());
 
             // TODO: discover columns lazily based on where they are needed (to support connectors that can't enumerate all tables)
             ImmutableList.Builder<Field> fields = ImmutableList.builder();
@@ -876,10 +879,10 @@ class StatementAnalyzer
                 }
             }
 
-            List<String> aliases = null;
+            List<ColumnName> aliases = null;
             if (relation.getColumnNames() != null) {
                 aliases = relation.getColumnNames().stream()
-                        .map(Identifier::getValue)
+                        .map(identifier -> createQuotedColumnName(identifier.getValue(), identifier.isDelimited()))
                         .collect(Collectors.toList());
             }
 
@@ -1198,7 +1201,7 @@ class StatementAnalyzer
                 Optional<Type> type = metadata.getTypeManager().getCommonSuperType(leftField.get().getType(), rightField.get().getType());
                 analysis.addTypes(ImmutableMap.of(NodeRef.of(column), type.get()));
 
-                joinFields.add(Field.newUnqualified(column.getValue(), type.get()));
+                joinFields.add(Field.newUnqualified(createQuotedColumnName(column.getValue(), column.isDelimited()), type.get()));
 
                 leftJoinFields.add(leftField.get().getRelationFieldIndex());
                 rightJoinFields.add(rightField.get().getRelationFieldIndex());
@@ -1639,7 +1642,8 @@ class StatementAnalyzer
                         }
                     }
 
-                    outputFields.add(Field.newUnqualified(field.map(Identifier::getValue), analysis.getType(expression), originTable, column.getAlias().isPresent())); // TODO don't use analysis as a side-channel. Use outputExpressions to look up the type
+                    outputFields.add(Field.newUnqualified(field.map(identifier -> createQuotedColumnName(identifier.getValue(), identifier.isDelimited())),
+                            analysis.getType(expression), originTable, column.getAlias().isPresent())); // TODO don't use analysis as a side-channel. Use outputExpressions to look up the type
                 }
                 else {
                     throw new IllegalArgumentException("Unsupported SelectItem type: " + item.getClass().getName());
@@ -1921,7 +1925,7 @@ class StatementAnalyzer
             for (int i = 0; i < columns.size(); i++) {
                 ViewDefinition.ViewColumn column = columns.get(i);
                 Field field = fieldList.get(i);
-                if (!column.getName().equalsIgnoreCase(field.getName().orElse(null)) ||
+                if (!column.getName().sqlEquals(field.getName().orElse(EMPTY_COLUMN_NAME)) ||
                         !metadata.getTypeManager().canCoerce(field.getType(), column.getType())) {
                     return true;
                 }

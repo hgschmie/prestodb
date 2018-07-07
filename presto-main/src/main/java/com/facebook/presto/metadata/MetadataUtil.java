@@ -16,6 +16,7 @@ package com.facebook.presto.metadata;
 import com.facebook.presto.Session;
 import com.facebook.presto.spi.CatalogSchemaName;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
@@ -83,10 +84,10 @@ public final class MetadataUtil
         return value;
     }
 
-    public static ColumnMetadata findColumnMetadata(ConnectorTableMetadata tableMetadata, String columnName)
+    public static ColumnMetadata findColumnMetadata(ConnectorTableMetadata tableMetadata, ColumnName columnName)
     {
         for (ColumnMetadata columnMetadata : tableMetadata.getColumns()) {
-            if (columnName.equals(columnMetadata.getName())) {
+            if (columnName.sqlEquals(columnMetadata.getName())) {
                 return columnMetadata;
             }
         }
@@ -200,7 +201,7 @@ public final class MetadataUtil
             this.comment = comment;
         }
 
-        public TableMetadataBuilder column(String columnName, Type type)
+        public TableMetadataBuilder column(ColumnName columnName, Type type)
         {
             columns.add(new ColumnMetadata(columnName, type));
             return this;

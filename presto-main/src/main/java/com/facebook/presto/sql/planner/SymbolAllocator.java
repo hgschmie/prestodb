@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.sql.planner;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.BigintType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.analyzer.Field;
@@ -122,8 +123,8 @@ public class SymbolAllocator
 
     public Symbol newSymbol(Field field)
     {
-        String nameHint = field.getName().orElse("field");
-        return newSymbol(nameHint, field.getType());
+        ColumnName nameHint = field.getName().orElse(ColumnName.createColumnName("field")); // that whole piece is fishy
+        return newSymbol(nameHint.getColumnName(), field.getType());
     }
 
     public Map<Symbol, Type> getTypes()

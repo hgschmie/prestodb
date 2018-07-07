@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.sql.analyzer;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.sql.tree.QualifiedName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -159,7 +160,7 @@ public class RelationType
     /**
      * Creates a new tuple descriptor with the relation, and, optionally, the columns aliased.
      */
-    public RelationType withAlias(String relationAlias, List<String> columnAliases)
+    public RelationType withAlias(String relationAlias, List<ColumnName> columnAliases)
     {
         if (columnAliases != null) {
             checkArgument(columnAliases.size() == visibleFields.size(),
@@ -172,7 +173,7 @@ public class RelationType
         ImmutableList.Builder<Field> fieldsBuilder = ImmutableList.builder();
         for (int i = 0; i < allFields.size(); i++) {
             Field field = allFields.get(i);
-            Optional<String> columnAlias = field.getName();
+            Optional<ColumnName> columnAlias = field.getName();
             if (columnAliases == null) {
                 fieldsBuilder.add(Field.newQualified(
                         QualifiedName.of(relationAlias),

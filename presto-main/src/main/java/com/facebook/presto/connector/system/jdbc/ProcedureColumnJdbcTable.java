@@ -22,6 +22,7 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.predicate.TupleDomain;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
@@ -31,26 +32,26 @@ public class ProcedureColumnJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "procedure_columns");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("procedure_cat", createUnboundedVarcharType())
-            .column("procedure_schem", createUnboundedVarcharType())
-            .column("procedure_name", createUnboundedVarcharType())
-            .column("column_name", createUnboundedVarcharType())
-            .column("column_type", BIGINT)
-            .column("data_type", BIGINT)
-            .column("type_name", createUnboundedVarcharType())
-            .column("precision", BIGINT)
-            .column("length", BIGINT)
-            .column("scale", BIGINT)
-            .column("radix", BIGINT)
-            .column("nullable", BIGINT)
-            .column("remarks", createUnboundedVarcharType())
-            .column("column_def", createUnboundedVarcharType())
-            .column("sql_data_type", BIGINT)
-            .column("sql_datetime_sub", BIGINT)
-            .column("char_octet_length", BIGINT)
-            .column("ordinal_position", BIGINT)
-            .column("is_nullable", createUnboundedVarcharType())
-            .column("specific_name", createUnboundedVarcharType())
+            .column(createColumnName("procedure_cat"), createUnboundedVarcharType())
+            .column(createColumnName("procedure_schem"), createUnboundedVarcharType())
+            .column(createColumnName("procedure_name"), createUnboundedVarcharType())
+            .column(createColumnName("column_name"), createUnboundedVarcharType())
+            .column(createColumnName("column_type"), BIGINT)
+            .column(createColumnName("data_type"), BIGINT)
+            .column(createColumnName("type_name"), createUnboundedVarcharType())
+            .column(createColumnName("precision"), BIGINT)
+            .column(createColumnName("length"), BIGINT)
+            .column(createColumnName("scale"), BIGINT)
+            .column(createColumnName("radix"), BIGINT)
+            .column(createColumnName("nullable"), BIGINT)
+            .column(createColumnName("remarks"), createUnboundedVarcharType())
+            .column(createColumnName("column_def"), createUnboundedVarcharType())
+            .column(createColumnName("sql_data_type"), BIGINT)
+            .column(createColumnName("sql_datetime_sub"), BIGINT)
+            .column(createColumnName("char_octet_length"), BIGINT)
+            .column(createColumnName("ordinal_position"), BIGINT)
+            .column(createColumnName("is_nullable"), createUnboundedVarcharType())
+            .column(createColumnName("specific_name"), createUnboundedVarcharType())
             .build();
 
     @Override

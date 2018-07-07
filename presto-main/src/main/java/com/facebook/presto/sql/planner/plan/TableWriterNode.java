@@ -17,6 +17,7 @@ import com.facebook.presto.metadata.InsertTableHandle;
 import com.facebook.presto.metadata.NewTableLayout;
 import com.facebook.presto.metadata.OutputTableHandle;
 import com.facebook.presto.metadata.TableHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.sql.planner.PartitioningScheme;
@@ -44,7 +45,7 @@ public class TableWriterNode
     private final WriterTarget target;
     private final List<Symbol> outputs;
     private final List<Symbol> columns;
-    private final List<String> columnNames;
+    private final List<ColumnName> columnNames;
     private final Optional<PartitioningScheme> partitioningScheme;
 
     @JsonCreator
@@ -53,7 +54,7 @@ public class TableWriterNode
             @JsonProperty("source") PlanNode source,
             @JsonProperty("target") WriterTarget target,
             @JsonProperty("columns") List<Symbol> columns,
-            @JsonProperty("columnNames") List<String> columnNames,
+            @JsonProperty("columnNames") List<ColumnName> columnNames,
             @JsonProperty("outputs") List<Symbol> outputs,
             @JsonProperty("partitioningScheme") Optional<PartitioningScheme> partitioningScheme)
     {
@@ -90,7 +91,7 @@ public class TableWriterNode
     }
 
     @JsonProperty
-    public List<String> getColumnNames()
+    public List<ColumnName> getColumnNames()
     {
         return columnNames;
     }

@@ -19,6 +19,7 @@ import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.sql.analyzer.SemanticException;
 import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.RenameColumn;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.facebook.presto.metadata.MetadataUtil.createQualifiedObjectName;
+import static com.facebook.presto.spi.ColumnName.createQuotedColumnName;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.COLUMN_ALREADY_EXISTS;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.MISSING_COLUMN;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.MISSING_TABLE;
@@ -53,12 +55,12 @@ public class RenameColumnTask
         TableHandle tableHandle = metadata.getTableHandle(session, tableName)
                 .orElseThrow(() -> new SemanticException(MISSING_TABLE, statement, "Table '%s' does not exist", tableName));
 
-        String source = statement.getSource().getValue().toLowerCase(ENGLISH);
-        String target = statement.getTarget().getValue().toLowerCase(ENGLISH);
+        ColumnName source = createQuotedColumnName(statement.getSource().getValue(), statement.getSource().isDelimited());
+        ColumnName target = createQuotedColumnName(statement.getTarget().getValue(), statement.getTarget().isDelimited());
 
         accessControl.checkCanRenameColumn(session.getRequiredTransactionId(), session.getIdentity(), tableName);
 
-        Map<String, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle);
+        Map<ColumnName, ColumnHandle> columnHandles = metadata.getColumnHandles(session, tableHandle);
         ColumnHandle columnHandle = columnHandles.get(source);
         if (columnHandle == null) {
             throw new SemanticException(MISSING_COLUMN, statement, "Column '%s' does not exist", source);

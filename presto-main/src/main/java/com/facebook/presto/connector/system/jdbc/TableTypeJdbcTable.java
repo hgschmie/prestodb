@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.connector.system.jdbc;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -22,6 +23,7 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.predicate.TupleDomain;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
 public class TableTypeJdbcTable
@@ -30,7 +32,7 @@ public class TableTypeJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "table_types");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("table_type", createUnboundedVarcharType())
+            .column(createColumnName("table_type"), createUnboundedVarcharType())
             .build();
 
     @Override

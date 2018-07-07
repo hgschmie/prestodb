@@ -16,6 +16,7 @@ package com.facebook.presto.connector.system.jdbc;
 import com.facebook.presto.Session;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.security.AccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -34,6 +35,7 @@ import static com.facebook.presto.connector.system.jdbc.FilterUtil.filter;
 import static com.facebook.presto.metadata.MetadataListing.listCatalogs;
 import static com.facebook.presto.metadata.MetadataListing.listSchemas;
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 import static java.util.Objects.requireNonNull;
 
@@ -43,8 +45,8 @@ public class SchemaJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "schemas");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("table_schem", createUnboundedVarcharType())
-            .column("table_catalog", createUnboundedVarcharType())
+            .column(createColumnName("table_schem"), createUnboundedVarcharType())
+            .column(createColumnName("table_catalog"), createUnboundedVarcharType())
             .build();
 
     private final Metadata metadata;

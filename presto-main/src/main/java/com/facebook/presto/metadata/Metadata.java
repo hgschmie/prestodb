@@ -19,6 +19,7 @@ import com.facebook.presto.spi.CatalogSchemaName;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnIdentity;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.Constraint;
 import com.facebook.presto.spi.PrestoException;
@@ -96,7 +97,7 @@ public interface Metadata
      *
      * @throws RuntimeException if table handle is no longer valid
      */
-    Map<String, ColumnHandle> getColumnHandles(Session session, TableHandle tableHandle);
+    Map<ColumnName, ColumnHandle> getColumnHandles(Session session, TableHandle tableHandle);
 
     /**
      * Gets the metadata for the specified table column.
@@ -140,7 +141,7 @@ public interface Metadata
     /**
      * Rename the specified column.
      */
-    void renameColumn(Session session, TableHandle tableHandle, ColumnHandle source, String target);
+    void renameColumn(Session session, TableHandle tableHandle, ColumnHandle source, ColumnName target);
 
     /**
      * Add the specified column to the table.

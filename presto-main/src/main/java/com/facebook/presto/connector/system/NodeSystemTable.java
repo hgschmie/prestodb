@@ -16,6 +16,7 @@ package com.facebook.presto.connector.system;
 import com.facebook.presto.metadata.AllNodes;
 import com.facebook.presto.metadata.InternalNodeManager;
 import com.facebook.presto.metadata.PrestoNode;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -33,6 +34,7 @@ import javax.inject.Inject;
 import java.util.Set;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.NodeState.ACTIVE;
 import static com.facebook.presto.spi.NodeState.INACTIVE;
 import static com.facebook.presto.spi.NodeState.SHUTTING_DOWN;
@@ -47,11 +49,11 @@ public class NodeSystemTable
     public static final SchemaTableName NODES_TABLE_NAME = new SchemaTableName("runtime", "nodes");
 
     public static final ConnectorTableMetadata NODES_TABLE = tableMetadataBuilder(NODES_TABLE_NAME)
-            .column("node_id", createUnboundedVarcharType())
-            .column("http_uri", createUnboundedVarcharType())
-            .column("node_version", createUnboundedVarcharType())
-            .column("coordinator", BOOLEAN)
-            .column("state", createUnboundedVarcharType())
+            .column(createColumnName("node_id"), createUnboundedVarcharType())
+            .column(createColumnName("http_uri"), createUnboundedVarcharType())
+            .column(createColumnName("node_version"), createUnboundedVarcharType())
+            .column(createColumnName("coordinator"), BOOLEAN)
+            .column(createColumnName("state"), createUnboundedVarcharType())
             .build();
 
     private final InternalNodeManager nodeManager;

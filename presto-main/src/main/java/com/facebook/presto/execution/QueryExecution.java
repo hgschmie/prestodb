@@ -16,6 +16,7 @@ package com.facebook.presto.execution;
 import com.facebook.presto.Session;
 import com.facebook.presto.execution.StateMachine.StateChangeListener;
 import com.facebook.presto.memory.VersionedMemoryPoolId;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.QueryId;
 import com.facebook.presto.spi.resourceGroups.ResourceGroupId;
 import com.facebook.presto.spi.type.Type;
@@ -98,12 +99,12 @@ public interface QueryExecution
      */
     class QueryOutputInfo
     {
-        private final List<String> columnNames;
+        private final List<ColumnName> columnNames;
         private final List<Type> columnTypes;
         private final Set<URI> bufferLocations;
         private final boolean noMoreBufferLocations;
 
-        public QueryOutputInfo(List<String> columnNames, List<Type> columnTypes, Set<URI> bufferLocations, boolean noMoreBufferLocations)
+        public QueryOutputInfo(List<ColumnName> columnNames, List<Type> columnTypes, Set<URI> bufferLocations, boolean noMoreBufferLocations)
         {
             this.columnNames = ImmutableList.copyOf(requireNonNull(columnNames, "columnNames is null"));
             this.columnTypes = ImmutableList.copyOf(requireNonNull(columnTypes, "columnTypes is null"));
@@ -111,7 +112,7 @@ public interface QueryExecution
             this.noMoreBufferLocations = noMoreBufferLocations;
         }
 
-        public List<String> getColumnNames()
+        public List<ColumnName> getColumnNames()
         {
             return columnNames;
         }

@@ -397,7 +397,8 @@ final class ShowQueriesRewrite
 
                 List<TableElement> columns = connectorTableMetadata.getColumns().stream()
                         .filter(column -> !column.isHidden())
-                        .map(column -> new ColumnDefinition(new Identifier(column.getName()), column.getType().getDisplayName(), Optional.ofNullable(column.getComment())))
+                        .map(column -> new ColumnDefinition(new Identifier(column.getName().getColumnName(), column.getName().isQuoted()),
+                                column.getType().getDisplayName(), Optional.ofNullable(column.getComment())))
                         .collect(toImmutableList());
 
                 Map<String, Object> properties = connectorTableMetadata.getProperties();

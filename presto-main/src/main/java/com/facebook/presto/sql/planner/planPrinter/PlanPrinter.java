@@ -29,6 +29,7 @@ import com.facebook.presto.metadata.OperatorNotFoundException;
 import com.facebook.presto.metadata.Signature;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.facebook.presto.spi.predicate.Domain;
 import com.facebook.presto.spi.predicate.Marker;
@@ -1060,9 +1061,9 @@ public class PlanPrinter
             printPlanNodesStatsAndCost(indent + 2, node);
             printStats(indent + 2, node.getId());
             for (int i = 0; i < node.getColumnNames().size(); i++) {
-                String name = node.getColumnNames().get(i);
+                ColumnName name = node.getColumnNames().get(i);
                 Symbol symbol = node.getOutputSymbols().get(i);
-                if (!name.equals(symbol.toString())) {
+                if (!name.sqlEquals(ColumnName.createColumnName(symbol.toString()))) { // very fishy
                     print(indent + 2, "%s := %s", name, symbol);
                 }
             }
@@ -1139,9 +1140,9 @@ public class PlanPrinter
             printPlanNodesStatsAndCost(indent + 2, node);
             printStats(indent + 2, node.getId());
             for (int i = 0; i < node.getColumnNames().size(); i++) {
-                String name = node.getColumnNames().get(i);
+                ColumnName name = node.getColumnNames().get(i);
                 Symbol symbol = node.getColumns().get(i);
-                print(indent + 2, "%s := %s", name, symbol);
+                print(indent + 2, "%s := %s", name.getColumnName(), symbol);
             }
 
             return processChildren(node, indent + 1);

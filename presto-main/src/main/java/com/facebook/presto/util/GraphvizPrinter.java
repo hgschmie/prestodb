@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.util;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.sql.planner.Partitioning.ArgumentBinding;
 import com.facebook.presto.sql.planner.PlanFragment;
 import com.facebook.presto.sql.planner.SubPlan;
@@ -556,13 +557,13 @@ public final class GraphvizPrinter
 
         private static String getColumns(OutputNode node)
         {
-            Iterator<String> columnNames = node.getColumnNames().iterator();
+            Iterator<ColumnName> columnNames = node.getColumnNames().iterator();
             String columns = "";
             int nameWidth = 0;
             while (columnNames.hasNext()) {
-                String columnName = columnNames.next();
-                columns += columnName;
-                nameWidth += columnName.length();
+                ColumnName columnName = columnNames.next();
+                columns += columnName.getColumnName();
+                nameWidth += columnName.getQuotedColumnName().length();
                 if (columnNames.hasNext()) {
                     columns += ", ";
                 }

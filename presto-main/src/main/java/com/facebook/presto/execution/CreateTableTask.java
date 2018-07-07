@@ -21,6 +21,7 @@ import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.metadata.TableMetadata;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.type.Type;
@@ -95,13 +96,13 @@ public class CreateTableTask
             return immediateFuture(null);
         }
 
-        LinkedHashMap<String, ColumnMetadata> columns = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         Map<String, Object> inheritedProperties = ImmutableMap.of();
         boolean includingProperties = false;
         for (TableElement element : statement.getElements()) {
             if (element instanceof ColumnDefinition) {
                 ColumnDefinition column = (ColumnDefinition) element;
-                String name = column.getName().getValue().toLowerCase(Locale.ENGLISH);
+                ColumnName name = ColumnName.createQuotedColumnName(column.getName().getValue(), column.getName().isDelimited());
                 Type type;
                 try {
                     type = metadata.getType(parseTypeSignature(column.getType()));
@@ -143,10 +144,10 @@ public class CreateTableTask
                 likeTableMetadata.getColumns().stream()
                         .filter(column -> !column.isHidden())
                         .forEach(column -> {
-                            if (columns.containsKey(column.getName().toLowerCase())) {
+                            if (columns.containsKey(column.getName())) {
                                 throw new SemanticException(DUPLICATE_COLUMN_NAME, element, "Column name '%s' specified more than once", column.getName());
                             }
-                            columns.put(column.getName().toLowerCase(), column);
+                            columns.put(column.getName(), column);
                         });
             }
             else {

@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.connector.system.jdbc;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -22,6 +23,7 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.predicate.TupleDomain;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
 public class SuperTypeJdbcTable
@@ -30,12 +32,12 @@ public class SuperTypeJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "super_types");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("type_cat", createUnboundedVarcharType())
-            .column("type_schem", createUnboundedVarcharType())
-            .column("type_name", createUnboundedVarcharType())
-            .column("supertype_cat", createUnboundedVarcharType())
-            .column("supertype_schem", createUnboundedVarcharType())
-            .column("supertype_name", createUnboundedVarcharType())
+            .column(createColumnName("type_cat"), createUnboundedVarcharType())
+            .column(createColumnName("type_schem"), createUnboundedVarcharType())
+            .column(createColumnName("type_name"), createUnboundedVarcharType())
+            .column(createColumnName("supertype_cat"), createUnboundedVarcharType())
+            .column(createColumnName("supertype_schem"), createUnboundedVarcharType())
+            .column(createColumnName("supertype_name"), createUnboundedVarcharType())
             .build();
 
     @Override

@@ -14,6 +14,7 @@
 package com.facebook.presto.connector.informationSchema;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,16 +25,16 @@ import static java.util.Objects.requireNonNull;
 public class InformationSchemaColumnHandle
         implements ColumnHandle
 {
-    private final String columnName;
+    private final ColumnName columnName;
 
     @JsonCreator
-    public InformationSchemaColumnHandle(@JsonProperty("columnName") String columnName)
+    public InformationSchemaColumnHandle(@JsonProperty("columnName") ColumnName columnName)
     {
         this.columnName = requireNonNull(columnName, "columnName is null");
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }
@@ -60,6 +61,6 @@ public class InformationSchemaColumnHandle
     @Override
     public String toString()
     {
-        return columnName;
+        return columnName.getColumnName();
     }
 }

@@ -14,6 +14,7 @@
 package com.facebook.presto.metadata;
 
 import com.facebook.presto.connector.ConnectorId;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorNewTableLayout;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.sql.planner.PartitioningHandle;
@@ -61,7 +62,7 @@ public class NewTableLayout
         return new PartitioningHandle(Optional.of(connectorId), Optional.of(transactionHandle), layout.getPartitioning());
     }
 
-    public List<String> getPartitionColumns()
+    public List<ColumnName> getPartitionColumns()
     {
         return layout.getPartitionColumns();
     }

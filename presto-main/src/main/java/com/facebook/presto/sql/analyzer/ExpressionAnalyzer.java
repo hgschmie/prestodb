@@ -22,6 +22,7 @@ import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.metadata.Signature;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.security.DenyAllAccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.StandardErrorCode;
 import com.facebook.presto.spi.function.OperatorType;
@@ -115,6 +116,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static com.facebook.presto.SystemSessionProperties.isLegacyRowFieldOrdinalAccessEnabled;
+import static com.facebook.presto.spi.ColumnName.createQuotedColumnName;
 import static com.facebook.presto.spi.function.OperatorType.SUBSCRIPT;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
@@ -186,7 +188,7 @@ public class ExpressionAnalyzer
     // For lambda argument references, maps each QualifiedNameReference to the referenced LambdaArgumentDeclaration
     private final Map<NodeRef<Identifier>, LambdaArgumentDeclaration> lambdaArgumentReferences = new LinkedHashMap<>();
     private final Set<NodeRef<FunctionCall>> windowFunctions = new LinkedHashSet<>();
-    private final Multimap<QualifiedObjectName, String> tableColumnReferences = HashMultimap.create();
+    private final Multimap<QualifiedObjectName, ColumnName> tableColumnReferences = HashMultimap.create();
 
     private final Session session;
     private final List<Expression> parameters;
@@ -296,7 +298,7 @@ public class ExpressionAnalyzer
         return unmodifiableSet(windowFunctions);
     }
 
-    public Multimap<QualifiedObjectName, String> getTableColumnReferences()
+    public Multimap<QualifiedObjectName, ColumnName> getTableColumnReferences()
     {
         return tableColumnReferences;
     }
@@ -1142,7 +1144,7 @@ public class ExpressionAnalyzer
             for (int i = 0; i < lambdaArguments.size(); i++) {
                 LambdaArgumentDeclaration lambdaArgument = lambdaArguments.get(i);
                 Type type = types.get(i);
-                fields.add(com.facebook.presto.sql.analyzer.Field.newUnqualified(lambdaArgument.getName().getValue(), type));
+                fields.add(com.facebook.presto.sql.analyzer.Field.newUnqualified(createQuotedColumnName(lambdaArgument.getName().getValue(), lambdaArgument.getName().isDelimited()), type));
                 setExpressionType(lambdaArgument, type);
             }
 

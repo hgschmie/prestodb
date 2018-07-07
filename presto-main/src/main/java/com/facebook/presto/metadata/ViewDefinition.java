@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.metadata;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -97,12 +98,12 @@ public final class ViewDefinition
 
     public static final class ViewColumn
     {
-        private final String name;
+        private final ColumnName name;
         private final Type type;
 
         @JsonCreator
         public ViewColumn(
-                @JsonProperty("name") String name,
+                @JsonProperty("name") ColumnName name,
                 @JsonProperty("type") Type type)
         {
             this.name = requireNonNull(name, "name is null");
@@ -110,7 +111,7 @@ public final class ViewDefinition
         }
 
         @JsonProperty
-        public String getName()
+        public ColumnName getName()
         {
             return name;
         }

@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.SystemTable.Distribution.SINGLE_COORDINATOR;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -48,11 +49,11 @@ abstract class AbstractPropertiesSystemTable
     protected AbstractPropertiesSystemTable(String tableName, TransactionManager transactionManager, Supplier<Map<ConnectorId, Map<String, PropertyMetadata<?>>>> propertySupplier)
     {
         this.tableMetadata = tableMetadataBuilder(new SchemaTableName("metadata", tableName))
-                .column("catalog_name", createUnboundedVarcharType())
-                .column("property_name", createUnboundedVarcharType())
-                .column("default_value", createUnboundedVarcharType())
-                .column("type", createUnboundedVarcharType())
-                .column("description", createUnboundedVarcharType())
+                .column(createColumnName("catalog_name"), createUnboundedVarcharType())
+                .column(createColumnName("property_name"), createUnboundedVarcharType())
+                .column(createColumnName("default_value"), createUnboundedVarcharType())
+                .column(createColumnName("type"), createUnboundedVarcharType())
+                .column(createColumnName("description"), createUnboundedVarcharType())
                 .build();
         this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");
         this.propertySupplier = requireNonNull(propertySupplier, "propertySupplier is null");

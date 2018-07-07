@@ -17,6 +17,7 @@ import com.facebook.presto.Session;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.security.AccessControl;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.FixedWidthType;
 import com.facebook.presto.sql.analyzer.Analysis;
 import com.facebook.presto.sql.analyzer.Analyzer;
@@ -38,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.sql.ParsingUtil.createParsingOptions;
 import static com.facebook.presto.sql.QueryUtil.aliased;
 import static com.facebook.presto.sql.QueryUtil.identifier;
@@ -132,19 +134,19 @@ final class DescribeOutputRewrite
                 typeSize = new LongLiteral(String.valueOf(((FixedWidthType) field.getType()).getFixedSize()));
             }
 
-            String columnName;
+            ColumnName columnName;
             if (field.getName().isPresent()) {
                 columnName = field.getName().get();
             }
             else {
                 int columnIndex = ImmutableList.copyOf(analysis.getOutputDescriptor().getVisibleFields()).indexOf(field);
-                columnName = "_col" + columnIndex;
+                columnName = createColumnName("_col" + columnIndex);
             }
 
             Optional<QualifiedObjectName> originTable = field.getOriginTable();
 
             return row(
-                    new StringLiteral(columnName),
+                    new StringLiteral(columnName.getColumnName()), // fishy!
                     new StringLiteral(originTable.map(QualifiedObjectName::getCatalogName).orElse("")),
                     new StringLiteral(originTable.map(QualifiedObjectName::getSchemaName).orElse("")),
                     new StringLiteral(originTable.map(QualifiedObjectName::getObjectName).orElse("")),

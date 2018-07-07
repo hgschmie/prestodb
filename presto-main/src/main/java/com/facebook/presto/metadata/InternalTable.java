@@ -14,6 +14,7 @@
 package com.facebook.presto.metadata;
 
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.type.Type;
@@ -30,16 +31,16 @@ import static java.util.Objects.requireNonNull;
 
 public class InternalTable
 {
-    private final Map<String, Integer> columnIndexes;
+    private final Map<ColumnName, Integer> columnIndexes;
     private final List<Page> pages;
 
-    public InternalTable(Map<String, Integer> columnIndexes, Iterable<Page> pages)
+    public InternalTable(Map<ColumnName, Integer> columnIndexes, Iterable<Page> pages)
     {
         this.columnIndexes = ImmutableMap.copyOf(requireNonNull(columnIndexes, "columnIndexes is null"));
         this.pages = ImmutableList.copyOf(requireNonNull(pages, "pages is null"));
     }
 
-    public int getColumnIndex(String columnName)
+    public int getColumnIndex(ColumnName columnName)
     {
         Integer index = columnIndexes.get(columnName);
         checkArgument(index != null, "Column %s not found", columnName);
@@ -58,7 +59,7 @@ public class InternalTable
 
     public static Builder builder(List<ColumnMetadata> columns)
     {
-        ImmutableList.Builder<String> names = ImmutableList.builder();
+        ImmutableList.Builder<ColumnName> names = ImmutableList.builder();
         ImmutableList.Builder<Type> types = ImmutableList.builder();
         for (ColumnMetadata column : columns) {
             names.add(column.getName());
@@ -69,18 +70,18 @@ public class InternalTable
 
     public static class Builder
     {
-        private final Map<String, Integer> columnIndexes;
+        private final Map<ColumnName, Integer> columnIndexes;
         private final List<Type> types;
         private final List<Page> pages;
         private PageBuilder pageBuilder;
 
-        public Builder(List<String> columnNames, List<Type> types)
+        public Builder(List<ColumnName> columnNames, List<Type> types)
         {
             requireNonNull(columnNames, "columnNames is null");
 
-            ImmutableMap.Builder<String, Integer> columnIndexes = ImmutableMap.builder();
+            ImmutableMap.Builder<ColumnName, Integer> columnIndexes = ImmutableMap.builder();
             int columnIndex = 0;
-            for (String columnName : columnNames) {
+            for (ColumnName columnName : columnNames) {
                 columnIndexes.put(columnName, columnIndex++);
             }
             this.columnIndexes = columnIndexes.build();

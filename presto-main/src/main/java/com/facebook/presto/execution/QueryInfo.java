@@ -15,6 +15,7 @@ package com.facebook.presto.execution;
 
 import com.facebook.presto.SessionRepresentation;
 import com.facebook.presto.client.FailureInfo;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ErrorCode;
 import com.facebook.presto.spi.ErrorType;
 import com.facebook.presto.spi.QueryId;
@@ -49,7 +50,7 @@ public class QueryInfo
     private final MemoryPoolId memoryPool;
     private final boolean scheduled;
     private final URI self;
-    private final List<String> fieldNames;
+    private final List<ColumnName> fieldNames;
     private final String query;
     private final QueryStats queryStats;
     private final Optional<String> setCatalog;
@@ -78,7 +79,7 @@ public class QueryInfo
             @JsonProperty("memoryPool") MemoryPoolId memoryPool,
             @JsonProperty("scheduled") boolean scheduled,
             @JsonProperty("self") URI self,
-            @JsonProperty("fieldNames") List<String> fieldNames,
+            @JsonProperty("fieldNames") List<ColumnName> fieldNames,
             @JsonProperty("query") String query,
             @JsonProperty("queryStats") QueryStats queryStats,
             @JsonProperty("setCatalog") Optional<String> setCatalog,
@@ -182,7 +183,7 @@ public class QueryInfo
     }
 
     @JsonProperty
-    public List<String> getFieldNames()
+    public List<ColumnName> getFieldNames()
     {
         return fieldNames;
     }

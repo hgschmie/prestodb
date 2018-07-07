@@ -14,6 +14,7 @@
 package com.facebook.presto.sql.analyzer;
 
 import com.facebook.presto.metadata.QualifiedObjectName;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.tree.QualifiedName;
 
@@ -25,12 +26,12 @@ public class Field
 {
     private final Optional<QualifiedObjectName> originTable;
     private final Optional<QualifiedName> relationAlias;
-    private final Optional<String> name;
+    private final Optional<ColumnName> name;
     private final Type type;
     private final boolean hidden;
     private final boolean aliased;
 
-    public static Field newUnqualified(String name, Type type)
+    public static Field newUnqualified(ColumnName name, Type type)
     {
         requireNonNull(name, "name is null");
         requireNonNull(type, "type is null");
@@ -38,7 +39,7 @@ public class Field
         return new Field(Optional.empty(), Optional.of(name), type, false, Optional.empty(), false);
     }
 
-    public static Field newUnqualified(Optional<String> name, Type type)
+    public static Field newUnqualified(Optional<ColumnName> name, Type type)
     {
         requireNonNull(name, "name is null");
         requireNonNull(type, "type is null");
@@ -46,7 +47,7 @@ public class Field
         return new Field(Optional.empty(), name, type, false, Optional.empty(), false);
     }
 
-    public static Field newUnqualified(Optional<String> name, Type type, Optional<QualifiedObjectName> originTable, boolean aliased)
+    public static Field newUnqualified(Optional<ColumnName> name, Type type, Optional<QualifiedObjectName> originTable, boolean aliased)
     {
         requireNonNull(name, "name is null");
         requireNonNull(type, "type is null");
@@ -55,7 +56,7 @@ public class Field
         return new Field(Optional.empty(), name, type, false, originTable, aliased);
     }
 
-    public static Field newQualified(QualifiedName relationAlias, Optional<String> name, Type type, boolean hidden, Optional<QualifiedObjectName> originTable, boolean aliased)
+    public static Field newQualified(QualifiedName relationAlias, Optional<ColumnName> name, Type type, boolean hidden, Optional<QualifiedObjectName> originTable, boolean aliased)
     {
         requireNonNull(relationAlias, "relationAlias is null");
         requireNonNull(name, "name is null");
@@ -66,7 +67,7 @@ public class Field
         return new Field(Optional.of(relationAlias), name, type, hidden, originTable, aliased);
     }
 
-    public Field(Optional<QualifiedName> relationAlias, Optional<String> name, Type type, boolean hidden, Optional<QualifiedObjectName> originTable, boolean aliased)
+    public Field(Optional<QualifiedName> relationAlias, Optional<ColumnName> name, Type type, boolean hidden, Optional<QualifiedObjectName> originTable, boolean aliased)
     {
         requireNonNull(relationAlias, "relationAlias is null");
         requireNonNull(name, "name is null");
@@ -92,7 +93,7 @@ public class Field
         return relationAlias;
     }
 
-    public Optional<String> getName()
+    public Optional<ColumnName> getName()
     {
         return name;
     }
@@ -145,7 +146,7 @@ public class Field
         }
 
         // TODO: need to know whether the qualified name and the name of this field were quoted
-        return matchesPrefix(name.getPrefix()) && this.name.get().equalsIgnoreCase(name.getSuffix());
+        return matchesPrefix(name.getPrefix()) && this.name.get().sqlEquals(ColumnName.createColumnName(name.getSuffix()));
     }
 
     @Override
@@ -157,7 +158,7 @@ public class Field
                     .append(".");
         }
 
-        result.append(name.orElse("<anonymous>"))
+        result.append(name.orElse(ColumnName.createColumnName("<anonymous>")))
                 .append(":")
                 .append(type);
 

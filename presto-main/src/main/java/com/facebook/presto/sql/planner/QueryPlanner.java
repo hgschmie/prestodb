@@ -201,7 +201,7 @@ class QueryPlanner
         ImmutableMap.Builder<Symbol, ColumnHandle> columns = ImmutableMap.builder();
         ImmutableList.Builder<Field> fields = ImmutableList.builder();
         for (Field field : descriptor.getAllFields()) {
-            Symbol symbol = symbolAllocator.newSymbol(field.getName().get(), field.getType());
+            Symbol symbol = symbolAllocator.newSymbol(field.getName().get().getColumnName(), field.getType()); // fishy
             outputSymbols.add(symbol);
             columns.put(symbol, analysis.getColumn(field));
             fields.add(field);

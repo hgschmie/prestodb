@@ -21,6 +21,7 @@ import com.facebook.presto.metadata.Signature;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.Constraint;
 import com.facebook.presto.spi.predicate.TupleDomain;
 import com.facebook.presto.spi.statistics.ColumnStatistics;
@@ -206,7 +207,7 @@ public class ShowStatsRewrite
             TableStatistics tableStatistics = metadata.getTableStatistics(session, tableHandle, constraint);
             List<String> statsColumnNames = buildColumnsNames();
             List<SelectItem> selectItems = buildSelectItems(statsColumnNames);
-            Map<ColumnHandle, String> tableColumnNames = getStatisticsColumnNames(tableStatistics, tableHandle);
+            Map<ColumnHandle, ColumnName> tableColumnNames = getStatisticsColumnNames(tableStatistics, tableHandle);
             Map<ColumnHandle, Type> tableColumnTypes = getStatisticsColumnTypes(tableStatistics, tableHandle);
             List<Expression> resultRows = buildStatisticsRows(tableStatistics, tableColumnNames, tableColumnTypes);
 
@@ -248,7 +249,7 @@ public class ShowStatsRewrite
             return new Constraint<>(scanNode.get().getCurrentConstraint(), bindings -> true);
         }
 
-        private Map<ColumnHandle, String> getStatisticsColumnNames(TableStatistics statistics, TableHandle tableHandle)
+        private Map<ColumnHandle, ColumnName> getStatisticsColumnNames(TableStatistics statistics, TableHandle tableHandle)
         {
             return statistics.getColumnStatistics()
                     .keySet().stream()
@@ -289,7 +290,7 @@ public class ShowStatsRewrite
                     .collect(toImmutableList());
         }
 
-        private List<Expression> buildStatisticsRows(TableStatistics tableStatistics, Map<ColumnHandle, String> columnNames, Map<ColumnHandle, Type> columnTypes)
+        private List<Expression> buildStatisticsRows(TableStatistics tableStatistics, Map<ColumnHandle, ColumnName> columnNames, Map<ColumnHandle, Type> columnTypes)
         {
             ImmutableList.Builder<Expression> rowsBuilder = ImmutableList.builder();
 
@@ -305,12 +306,12 @@ public class ShowStatsRewrite
             return rowsBuilder.build();
         }
 
-        private Row createColumnStatsRow(String columnName, Type type, ColumnStatistics columnStatistics)
+        private Row createColumnStatsRow(ColumnName columnName, Type type, ColumnStatistics columnStatistics)
         {
             RangeColumnStatistics onlyRangeColumnStatistics = columnStatistics.getOnlyRangeColumnStatistics();
 
             ImmutableList.Builder<Expression> rowValues = ImmutableList.builder();
-            rowValues.add(new StringLiteral(columnName));
+            rowValues.add(new StringLiteral(columnName.getColumnName())); // fishy
             rowValues.add(createStatisticValueOrNull(onlyRangeColumnStatistics.getDataSize()));
             rowValues.add(createStatisticValueOrNull(onlyRangeColumnStatistics.getDistinctValuesCount()));
             rowValues.add(createStatisticValueOrNull(columnStatistics.getNullsFraction()));

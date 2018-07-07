@@ -15,6 +15,7 @@ package com.facebook.presto.connector.system;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayout;
@@ -108,7 +109,7 @@ public class GlobalSystemConnector
             }
 
             @Override
-            public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
+            public Map<ColumnName, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle)
             {
                 throw new UnsupportedOperationException();
             }

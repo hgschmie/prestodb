@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.connector.system.jdbc;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.InMemoryRecordSet;
@@ -22,6 +23,7 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.predicate.TupleDomain;
 
 import static com.facebook.presto.metadata.MetadataUtil.TableMetadataBuilder.tableMetadataBuilder;
+import static com.facebook.presto.spi.ColumnName.*;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 
@@ -31,12 +33,12 @@ public class ProcedureJdbcTable
     public static final SchemaTableName NAME = new SchemaTableName("jdbc", "procedures");
 
     public static final ConnectorTableMetadata METADATA = tableMetadataBuilder(NAME)
-            .column("procedure_cat", createUnboundedVarcharType())
-            .column("procedure_schem", createUnboundedVarcharType())
-            .column("procedure_name", createUnboundedVarcharType())
-            .column("remarks", createUnboundedVarcharType())
-            .column("procedure_type", BIGINT)
-            .column("specific_name", createUnboundedVarcharType())
+            .column(createColumnName("procedure_cat"), createUnboundedVarcharType())
+            .column(createColumnName("procedure_schem"), createUnboundedVarcharType())
+            .column(createColumnName("procedure_name"), createUnboundedVarcharType())
+            .column(createColumnName("remarks"), createUnboundedVarcharType())
+            .column(createColumnName("procedure_type"), BIGINT)
+            .column(createColumnName("specific_name"), createUnboundedVarcharType())
             .build();
 
     @Override

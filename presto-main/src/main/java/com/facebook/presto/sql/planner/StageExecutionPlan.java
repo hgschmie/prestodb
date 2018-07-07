@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.sql.planner;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.split.SplitSource;
 import com.facebook.presto.sql.planner.plan.OutputNode;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
@@ -31,7 +32,7 @@ public class StageExecutionPlan
     private final PlanFragment fragment;
     private final Map<PlanNodeId, SplitSource> splitSources;
     private final List<StageExecutionPlan> subStages;
-    private final Optional<List<String>> fieldNames;
+    private final Optional<List<ColumnName>> fieldNames;
 
     public StageExecutionPlan(
             PlanFragment fragment,
@@ -47,7 +48,7 @@ public class StageExecutionPlan
                 Optional.empty();
     }
 
-    public List<String> getFieldNames()
+    public List<ColumnName> getFieldNames()
     {
         checkState(fieldNames.isPresent(), "cannot get field names from non-output stage");
         return fieldNames.get();

@@ -23,6 +23,7 @@ import com.facebook.presto.metadata.ViewDefinition;
 import com.facebook.presto.security.AccessControl;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorPageSource;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
@@ -75,7 +76,7 @@ public class InformationSchemaPageSourceProvider
 
         List<Integer> channels = new ArrayList<>();
         for (ColumnHandle column : columns) {
-            String columnName = ((InformationSchemaColumnHandle) column).getColumnName();
+            ColumnName columnName = ((InformationSchemaColumnHandle) column).getColumnName();
             int columnIndex = table.getColumnIndex(columnName);
             channels.add(columnIndex);
         }

@@ -15,6 +15,7 @@ package com.facebook.presto.connector.system;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorPageSource;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
@@ -68,7 +69,7 @@ public class SystemPageSourceProvider
 
         List<ColumnMetadata> tableColumns = systemTable.getTableMetadata().getColumns();
 
-        Map<String, Integer> columnsByName = new HashMap<>();
+        Map<ColumnName, Integer> columnsByName = new HashMap<>();
         for (int i = 0; i < tableColumns.size(); i++) {
             ColumnMetadata column = tableColumns.get(i);
             if (columnsByName.put(column.getName(), i) != null) {
@@ -78,7 +79,7 @@ public class SystemPageSourceProvider
 
         ImmutableList.Builder<Integer> userToSystemFieldIndex = ImmutableList.builder();
         for (ColumnHandle column : columns) {
-            String columnName = ((SystemColumnHandle) column).getColumnName();
+            ColumnName columnName = ((SystemColumnHandle) column).getColumnName();
 
             Integer index = columnsByName.get(columnName);
             if (index == null) {
@@ -91,7 +92,7 @@ public class SystemPageSourceProvider
         TupleDomain<ColumnHandle> constraint = systemSplit.getConstraint();
         ImmutableMap.Builder<Integer, Domain> newConstraints = ImmutableMap.builder();
         for (Map.Entry<ColumnHandle, Domain> entry : constraint.getDomains().get().entrySet()) {
-            String columnName = ((SystemColumnHandle) entry.getKey()).getColumnName();
+            ColumnName columnName = ((SystemColumnHandle) entry.getKey()).getColumnName();
             newConstraints.put(columnsByName.get(columnName), entry.getValue());
         }
         TupleDomain<Integer> newContraint = withColumnDomains(newConstraints.build());
