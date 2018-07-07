@@ -15,6 +15,7 @@
 package com.facebook.presto.tpcds.statistics;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.statistics.ColumnStatistics;
 import com.facebook.presto.spi.statistics.Estimate;
 import com.facebook.presto.spi.statistics.TableStatistics;
@@ -42,22 +43,22 @@ public class TpcdsTableStatisticsFactory
 {
     private final TableStatisticsDataRepository statisticsDataRepository = new TableStatisticsDataRepository();
 
-    public TableStatistics create(String schemaName, Table table, Map<String, ColumnHandle> columnHandles)
+    public TableStatistics create(String schemaName, Table table, Map<ColumnName, ColumnHandle> columnHandles)
     {
         Optional<TableStatisticsData> statisticsDataOptional = statisticsDataRepository.load(schemaName, table);
         return statisticsDataOptional.map(statisticsData -> toTableStatistics(columnHandles, statisticsData))
                 .orElse(TableStatistics.EMPTY_STATISTICS);
     }
 
-    private TableStatistics toTableStatistics(Map<String, ColumnHandle> columnHandles, TableStatisticsData statisticsData)
+    private TableStatistics toTableStatistics(Map<ColumnName, ColumnHandle> columnHandles, TableStatisticsData statisticsData)
     {
         long rowCount = statisticsData.getRowCount();
         TableStatistics.Builder tableStatistics = TableStatistics.builder()
                 .setRowCount(new Estimate(rowCount));
 
         if (rowCount > 0) {
-            Map<String, ColumnStatisticsData> columnsData = statisticsData.getColumns();
-            for (Map.Entry<String, ColumnHandle> entry : columnHandles.entrySet()) {
+            Map<ColumnName, ColumnStatisticsData> columnsData = statisticsData.getColumns();
+            for (Map.Entry<ColumnName, ColumnHandle> entry : columnHandles.entrySet()) {
                 TpcdsColumnHandle columnHandle = (TpcdsColumnHandle) entry.getValue();
                 tableStatistics.setColumnStatistics(entry.getValue(), toColumnStatistics(columnsData.get(entry.getKey()), columnHandle.getType(), rowCount));
             }

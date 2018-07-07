@@ -14,6 +14,7 @@
 package com.facebook.presto.tpcds;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,12 +26,12 @@ import static java.util.Objects.requireNonNull;
 public class TpcdsColumnHandle
         implements ColumnHandle
 {
-    private final String columnName;
+    private final ColumnName columnName;
     private final Type type;
 
     @JsonCreator
     public TpcdsColumnHandle(
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("type") Type type)
     {
         this.columnName = requireNonNull(columnName, "columnName is null");
@@ -38,7 +39,7 @@ public class TpcdsColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

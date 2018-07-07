@@ -52,7 +52,7 @@ public class TpcdsRecordSetProvider
     {
         ImmutableList.Builder<Column> builder = ImmutableList.builder();
         for (ColumnHandle column : columns) {
-            String columnName = ((TpcdsColumnHandle) column).getColumnName();
+            String columnName = ((TpcdsColumnHandle) column).getColumnName().getColumnName();
             builder.add(table.getColumn(columnName));
         }
 

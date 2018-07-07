@@ -14,6 +14,7 @@
 
 package com.facebook.presto.tpcds.statistics;
 
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
@@ -23,12 +24,12 @@ import java.util.Map;
 public class TableStatisticsData
 {
     private final long rowCount;
-    private final Map<String, ColumnStatisticsData> columns;
+    private final Map<ColumnName, ColumnStatisticsData> columns;
 
     @JsonCreator
     public TableStatisticsData(
             @JsonProperty("rowCount") long rowCount,
-            @JsonProperty("columns") Map<String, ColumnStatisticsData> columns)
+            @JsonProperty("columns") Map<ColumnName, ColumnStatisticsData> columns)
     {
         this.rowCount = rowCount;
         this.columns = ImmutableMap.copyOf(columns);
@@ -39,7 +40,7 @@ public class TableStatisticsData
         return rowCount;
     }
 
-    public Map<String, ColumnStatisticsData> getColumns()
+    public Map<ColumnName, ColumnStatisticsData> getColumns()
     {
         return columns;
     }
