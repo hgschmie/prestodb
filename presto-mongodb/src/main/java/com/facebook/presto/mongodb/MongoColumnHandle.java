@@ -15,6 +15,7 @@ package com.facebook.presto.mongodb;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,13 +31,13 @@ public class MongoColumnHandle
 {
     public static final String SAMPLE_WEIGHT_COLUMN_NAME = "presto_sample_weight";
 
-    private final String name;
+    private final ColumnName name;
     private final Type type;
     private final boolean hidden;
 
     @JsonCreator
     public MongoColumnHandle(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("columnType") Type type,
             @JsonProperty("hidden") boolean hidden)
     {
@@ -46,7 +47,7 @@ public class MongoColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

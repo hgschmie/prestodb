@@ -14,12 +14,14 @@
 package com.facebook.presto.raptor;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.IntegerType.INTEGER;
 import static com.facebook.presto.spi.type.VarcharType.createVarcharType;
@@ -30,24 +32,24 @@ public final class RaptorColumnHandle
 {
     // Generated rowId column for updates
     private static final long SHARD_ROW_ID_COLUMN_ID = -1;
-    private static final String SHARD_ROW_ID_COLUMN_NAME = "$shard_row_id";
+    private static final ColumnName SHARD_ROW_ID_COLUMN_NAME = createColumnName("$shard_row_id");
 
     public static final long SHARD_UUID_COLUMN_ID = -2;
-    public static final String SHARD_UUID_COLUMN_NAME = "$shard_uuid";
+    public static final ColumnName SHARD_UUID_COLUMN_NAME = createColumnName("$shard_uuid");
     public static final Type SHARD_UUID_COLUMN_TYPE = createVarcharType(36);
 
     public static final long BUCKET_NUMBER_COLUMN_ID = -3;
-    public static final String BUCKET_NUMBER_COLUMN_NAME = "$bucket_number";
+    public static final ColumnName BUCKET_NUMBER_COLUMN_NAME = createColumnName("$bucket_number");
 
     private final String connectorId;
-    private final String columnName;
+    private final ColumnName columnName;
     private final long columnId;
     private final Type columnType;
 
     @JsonCreator
     public RaptorColumnHandle(
             @JsonProperty("connectorId") String connectorId,
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("columnId") long columnId,
             @JsonProperty("columnType") Type columnType)
     {
@@ -64,7 +66,7 @@ public final class RaptorColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

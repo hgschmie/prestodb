@@ -17,7 +17,6 @@ import com.facebook.presto.decoder.DecoderColumnHandle;
 import com.facebook.presto.decoder.DecoderTestColumnHandle;
 import com.facebook.presto.decoder.FieldDecoder;
 import com.facebook.presto.decoder.FieldValueProvider;
-import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.BigintType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

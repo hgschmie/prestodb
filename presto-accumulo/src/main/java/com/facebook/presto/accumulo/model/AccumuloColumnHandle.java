@@ -15,6 +15,7 @@ package com.facebook.presto.accumulo.model;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,12 +36,12 @@ public final class AccumuloColumnHandle
     private final Optional<String> qualifier;
     private final Type type;
     private final String comment;
-    private final String name;
+    private final ColumnName name;
     private final int ordinal;
 
     @JsonCreator
     public AccumuloColumnHandle(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("family") Optional<String> family,
             @JsonProperty("qualifier") Optional<String> qualifier,
             @JsonProperty("type") Type type,
@@ -60,7 +61,7 @@ public final class AccumuloColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

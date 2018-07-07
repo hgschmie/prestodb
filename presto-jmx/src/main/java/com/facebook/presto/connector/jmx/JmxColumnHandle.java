@@ -15,6 +15,7 @@ package com.facebook.presto.connector.jmx;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,12 +28,12 @@ import static java.util.Objects.requireNonNull;
 public class JmxColumnHandle
         implements ColumnHandle
 {
-    private final String columnName;
+    private final ColumnName columnName;
     private final Type columnType;
 
     @JsonCreator
     public JmxColumnHandle(
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("columnType") Type columnType)
     {
         this.columnName = requireNonNull(columnName, "columnName is null");
@@ -40,7 +41,7 @@ public class JmxColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

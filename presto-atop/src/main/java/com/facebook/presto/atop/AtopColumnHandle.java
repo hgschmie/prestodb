@@ -14,6 +14,7 @@
 package com.facebook.presto.atop;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,16 +26,16 @@ import static java.util.Objects.requireNonNull;
 public class AtopColumnHandle
         implements ColumnHandle
 {
-    private final String name;
+    private final ColumnName name;
 
     @JsonCreator
-    public AtopColumnHandle(@JsonProperty("name") String name)
+    public AtopColumnHandle(@JsonProperty("name") ColumnName name)
     {
         this.name = requireNonNull(name, "name is null");
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

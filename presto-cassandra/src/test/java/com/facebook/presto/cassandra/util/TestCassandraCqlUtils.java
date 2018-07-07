@@ -48,7 +48,7 @@ public class TestCassandraCqlUtils
     public void testValidColumnName()
     {
         assertEquals("foo", validColumnName("foo"));
-        assertEquals("\"\"", validColumnName(CassandraCqlUtils.EMPTY_COLUMN_NAME));
+        assertEquals("\"\"", validColumnName(CassandraCqlUtils.CQL_EMPTY_COLUMN_NAME));
         assertEquals("\"\"", validColumnName(""));
         assertEquals("\"select\"", validColumnName("select"));
     }

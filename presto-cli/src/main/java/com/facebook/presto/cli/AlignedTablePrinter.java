@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.cli;
 
+import com.facebook.presto.spi.ColumnName;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -41,13 +42,13 @@ public class AlignedTablePrinter
     private static final Joiner HEX_BYTE_JOINER = Joiner.on(' ');
     private static final Joiner HEX_LINE_JOINER = Joiner.on('\n');
 
-    private final List<String> fieldNames;
+    private final List<ColumnName> fieldNames;
     private final Writer writer;
 
     private boolean headerOutput;
     private long rowCount;
 
-    public AlignedTablePrinter(List<String> fieldNames, Writer writer)
+    public AlignedTablePrinter(List<ColumnName> fieldNames, Writer writer)
     {
         this.fieldNames = ImmutableList.copyOf(requireNonNull(fieldNames, "fieldNames is null"));
         this.writer = requireNonNull(writer, "writer is null");

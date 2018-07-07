@@ -15,6 +15,7 @@ package com.facebook.presto.hive;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.TypeManager;
 import com.facebook.presto.spi.type.TypeSignature;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -28,6 +29,7 @@ import static com.facebook.presto.hive.HiveColumnHandle.ColumnType.SYNTHESIZED;
 import static com.facebook.presto.hive.HiveType.HIVE_INT;
 import static com.facebook.presto.hive.HiveType.HIVE_LONG;
 import static com.facebook.presto.hive.HiveType.HIVE_STRING;
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -37,16 +39,16 @@ public class HiveColumnHandle
         implements ColumnHandle
 {
     public static final int PATH_COLUMN_INDEX = -11;
-    public static final String PATH_COLUMN_NAME = "$path";
+    public static final ColumnName PATH_COLUMN_NAME = createColumnName("$path");
     public static final HiveType PATH_HIVE_TYPE = HIVE_STRING;
     public static final TypeSignature PATH_TYPE_SIGNATURE = PATH_HIVE_TYPE.getTypeSignature();
 
     public static final int BUCKET_COLUMN_INDEX = -12;
-    public static final String BUCKET_COLUMN_NAME = "$bucket";
+    public static final ColumnName BUCKET_COLUMN_NAME = createColumnName("$bucket");
     public static final HiveType BUCKET_HIVE_TYPE = HIVE_INT;
     public static final TypeSignature BUCKET_TYPE_SIGNATURE = BUCKET_HIVE_TYPE.getTypeSignature();
 
-    private static final String UPDATE_ROW_ID_COLUMN_NAME = "$shard_row_id";
+    private static final ColumnName UPDATE_ROW_ID_COLUMN_NAME = createColumnName("$shard_row_id");
 
     public enum ColumnType
     {
@@ -55,7 +57,7 @@ public class HiveColumnHandle
         SYNTHESIZED,
     }
 
-    private final String name;
+    private final ColumnName name;
     private final HiveType hiveType;
     private final TypeSignature typeName;
     private final int hiveColumnIndex;
@@ -64,7 +66,7 @@ public class HiveColumnHandle
 
     @JsonCreator
     public HiveColumnHandle(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("hiveType") HiveType hiveType,
             @JsonProperty("typeSignature") TypeSignature typeSignature,
             @JsonProperty("hiveColumnIndex") int hiveColumnIndex,
@@ -81,7 +83,7 @@ public class HiveColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

@@ -15,6 +15,7 @@ package com.facebook.presto.plugin.memory;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +30,7 @@ import static java.util.Objects.requireNonNull;
 public final class MemoryColumnHandle
         implements ColumnHandle
 {
-    private final String name;
+    private final ColumnName name;
     private final Type columnType;
     private final int columnIndex;
 
@@ -40,7 +41,7 @@ public final class MemoryColumnHandle
 
     @JsonCreator
     public MemoryColumnHandle(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("columnType") Type columnType,
             @JsonProperty("columnIndex") int columnIndex)
     {
@@ -50,7 +51,7 @@ public final class MemoryColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

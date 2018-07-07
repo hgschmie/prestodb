@@ -15,6 +15,7 @@ package com.facebook.presto.localfile;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,13 +31,13 @@ public class LocalFileColumnHandle
     public static final int SERVER_ADDRESS_ORDINAL_POSITION = -1;
     public static final String SERVER_ADDRESS_COLUMN_NAME = "server_address";
 
-    private final String columnName;
+    private final ColumnName columnName;
     private final Type columnType;
     private final int ordinalPosition;
 
     @JsonCreator
     public LocalFileColumnHandle(
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("columnType") Type columnType,
             @JsonProperty("ordinalPosition") int ordinalPosition)
     {
@@ -46,7 +47,7 @@ public class LocalFileColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

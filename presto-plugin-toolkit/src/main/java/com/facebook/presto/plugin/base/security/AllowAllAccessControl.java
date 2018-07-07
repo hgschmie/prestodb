@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.plugin.base.security;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.connector.ConnectorAccessControl;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
@@ -77,7 +78,7 @@ public class AllowAllAccessControl
     }
 
     @Override
-    public void checkCanSelectFromColumns(ConnectorTransactionHandle transactionHandle, Identity identity, SchemaTableName tableName, Set<String> columnNames)
+    public void checkCanSelectFromColumns(ConnectorTransactionHandle transactionHandle, Identity identity, SchemaTableName tableName, Set<ColumnName> columnNames)
     {
     }
 

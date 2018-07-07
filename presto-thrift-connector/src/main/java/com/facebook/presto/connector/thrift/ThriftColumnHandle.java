@@ -15,6 +15,7 @@ package com.facebook.presto.connector.thrift;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,14 +30,14 @@ import static java.util.Objects.requireNonNull;
 public final class ThriftColumnHandle
         implements ColumnHandle
 {
-    private final String columnName;
+    private final ColumnName columnName;
     private final Type columnType;
     private final String comment;
     private final boolean hidden;
 
     @JsonCreator
     public ThriftColumnHandle(
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("columnType") Type columnType,
             @JsonProperty("comment") @Nullable String comment,
             @JsonProperty("hidden") boolean hidden)
@@ -53,7 +54,7 @@ public final class ThriftColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

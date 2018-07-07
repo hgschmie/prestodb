@@ -15,6 +15,7 @@ package com.facebook.presto.plugin.jdbc;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,14 +29,14 @@ public final class JdbcColumnHandle
         implements ColumnHandle
 {
     private final String connectorId;
-    private final String columnName;
+    private final ColumnName columnName;
     private final JdbcTypeHandle jdbcTypeHandle;
     private final Type columnType;
 
     @JsonCreator
     public JdbcColumnHandle(
             @JsonProperty("connectorId") String connectorId,
-            @JsonProperty("columnName") String columnName,
+            @JsonProperty("columnName") ColumnName columnName,
             @JsonProperty("jdbcTypeHandle") JdbcTypeHandle jdbcTypeHandle,
             @JsonProperty("columnType") Type columnType)
     {
@@ -52,7 +53,7 @@ public final class JdbcColumnHandle
     }
 
     @JsonProperty
-    public String getColumnName()
+    public ColumnName getColumnName()
     {
         return columnName;
     }

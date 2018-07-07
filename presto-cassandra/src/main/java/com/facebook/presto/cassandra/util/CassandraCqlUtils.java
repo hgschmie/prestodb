@@ -20,6 +20,7 @@ import com.facebook.presto.cassandra.CassandraColumnHandle;
 import com.facebook.presto.cassandra.CassandraTableHandle;
 import com.facebook.presto.cassandra.CassandraType;
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import io.airlift.slice.Slice;
 
@@ -28,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.facebook.presto.spi.ColumnName.createColumnName;
 import static java.util.Locale.ENGLISH;
 
 public final class CassandraCqlUtils
@@ -49,7 +51,7 @@ public final class CassandraCqlUtils
 
     private static final Set<String> keywords = new HashSet<>(Arrays.asList(KEYWORDS));
 
-    public static final String EMPTY_COLUMN_NAME = "__empty__";
+    public static final ColumnName CQL_EMPTY_COLUMN_NAME = createColumnName("__empty__");
 
     public static String validSchemaName(String identifier)
     {
@@ -61,25 +63,30 @@ public final class CassandraCqlUtils
         return validIdentifier(identifier);
     }
 
-    public static String validColumnName(String identifier)
+    public static String validColumnName(ColumnName identifier)
     {
-        if (identifier.isEmpty() || identifier.equals(EMPTY_COLUMN_NAME)) {
-            return "\"\"";
+        if (identifier.equals(CQL_EMPTY_COLUMN_NAME)) {
+            return ColumnName.EMPTY_COLUMN_NAME.getQuotedColumnName();
         }
 
-        return validIdentifier(identifier);
+        return mustQuote(identifier.getColumnName()) ? identifier.getQuotedColumnName() : identifier.getColumnName();
+    }
+
+    private static boolean mustQuote(String value) {
+        if (!value.equals(value.toLowerCase(ENGLISH))) {
+            return true;
+        }
+
+        if (keywords.contains(value.toUpperCase(ENGLISH))) {
+            return true;
+        }
+
+        return false;
     }
 
     private static String validIdentifier(String identifier)
     {
-        if (!identifier.equals(identifier.toLowerCase(ENGLISH))) {
-            return quoteIdentifier(identifier);
-        }
-
-        if (keywords.contains(identifier.toUpperCase(ENGLISH))) {
-            return quoteIdentifier(identifier);
-        }
-        return identifier;
+        return mustQuote(identifier) ?  quoteIdentifier(identifier) : identifier;
     }
 
     private static String quoteIdentifier(String identifier)
@@ -115,17 +122,17 @@ public final class CassandraCqlUtils
         }
     }
 
-    public static String cqlNameToSqlName(String name)
+    public static ColumnName cqlNameToSqlName(String name)
     {
         if (name.isEmpty()) {
-            return EMPTY_COLUMN_NAME;
+            return CQL_EMPTY_COLUMN_NAME;
         }
-        return name;
+        return createColumnName(name);
     }
 
     public static String sqlNameToCqlName(String name)
     {
-        if (name.equals(EMPTY_COLUMN_NAME)) {
+        if (name.equals(CQL_EMPTY_COLUMN_NAME)) {
             return "";
         }
         return name;

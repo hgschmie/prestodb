@@ -15,6 +15,7 @@ package com.facebook.presto.connector.informationschema;
 
 import com.facebook.presto.Session;
 import com.facebook.presto.connector.MockConnectorFactory;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.Plugin;
@@ -125,7 +126,7 @@ public class BenchmarkInformationSchema
                     BiFunction<ConnectorSession, ConnectorTableHandle, Map<String, TpchColumnHandle>> getColumnHandles = (session, tableHandle) -> IntStream.range(0, Integer.parseInt(columnsCount))
                             .boxed()
                             .map(i -> "column_" + i)
-                            .collect(toImmutableMap(column -> column, column -> new TpchColumnHandle(column, createUnboundedVarcharType()) {}));
+                            .collect(toImmutableMap(column -> column, column -> new TpchColumnHandle(ColumnName.createColumnName(column), createUnboundedVarcharType()) {}));
                     return ImmutableList.of(new MockConnectorFactory(listSchemaNames, listTables, getColumnHandles));
                 }
             });

@@ -15,6 +15,7 @@ package com.facebook.presto.plugin.blackhole;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,7 +25,7 @@ import java.util.Objects;
 public final class BlackHoleColumnHandle
         implements ColumnHandle
 {
-    private final String name;
+    private final ColumnName name;
     private final Type columnType;
 
     public BlackHoleColumnHandle(ColumnMetadata columnMetadata)
@@ -34,7 +35,7 @@ public final class BlackHoleColumnHandle
 
     @JsonCreator
     public BlackHoleColumnHandle(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("columnType") Type columnType)
     {
         this.name = name;
@@ -42,7 +43,7 @@ public final class BlackHoleColumnHandle
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

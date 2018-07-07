@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.client;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeSignature;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,23 +26,23 @@ import static java.util.Objects.requireNonNull;
 @Immutable
 public class Column
 {
-    private final String name;
+    private final ColumnName name;
     private final String type;
     private final ClientTypeSignature typeSignature;
 
-    public Column(String name, Type type)
+    public Column(ColumnName name, Type type)
     {
         this(name, type.getTypeSignature());
     }
 
-    public Column(String name, TypeSignature signature)
+    public Column(ColumnName name, TypeSignature signature)
     {
         this(name, signature.toString(), new ClientTypeSignature(signature));
     }
 
     @JsonCreator
     public Column(
-            @JsonProperty("name") String name,
+            @JsonProperty("name") ColumnName name,
             @JsonProperty("type") String type,
             @JsonProperty("typeSignature") ClientTypeSignature typeSignature)
     {
@@ -51,7 +52,7 @@ public class Column
     }
 
     @JsonProperty
-    public String getName()
+    public ColumnName getName()
     {
         return name;
     }

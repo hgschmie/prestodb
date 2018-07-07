@@ -19,6 +19,7 @@ import com.facebook.presto.client.ErrorLocation;
 import com.facebook.presto.client.QueryError;
 import com.facebook.presto.client.QueryStatusInfo;
 import com.facebook.presto.client.StatementClient;
+import com.facebook.presto.spi.ColumnName;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -219,7 +220,7 @@ public class Query
     private void doRenderResults(PrintStream out, OutputFormat format, boolean interactive, List<Column> columns)
             throws IOException
     {
-        List<String> fieldNames = Lists.transform(columns, Column::getName);
+        List<ColumnName> fieldNames = Lists.transform(columns, Column::getName);
         if (interactive) {
             pageOutput(format, fieldNames);
         }
@@ -228,7 +229,7 @@ public class Query
         }
     }
 
-    private void pageOutput(OutputFormat format, List<String> fieldNames)
+    private void pageOutput(OutputFormat format, List<ColumnName> fieldNames)
             throws IOException
     {
         try (Pager pager = Pager.create();
@@ -262,12 +263,12 @@ public class Query
         }
     }
 
-    private static OutputHandler createOutputHandler(OutputFormat format, Writer writer, List<String> fieldNames)
+    private static OutputHandler createOutputHandler(OutputFormat format, Writer writer, List<ColumnName> fieldNames)
     {
         return new OutputHandler(createOutputPrinter(format, writer, fieldNames));
     }
 
-    private static OutputPrinter createOutputPrinter(OutputFormat format, Writer writer, List<String> fieldNames)
+    private static OutputPrinter createOutputPrinter(OutputFormat format, Writer writer, List<ColumnName> fieldNames)
     {
         switch (format) {
             case ALIGNED:
