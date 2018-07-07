@@ -214,7 +214,7 @@ public interface ConnectorMetadata
     /**
      * Rename the specified column
      */
-    default void renameColumn(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle source, String target)
+    default void renameColumn(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle source, ColumnName target)
     {
         throw new PrestoException(NOT_SUPPORTED, "This connector does not support renaming columns");
     }

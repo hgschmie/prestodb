@@ -15,6 +15,7 @@ package com.facebook.presto.spi.security;
 
 import com.facebook.presto.spi.CatalogSchemaName;
 import com.facebook.presto.spi.CatalogSchemaTableName;
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.SchemaTableName;
 
 import java.security.Principal;
@@ -218,7 +219,7 @@ public interface SystemAccessControl
      *
      * @throws com.facebook.presto.spi.security.AccessDeniedException if not allowed
      */
-    default void checkCanSelectFromColumns(Identity identity, CatalogSchemaTableName table, Set<String> columns)
+    default void checkCanSelectFromColumns(Identity identity, CatalogSchemaTableName table, Set<ColumnName> columns)
     {
         denySelectColumns(table.toString(), columns);
     }

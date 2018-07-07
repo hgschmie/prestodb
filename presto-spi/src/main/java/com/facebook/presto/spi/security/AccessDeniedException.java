@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.spi.security;
 
+import com.facebook.presto.spi.ColumnName;
 import com.facebook.presto.spi.PrestoException;
 
 import java.security.Principal;
@@ -274,12 +275,12 @@ public class AccessDeniedException
         throw new AccessDeniedException(format("Cannot set catalog session property %s", propertyName));
     }
 
-    public static void denySelectColumns(String tableName, Collection<String> columnNames)
+    public static void denySelectColumns(String tableName, Collection<ColumnName> columnNames)
     {
         denySelectColumns(tableName, columnNames, null);
     }
 
-    public static void denySelectColumns(String tableName, Collection<String> columnNames, String extraInfo)
+    public static void denySelectColumns(String tableName, Collection<ColumnName> columnNames, String extraInfo)
     {
         throw new AccessDeniedException(format("Cannot select from columns %s in table or view %s%s", columnNames, tableName, formatExtraInfo(extraInfo)));
     }

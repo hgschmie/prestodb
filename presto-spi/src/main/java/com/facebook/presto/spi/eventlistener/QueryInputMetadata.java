@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.spi.eventlistener;
 
+import com.facebook.presto.spi.ColumnName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -25,10 +26,10 @@ public class QueryInputMetadata
     private final String connectorId;
     private final String schema;
     private final String table;
-    private final List<String> columns;
+    private final List<ColumnName> columns;
     private final Optional<Object> connectorInfo;
 
-    public QueryInputMetadata(String connectorId, String schema, String table, List<String> columns, Optional<Object> connectorInfo)
+    public QueryInputMetadata(String connectorId, String schema, String table, List<ColumnName> columns, Optional<Object> connectorInfo)
     {
         this.connectorId = requireNonNull(connectorId, "connectorId is null");
         this.schema = requireNonNull(schema, "schema is null");
@@ -56,7 +57,7 @@ public class QueryInputMetadata
     }
 
     @JsonProperty
-    public List<String> getColumns()
+    public List<ColumnName> getColumns()
     {
         return columns;
     }
